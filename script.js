@@ -388,6 +388,7 @@ function openProblemModal(problem) {
   document.getElementById("modalStatement").textContent = problem.statement;
   document.getElementById("modalExampleInput").textContent = problem.input || "None";
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
+  document.getElementById("editorInput").value = problem.input || "";
   const badge = document.getElementById("modalBadge");
   badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
   const solvedBtn = document.getElementById("modalMarkSolved");
@@ -414,7 +415,7 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-// Run code via Judge0 API with fallback
+// Run code via Judge0 API with retry and fallback
 async function runCode() {
   if (!editor) {
     alert("Editor still loading, please wait...");
@@ -422,13 +423,17 @@ async function runCode() {
   }
 
   const code = editor.getValue();
+  const stdin = document.getElementById("editorInput").value || "";
   const outputEl = document.getElementById("outputText");
   const outputContainer = document.getElementById("editorOutput");
+  const btnRun = document.getElementById("btnRun");
 
   // Show loading
-  outputEl.textContent = "Compiling & Running...";
+  btnRun.disabled = true;
+  btnRun.textContent = "Running...";
   outputContainer.style.display = "block";
-  outputEl.style.color = "#10b981";
+  outputEl.textContent = "Compiling & Running...";
+  outputEl.style.color = "#22d3ee";
 
   try {
     // Try Judge0 API (free C++ compiler)
@@ -438,19 +443,19 @@ async function runCode() {
       body: JSON.stringify({
         source_code: code,
         language_id: 54, // C++ (G++)
-        stdin: "", // No input for now
+        stdin: stdin,
       }),
     });
 
-    if (!response.ok) throw new Error("API error");
+    if (!response.ok) throw new Error("API error: " + response.status);
 
     const data = await response.json();
     const token = data.token;
 
-    // Wait for result
+    // Wait for result with retry
     let result = null;
-    for (let i = 0; i < 10; i++) {
-      await new Promise(r => setTimeout(r, 1000));
+    for (let i = 0; i < 15; i++) {
+      await new Promise(r => setTimeout(r, 800));
       const res = await fetch(`https://ce-api.judge0.com/submissions/${token}?base64_encoded=false`);
       result = await res.json();
       if (result.status.id !== 1 && result.status.id !== 2) break; // 1=In Queue, 2=Processing
@@ -458,29 +463,32 @@ async function runCode() {
 
     if (result.status.id === 3) { // Accepted
       outputEl.textContent = result.stdout || "Code executed successfully (no output).";
-      outputEl.style.color = "#10b981";
+      outputEl.style.color = "#34d399";
     } else if (result.status.id === 4) { // Wrong Answer
       outputEl.textContent = result.stdout || "Code ran but output may be incorrect.";
-      outputEl.style.color = "#f59e0b";
+      outputEl.style.color = "#fbbf24";
     } else if (result.status.id === 5 || result.status.id === 6 || result.status.id === 7) { // Time Limit, etc.
       outputEl.textContent = result.stderr || "Execution error or time limit exceeded.";
-      outputEl.style.color = "#ef4444";
+      outputEl.style.color = "#f87171";
     } else if (result.status.id === 8 || result.status.id === 9 || result.status.id === 10 || result.status.id === 11 || result.status.id === 12 || result.status.id === 13) { // Compilation errors
       outputEl.textContent = result.stderr || "Compilation error.";
-      outputEl.style.color = "#ef4444";
+      outputEl.style.color = "#f87171";
     } else {
       outputEl.textContent = result.stderr || result.stdout || "Unknown status.";
-      outputEl.style.color = "#ef4444";
+      outputEl.style.color = "#f87171";
     }
   } catch (err) {
     console.error(err);
     // Fallback: Show message to use local IDE
     outputEl.textContent = `
 ⚠️ Online compiler is temporarily unavailable.
+
 Please copy your code to your local IDE (VS Code, Code::Blocks, etc.) and run there.
-Code copied to clipboard - paste it into your IDE.
-    `;
-    outputEl.style.color = "#f59e0b";
+
+Sample Input:
+${stdin || "(none provided)"}
+`;
+    outputEl.style.color = "#fbbf24";
 
     // Auto-copy code to clipboard
     try {
@@ -489,6 +497,9 @@ Code copied to clipboard - paste it into your IDE.
     } catch (e) {
       console.log("Clipboard not available");
     }
+  } finally {
+    btnRun.disabled = false;
+    btnRun.textContent = "Run Code ▶";
   }
 }
 
@@ -578,6 +589,12 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("outputText").textContent = "";
       document.getElementById("editorOutput").style.display = "none";
     }
+  });
+
+  // Load example input
+  document.getElementById("btnLoadExample").addEventListener("click", () => {
+    const exampleInput = document.getElementById("modalExampleInput").textContent;
+    document.getElementById("editorInput").value = exampleInput;
   });
 });
 
