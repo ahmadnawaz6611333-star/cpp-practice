@@ -658,6 +658,83 @@ async function submitCode() {
   }
 }
 
+// AI Review - sends code to Gemini API for analysis
+async function aiReviewCode() {
+  if (!editor) {
+    alert("Editor still loading, please wait...");
+    return;
+  }
+
+  const code = editor.getValue();
+  const outputEl = document.getElementById("outputText");
+  const outputContainer = document.getElementById("editorOutput");
+  const btnAiReview = document.getElementById("btnAiReview");
+
+  // ⚠️ REPLACE WITH YOUR GEMINI API KEY
+  const GEMINI_API_KEY = ""; // Paste your Gemini API key here
+
+  if (!GEMINI_API_KEY) {
+    outputEl.textContent = "⚠️ Gemini API Key not configured.\n\nPlease add your API key in script.js:\nconst GEMINI_API_KEY = \"YOUR_KEY_HERE\";";
+    outputEl.style.color = "#fbbf24";
+    outputContainer.style.display = "block";
+    return;
+  }
+
+  // Show loading
+  btnAiReview.disabled = true;
+  btnAiReview.textContent = "🤖 Reviewing...";
+  outputContainer.style.display = "block";
+  outputEl.textContent = "Analyzing code with Gemini AI...";
+  outputEl.style.color = "#22d3ee";
+  document.getElementById("outputStatus").textContent = "AI Reviewing...";
+  document.getElementById("outputStatus").className = "status-badge status-running";
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are a C++ expert code reviewer. Review this code and provide:\n1. Any syntax or logical errors\n2. Suggested improvements\n3. Time and Space complexity analysis\n4. Corrected code if errors found\n\nCode to review:\n\`\`\`cpp\n${code}\n\`\`\`\n\nProvide a clear, concise review in plain text.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1000,
+          }
+        }),
+        signal: AbortSignal.timeout(30000),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const reviewText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No review generated.";
+
+    outputEl.textContent = reviewText;
+    outputEl.style.color = "#cbd5e1";
+    document.getElementById("outputStatus").textContent = "AI Review Complete";
+    document.getElementById("outputStatus").className = "status-badge status-accepted";
+
+  } catch (err) {
+    console.error(err);
+    outputEl.textContent = `⚠️ AI Review Failed:\n${err.message}\n\nCheck your API key and internet connection.`;
+    outputEl.style.color = "#f87171";
+    document.getElementById("outputStatus").textContent = "AI Review Failed";
+    document.getElementById("outputStatus").className = "status-badge status-error";
+  } finally {
+    btnAiReview.disabled = false;
+    btnAiReview.textContent = "🤖 AI Review";
+  }
+}
+
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => renderProblems(btn.dataset.category));
 });
@@ -724,6 +801,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Submit button - checks against sample test case
   document.getElementById("btnSubmit").addEventListener("click", submitCode);
+
+  // AI Review button - gets code analysis from Gemini
+  document.getElementById("btnAiReview").addEventListener("click", aiReviewCode);
 
   // Copy to local IDE button (both left and right copies)
   document.getElementById("btnCopyLocal").addEventListener("click", copyCodeToClipboard);
