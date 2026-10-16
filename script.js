@@ -427,6 +427,8 @@ async function runCode() {
   const outputEl = document.getElementById("outputText");
   const outputContainer = document.getElementById("editorOutput");
   const btnRun = document.getElementById("btnRun");
+  const statusBadge = document.getElementById("outputStatus");
+  const testResult = document.getElementById("testResult");
 
   // Judge0 API endpoints (fallback if one is down)
   const API_ENDPOINTS = [
@@ -434,12 +436,17 @@ async function runCode() {
     'https://api.judge0.com/submissions',
   ];
 
+  // Hide test result
+  testResult.style.display = "none";
+
   // Show loading
   btnRun.disabled = true;
   btnRun.textContent = "Running...";
   outputContainer.style.display = "block";
   outputEl.textContent = "Compiling & Running...";
   outputEl.style.color = "#22d3ee";
+  statusBadge.textContent = "Running...";
+  statusBadge.className = "status-badge status-running";
 
   let lastError = null;
 
@@ -479,18 +486,28 @@ async function runCode() {
         if (result.status.id === 3) { // Accepted
           outputEl.textContent = result.stdout || "Code executed successfully (no output).";
           outputEl.style.color = "#34d399";
+          statusBadge.textContent = "Accepted";
+          statusBadge.className = "status-badge status-accepted";
         } else if (result.status.id === 4) { // Wrong Answer
           outputEl.textContent = result.stdout || "Code ran but output may be incorrect.";
           outputEl.style.color = "#fbbf24";
+          statusBadge.textContent = "Wrong Answer";
+          statusBadge.className = "status-badge status-wrong";
         } else if (result.status.id === 5 || result.status.id === 6 || result.status.id === 7) { // Time Limit, etc.
           outputEl.textContent = result.stderr || "Execution error or time limit exceeded.";
           outputEl.style.color = "#f87171";
+          statusBadge.textContent = "Error";
+          statusBadge.className = "status-badge status-error";
         } else if (result.status.id >= 8 && result.status.id <= 13) { // Compilation errors
           outputEl.textContent = result.stderr || "Compilation error.";
           outputEl.style.color = "#f87171";
+          statusBadge.textContent = "Compilation Error";
+          statusBadge.className = "status-badge status-error";
         } else {
           outputEl.textContent = result.stderr || result.stdout || "Unknown status.";
           outputEl.style.color = "#f87171";
+          statusBadge.textContent = "Error";
+          statusBadge.className = "status-badge status-error";
         }
 
         return; // Success, exit function
@@ -518,6 +535,8 @@ ${stdin || "(none provided)"}
 Your code is ready - copy it to VS Code, Code::Blocks, or any C++ compiler.
 `;
     outputEl.style.color = "#fbbf24";
+    statusBadge.textContent = "Unavailable";
+    statusBadge.className = "status-badge status-error";
 
     // Add retry button
     outputEl.textContent += "\n\n🔄 Click below to retry:";
@@ -538,6 +557,109 @@ Your code is ready - copy it to VS Code, Code::Blocks, or any C++ compiler.
   } finally {
     btnRun.disabled = false;
     btnRun.textContent = "Run Code ▶";
+  }
+}
+
+// Submit code - checks against sample test case
+async function submitCode() {
+  if (!editor) {
+    alert("Editor still loading, please wait...");
+    return;
+  }
+
+  const code = editor.getValue();
+  const problem = problems.find(p => p.id === currentProblemId);
+  if (!problem) {
+    alert("Problem not found");
+    return;
+  }
+
+  const outputEl = document.getElementById("outputText");
+  const outputContainer = document.getElementById("editorOutput");
+  const btnSubmit = document.getElementById("btnSubmit");
+  const testResult = document.getElementById("testResult");
+  const statusBadge = document.getElementById("outputStatus");
+
+  // Show loading
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = "Checking...";
+  outputContainer.style.display = "block";
+  outputEl.textContent = "Running test case...";
+  outputEl.style.color = "#22d3ee";
+  statusBadge.textContent = "Testing...";
+  statusBadge.className = "status-badge status-running";
+  testResult.style.display = "none";
+
+  try {
+    // Try each API endpoint until one works
+    for (const endpoint of API_ENDPOINTS) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: 54, // C++ (G++)
+            stdin: problem.input || "", // Use problem's sample input
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+        const data = await response.json();
+        const token = data.token;
+        const resultEndpoint = endpoint.replace('/submissions', `/submissions/${token}`);
+
+        // Wait for result
+        let result = null;
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 800));
+          const res = await fetch(`${resultEndpoint}?base64_encoded=false`, {
+            signal: AbortSignal.timeout(10000),
+          });
+          result = await res.json();
+          if (result.status.id !== 1 && result.status.id !== 2) break;
+        }
+
+        const actualOutput = (result.stdout || "").trim();
+        const expectedOutput = (problem.output || "").trim();
+        const passed = actualOutput === expectedOutput;
+
+        // Display test result
+        outputEl.textContent = `Expected Output:\n${expectedOutput}\n\nYour Output:\n${actualOutput}`;
+        outputEl.style.color = passed ? "#34d399" : "#f87171";
+        statusBadge.textContent = passed ? "Accepted" : "Wrong Answer";
+        statusBadge.className = passed ? "status-badge status-accepted" : "status-badge status-wrong";
+
+        testResult.innerHTML = passed
+          ? `✅ Test Case Passed! Output matches expected.`
+          : `❌ Test Case Failed. Output does not match.`;
+        testResult.className = `test-result ${passed ? 'passed' : 'failed'}`;
+        testResult.style.display = "flex";
+
+        if (passed) {
+          // Auto mark as solved
+          toggleSolved(currentProblemId);
+        }
+
+        return;
+      } catch (err) {
+        console.error(`${endpoint} failed:`, err);
+      }
+    }
+
+    throw new Error("All compiler APIs unavailable");
+
+  } catch (err) {
+    console.error(err);
+    outputEl.textContent = "⚠️ Compiler unavailable. Please try again later.";
+    outputEl.style.color = "#fbbf24";
+    statusBadge.textContent = "Unavailable";
+    statusBadge.className = "status-badge status-error";
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = "Submit ✓";
   }
 }
 
@@ -604,6 +726,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Run button
   document.getElementById("btnRun").addEventListener("click", runCode);
+
+  // Submit button - checks against sample test case
+  document.getElementById("btnSubmit").addEventListener("click", submitCode);
 
   // Copy to local IDE button
   document.getElementById("btnCopyLocal").addEventListener("click", async () => {

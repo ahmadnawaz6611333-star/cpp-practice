@@ -451,12 +451,17 @@
         </div>
         <div class="editor-controls">
           <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
+          <button class="btn btn-outline" id="btnSubmit">Submit ✓</button>
           <button class="btn btn-outline" id="btnCopyLocal">Copy to Local IDE</button>
           <button class="btn btn-outline" id="btnClearEditor">Clear</button>
         </div>
         <div class="editor-output" id="editorOutput">
-          <div class="output-header">Output:</div>
+          <div class="output-header">
+            <span>Output:</span>
+            <span id="outputStatus" class="status-badge">Waiting...</span>
+          </div>
           <pre id="outputText"></pre>
+          <div id="testResult" class="test-result" style="display:none;"></div>
         </div>
       </div>
 
