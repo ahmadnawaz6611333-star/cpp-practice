@@ -388,7 +388,6 @@ function openProblemModal(problem) {
   document.getElementById("modalStatement").textContent = problem.statement;
   document.getElementById("modalExampleInput").textContent = problem.input || "None";
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
-  document.getElementById("editorInput").value = problem.input || "";
   const badge = document.getElementById("modalBadge");
   badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
   const solvedBtn = document.getElementById("modalMarkSolved");
@@ -423,7 +422,6 @@ async function runCode() {
   }
 
   const code = editor.getValue();
-  const stdin = document.getElementById("editorInput").value || "";
   const outputEl = document.getElementById("outputText");
   const outputContainer = document.getElementById("editorOutput");
   const btnRun = document.getElementById("btnRun");
@@ -460,7 +458,7 @@ async function runCode() {
           body: JSON.stringify({
             source_code: code,
             language_id: 54, // C++ (G++)
-            stdin: stdin,
+            stdin: "",
           }),
           signal: AbortSignal.timeout(15000), // 15 second timeout per attempt
         });
@@ -528,9 +526,6 @@ async function runCode() {
 ⚠️ Online compiler is temporarily unavailable.
 
 All compiler servers are down. Please try again later or use your local IDE.
-
-Sample Input:
-${stdin || "(none provided)"}
 
 Your code is ready - copy it to VS Code, Code::Blocks, or any C++ compiler.
 `;
@@ -752,12 +747,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("outputText").textContent = "";
       document.getElementById("editorOutput").style.display = "none";
     }
-  });
-
-  // Load example input
-  document.getElementById("btnLoadExample").addEventListener("click", () => {
-    const exampleInput = document.getElementById("modalExampleInput").textContent;
-    document.getElementById("editorInput").value = exampleInput;
   });
 });
 
