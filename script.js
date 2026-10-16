@@ -296,6 +296,7 @@ let currentSearch = '';
 let currentDifficulty = 'all';
 let editor = null;
 let monacoLoaded = false;
+let runMode = 'judge0'; // 'judge0' or 'local'
 
 // Initialize Monaco Editor
 function initMonaco() {
@@ -414,7 +415,12 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-// Run code via Judge0 API with multiple fallbacks and retry
+function closeAIReview() {
+  document.getElementById("aiReviewModal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Run code - supports both Judge0 API and Local Browser mode
 async function runCode() {
   if (!editor) {
     alert("Editor still loading, please wait...");
@@ -427,15 +433,64 @@ async function runCode() {
   const btnRun = document.getElementById("btnRun");
   const statusBadge = document.getElementById("outputStatus");
   const testResult = document.getElementById("testResult");
+  const localNotice = document.getElementById("localNotice");
 
-  // Judge0 API endpoints (fallback if one is down)
+  // Hide test result
+  testResult.style.display = "none";
+
+  // Show local notice if local mode
+  if (runMode === 'local') {
+    localNotice.style.display = "block";
+  }
+
+  // ==========================================
+  // LOCAL MODE - No external server, no git upload
+  // ==========================================
+  if (runMode === 'local') {
+    btnRun.disabled = true;
+    btnRun.textContent = "Running Locally...";
+    outputContainer.style.display = "block";
+    outputEl.textContent = "Running in browser (local mode)...";
+    outputEl.style.color = "#22d3ee";
+    statusBadge.textContent = "Local Run";
+    statusBadge.className = "status-badge status-running";
+
+    try {
+      // C++ cannot be fully compiled in browser without a WASM compiler.
+      // We provide a safe local fallback: show code, suggest local IDE, and
+      // attempt a very basic syntax check using JavaScript.
+      const localResult = runCppLocally(code);
+
+      if (localResult.success) {
+        outputEl.textContent = localResult.output;
+        outputEl.style.color = "#34d399";
+        statusBadge.textContent = "Local Run Complete";
+        statusBadge.className = "status-badge status-accepted";
+      } else {
+        outputEl.textContent = localResult.output;
+        outputEl.style.color = "#fbbf24";
+        statusBadge.textContent = "Local Mode";
+        statusBadge.className = "status-badge status-error";
+      }
+    } catch (err) {
+      outputEl.textContent = "⚠️ Local run error: " + err.message;
+      outputEl.style.color = "#f87171";
+      statusBadge.textContent = "Error";
+      statusBadge.className = "status-badge status-error";
+    } finally {
+      btnRun.disabled = false;
+      btnRun.textContent = "Run Code ▶";
+    }
+    return;
+  }
+
+  // ==========================================
+  // JUDGE0 MODE - Sends code to external compiler API (not git)
+  // ==========================================
   const API_ENDPOINTS = [
     'https://ce-api.judge0.com/submissions',
     'https://api.judge0.com/submissions',
   ];
-
-  // Hide test result
-  testResult.style.display = "none";
 
   // Show loading
   btnRun.disabled = true;
@@ -555,6 +610,45 @@ Your code is ready - copy it to VS Code, Code::Blocks, or any C++ compiler.
   }
 }
 
+/**
+ * Simple local C++ "runner" for browser.
+ * Since real C++ compilation needs a compiler (g++/clang), this function
+ * does a basic syntax check and simulates output for common beginner patterns.
+ * Nothing is sent to any server or git.
+ */
+function runCppLocally(code) {
+  const outputLines = [];
+  const trimmed = code.trim();
+
+  // Basic checks
+  if (!trimmed.includes('#include')) {
+    return { success: false, output: "⚠️ Missing #include directive.\nAdd: #include <iostream>\n\nNote: Full C++ compilation requires a local compiler (g++/clang).\nSwitch to 'Online Compiler (Judge0)' or copy code to your local IDE." };
+  }
+  if (!trimmed.includes('int main')) {
+    return { success: false, output: "⚠️ Missing 'int main()' function.\n\nNote: Full C++ compilation requires a local compiler (g++/clang).\nSwitch to 'Online Compiler (Judge0)' or copy code to your local IDE." };
+  }
+
+  // Detect simple cout patterns and simulate output
+  const coutMatches = code.match(/cout\s*<<\s*"([^"]*)"/g);
+  if (coutMatches) {
+    coutMatches.forEach(match => {
+      const strMatch = match.match(/"([^"]*)"/);
+      if (strMatch) outputLines.push(strMatch[1]);
+    });
+  }
+
+  // Detect endl
+  if (code.includes('endl')) {
+    outputLines.push(''); // newline
+  }
+
+  if (outputLines.length > 0) {
+    return { success: true, output: outputLines.join('\n') + '\n\n✅ Local simulation complete.\n💡 For full compilation, use your local IDE or switch to Online Compiler mode.' };
+  }
+
+  return { success: true, output: "✅ Code structure looks valid.\nNo runtime output detected (no cout statements found).\n\n💡 For full compilation, use your local IDE or switch to Online Compiler mode." };
+}
+
 // Submit code - checks against sample test case
 async function submitCode() {
   if (!editor) {
@@ -658,7 +752,7 @@ async function submitCode() {
   }
 }
 
-// AI Review - sends code to Gemini API for analysis
+// AI Review - sends code to Gemini API and opens result modal
 async function aiReviewCode() {
   if (!editor) {
     alert("Editor still loading, please wait...");
@@ -666,28 +760,40 @@ async function aiReviewCode() {
   }
 
   const code = editor.getValue();
-  const outputEl = document.getElementById("outputText");
-  const outputContainer = document.getElementById("editorOutput");
   const btnAiReview = document.getElementById("btnAiReview");
+  const aiReviewModal = document.getElementById("aiReviewModal");
+  const aiReviewStatus = document.getElementById("aiReviewStatus");
+  const aiReviewBadge = document.getElementById("aiReviewBadge");
+  const aiReviewCodeEl = document.getElementById("aiReviewCode");
+  const aiReviewResultEl = document.getElementById("aiReviewResult");
 
   // ⚠️ REPLACE WITH YOUR GEMINI API KEY
   const GEMINI_API_KEY = ""; // Paste your Gemini API key here
 
   if (!GEMINI_API_KEY) {
-    outputEl.textContent = "⚠️ Gemini API Key not configured.\n\nPlease add your API key in script.js:\nconst GEMINI_API_KEY = \"YOUR_KEY_HERE\";";
-    outputEl.style.color = "#fbbf24";
-    outputContainer.style.display = "block";
+    aiReviewResultEl.textContent = "⚠️ Gemini API Key not configured.\n\nPlease add your API key in script.js:\nconst GEMINI_API_KEY = \"YOUR_KEY_HERE\";";
+    aiReviewResultEl.style.color = "#fbbf24";
+    aiReviewCodeEl.textContent = code;
+    aiReviewStatus.textContent = "API Key Missing";
+    aiReviewBadge.textContent = "Error";
+    aiReviewBadge.className = "modal-badge status-error";
+    aiReviewModal.classList.add("open");
+    document.body.style.overflow = "hidden";
     return;
   }
 
-  // Show loading
+  // Open modal immediately
+  aiReviewCodeEl.textContent = code;
+  aiReviewResultEl.textContent = "⏳ Sending code to Gemini AI...";
+  aiReviewResultEl.style.color = "#22d3ee";
+  aiReviewStatus.textContent = "Sending to Gemini...";
+  aiReviewBadge.textContent = "Reviewing...";
+  aiReviewBadge.className = "modal-badge status-running";
+  aiReviewModal.classList.add("open");
+  document.body.style.overflow = "hidden";
+
   btnAiReview.disabled = true;
   btnAiReview.textContent = "🤖 Reviewing...";
-  outputContainer.style.display = "block";
-  outputEl.textContent = "Analyzing code with Gemini AI...";
-  outputEl.style.color = "#22d3ee";
-  document.getElementById("outputStatus").textContent = "AI Reviewing...";
-  document.getElementById("outputStatus").className = "status-badge status-running";
 
   try {
     const response = await fetch(
@@ -698,12 +804,12 @@ async function aiReviewCode() {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a C++ expert code reviewer. Review this code and provide:\n1. Any syntax or logical errors\n2. Suggested improvements\n3. Time and Space complexity analysis\n4. Corrected code if errors found\n\nCode to review:\n\`\`\`cpp\n${code}\n\`\`\`\n\nProvide a clear, concise review in plain text.`
+              text: `You are a C++ expert code reviewer. Review this code and provide:\n1. Is the code correct or wrong? State clearly at the start.\n2. Any syntax or logical errors.\n3. What is the mistake and how to fix it.\n4. Suggested improvements.\n5. Time and Space complexity analysis.\n6. Corrected code if errors found.\n\nCode to review:\n\`\`\`cpp\n${code}\n\`\`\`\n\nProvide a clear, concise review in plain text. Start with "CODE STATUS: CORRECT" or "CODE STATUS: WRONG".`
             }]
           }],
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 1000,
+            maxOutputTokens: 1500,
           }
         }),
         signal: AbortSignal.timeout(30000),
@@ -716,19 +822,26 @@ async function aiReviewCode() {
     }
 
     const data = await response.json();
-    const reviewText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No review generated.";
+    let reviewText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No review generated.";
 
-    outputEl.textContent = reviewText;
-    outputEl.style.color = "#cbd5e1";
-    document.getElementById("outputStatus").textContent = "AI Review Complete";
-    document.getElementById("outputStatus").className = "status-badge status-accepted";
+    // Determine status badge based on review text
+    const isCorrect = /CODE STATUS:\s*CORRECT/i.test(reviewText);
+    const isWrong = /CODE STATUS:\s*WRONG/i.test(reviewText);
+
+    aiReviewStatus.textContent = isCorrect ? "Code is Correct ✅" : (isWrong ? "Code has Errors ❌" : "Review Complete");
+    aiReviewBadge.textContent = isCorrect ? "Correct" : (isWrong ? "Errors Found" : "Reviewed");
+    aiReviewBadge.className = "modal-badge " + (isCorrect ? "status-accepted" : (isWrong ? "status-error" : "status-accepted"));
+
+    aiReviewResultEl.textContent = reviewText;
+    aiReviewResultEl.style.color = isCorrect ? "#34d399" : (isWrong ? "#f87171" : "#cbd5e1");
 
   } catch (err) {
     console.error(err);
-    outputEl.textContent = `⚠️ AI Review Failed:\n${err.message}\n\nCheck your API key and internet connection.`;
-    outputEl.style.color = "#f87171";
-    document.getElementById("outputStatus").textContent = "AI Review Failed";
-    document.getElementById("outputStatus").className = "status-badge status-error";
+    aiReviewStatus.textContent = "AI Review Failed";
+    aiReviewBadge.textContent = "Error";
+    aiReviewBadge.className = "modal-badge status-error";
+    aiReviewResultEl.textContent = `⚠️ AI Review Failed:\n${err.message}\n\nCheck your API key and internet connection.`;
+    aiReviewResultEl.style.color = "#f87171";
   } finally {
     btnAiReview.disabled = false;
     btnAiReview.textContent = "🤖 AI Review";
@@ -778,6 +891,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("problemModal").addEventListener("click", (e) => {
     if (e.target === document.getElementById("problemModal")) closeModal();
   });
+
+  // AI Review Modal close
+  document.getElementById("aiReviewClose").addEventListener("click", closeAIReview);
+  document.getElementById("aiReviewCloseBtn").addEventListener("click", closeAIReview);
+  document.getElementById("aiReviewModal").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("aiReviewModal")) closeAIReview();
+  });
+  document.getElementById("aiReviewCopyResult").addEventListener("click", () => {
+    const text = document.getElementById("aiReviewResult").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById("aiReviewCopyResult");
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = original, 1500);
+    });
+  });
   document.getElementById("modalCopyStatement").addEventListener("click", () => {
     const statement = document.getElementById("modalStatement").textContent;
     navigator.clipboard.writeText(statement).then(() => {
@@ -794,7 +923,24 @@ document.addEventListener("DOMContentLoaded", () => {
     solvedBtn.textContent = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
     solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+      closeAIReview();
+    }
+  });
+
+  // Run mode selector - Local vs Online
+  const runModeSelect = document.getElementById("runMode");
+  if (runModeSelect) {
+    runModeSelect.addEventListener("change", (e) => {
+      runMode = e.target.value;
+      const localNotice = document.getElementById("localNotice");
+      if (localNotice) {
+        localNotice.style.display = runMode === 'local' ? "block" : "none";
+      }
+    });
+  }
 
   // Run button
   document.getElementById("btnRun").addEventListener("click", runCode);
@@ -805,12 +951,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // AI Review button - gets code analysis from Gemini
   document.getElementById("btnAiReview").addEventListener("click", aiReviewCode);
 
-  // Copy to local IDE button (both left and right copies)
-  document.getElementById("btnCopyLocal").addEventListener("click", copyCodeToClipboard);
+  // Copy to local IDE button (right side only - matches HTML)
   document.getElementById("btnCopyLocalRight").addEventListener("click", copyCodeToClipboard);
 
-  // Clear editor button (both left and right copies)
-  document.getElementById("btnClearEditor").addEventListener("click", clearEditor);
+  // Clear editor button (right side only - matches HTML)
   document.getElementById("btnClearEditorRight").addEventListener("click", clearEditor);
 });
 

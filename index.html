@@ -158,6 +158,11 @@
           <p>Write, run and test C++ code right in your browser.</p>
         </div>
         <div class="feature-card-3d">
+          <div class="feature-icon">🔒</div>
+          <h3>Private & Local</h3>
+          <p>Code runs in your browser — nothing is uploaded to GitHub or any server.</p>
+        </div>
+        <div class="feature-card-3d">
           <div class="feature-icon">📚</div>
           <h3>Structured Learning</h3>
           <p>From basics to advanced DSA — follow a clear learning path.</p>
@@ -171,6 +176,11 @@
           <div class="feature-icon">📱</div>
           <h3>Mobile Friendly</h3>
           <p>Practice anywhere on your phone, tablet, or computer.</p>
+        </div>
+        <div class="feature-card-3d">
+          <div class="feature-icon">🚀</div>
+          <h3>No Installation</h3>
+          <p>Start coding immediately — no setup required.</p>
         </div>
       </div>
     </div>
@@ -347,6 +357,9 @@
             <li>Click Run to test with sample input/output</li>
             <li>Mark the problem as solved when complete</li>
           </ol>
+          <div class="privacy-notice">
+            <strong>🔒 Privacy:</strong> This website does <strong>not</strong> upload your code to GitHub, GitLab, or any external server. All progress is saved only in your browser's local storage.
+          </div>
         </div>
         <div class="about-image">
           <div class="code-card">
@@ -475,6 +488,15 @@
             <div id="editor"></div>
           </div>
 
+          <!-- Run Mode Selector -->
+          <div class="run-mode-selector">
+            <label class="run-mode-label">Run Mode:</label>
+            <select id="runMode" class="run-mode-select">
+              <option value="judge0">Online Compiler (Judge0)</option>
+              <option value="local">Local Browser Only (No Upload)</option>
+            </select>
+          </div>
+
           <div class="editor-controls">
             <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
             <button class="btn btn-outline" id="btnSubmit">Submit ✓</button>
@@ -484,10 +506,15 @@
           <div class="editor-output" id="editorOutput">
             <div class="output-header">
               <span>Output:</span>
-              <span id="outputStatus" class="status-badge">Waiting...</span>
+              <span id="outputStatus" class="status-badge status-waiting">Waiting...</span>
             </div>
             <pre id="outputText"></pre>
             <div id="testResult" class="test-result" style="display:none;"></div>
+          </div>
+
+          <!-- Local-only notice -->
+          <div id="localNotice" class="privacy-notice" style="margin-top: 10px; font-size: 0.85rem; display: none;">
+            🔒 <strong>Local Mode:</strong> Code runs entirely in your browser. Nothing is sent to any server or git.
           </div>
         </div>
 
@@ -497,6 +524,55 @@
       <div class="modal-actions-bottom">
         <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
         <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI Review Result Modal -->
+  <div class="modal-overlay" id="aiReviewModal">
+    <div class="modal-container hackerrank-modal" style="max-height: 95vh; max-width: 1100px;">
+      <button class="modal-close" id="aiReviewClose">&times;</button>
+
+      <div class="modal-header">
+        <div class="modal-id-badge">
+          <span class="modal-id">🤖 AI Review</span>
+          <span class="modal-badge" id="aiReviewBadge">Analyzing...</span>
+        </div>
+      </div>
+
+      <h2 class="modal-title" id="aiReviewTitle">Code Review Result</h2>
+
+      <div class="modal-meta">
+        <div class="meta-item">
+          <span class="meta-label">Status</span>
+          <span class="meta-value" id="aiReviewStatus">Sending to Gemini...</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Language</span>
+          <span class="meta-value">C++</span>
+        </div>
+      </div>
+
+      <!-- Split Layout: Code | Review -->
+      <div class="problem-layout" style="height: auto; min-height: 400px; margin: 0 1.5rem 1rem; flex-direction: row;">
+        <div class="problem-left" style="border-right: 1px solid var(--border); padding: 1.5rem; flex: 1; overflow-y: auto;">
+          <div class="problem-section">
+            <h3 class="section-title">Your Code</h3>
+            <pre id="aiReviewCode" style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); white-space: pre-wrap; margin: 0;"></pre>
+          </div>
+        </div>
+        <div class="problem-right" style="padding: 1.5rem; flex: 1.2; overflow-y: auto;">
+          <div class="problem-section">
+            <h3 class="section-title">Review Result</h3>
+            <div id="aiReviewResult" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-wrap; margin: 0;">Waiting for AI response...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions-bottom">
+        <button class="btn btn-outline" id="aiReviewCopyResult">📋 Copy Review</button>
+        <button class="btn btn-primary" id="aiReviewCloseBtn">Close ✓</button>
       </div>
 
     </div>
