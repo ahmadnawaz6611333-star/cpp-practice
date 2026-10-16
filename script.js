@@ -516,11 +516,11 @@ function toggleTheme() {
 }
 
 const savedTheme = localStorage.getItem("theme");
-if (savedTheme) {
-  document.documentElement.setAttribute("data-theme", savedTheme);
-  const icon = document.querySelector(".theme-icon");
-  if (icon) icon.textContent = savedTheme === "dark" ? "🌙" : "☀️";
-}
+const isDark = savedTheme ? savedTheme === "dark" : true;
+document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+localStorage.setItem("theme", isDark ? "dark" : "light");
+const icon = document.querySelector(".theme-icon");
+if (icon) icon.textContent = isDark ? "🌙" : "☀️";
 
 const dailyDate = document.getElementById("dailyDate");
 if (dailyDate) {
