@@ -9,12 +9,13 @@
 </head>
 <body>
 
-  <!-- Animated Background Orbs -->
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="orb orb-5"></div>
+  <!-- Background Gradient Mesh -->
+  <div class="bg-mesh">
+    <div class="mesh-blob blob-1"></div>
+    <div class="mesh-blob blob-2"></div>
+    <div class="mesh-blob blob-3"></div>
+    <div class="mesh-blob blob-4"></div>
+  </div>
 
   <!-- Navigation -->
   <nav class="navbar">
@@ -56,39 +57,37 @@
         </div>
       </div>
       <div class="hero-visual">
-        <div class="code-card-3d">
-          <div class="code-card-face front">
-            <div class="code-header">
-              <div class="code-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <span class="code-lang">main.cpp</span>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
             </div>
-            <div class="code-body">
-              <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
-              <div class="code-line"><span class="keyword">using namespace</span> std;</div>
-              <div class="code-line"></div>
-              <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
-              <div class="code-line indent"><span class="keyword">cout</span> &lt;&lt; <span class="string">"Hello, C++!"</span> &lt;&lt; endl;</div>
-              <div class="code-line indent"><span class="keyword">return</span> 0;</div>
-              <div class="code-line">}</div>
-            </div>
+            <span class="code-lang">main.cpp</span>
+          </div>
+          <div class="code-body">
+            <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
+            <div class="code-line"><span class="keyword">using namespace</span> std;</div>
+            <div class="code-line"></div>
+            <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
+            <div class="code-line indent"><span class="keyword">cout</span> &lt;&lt; <span class="string">"Hello, C++!"</span> &lt;&lt; endl;</div>
+            <div class="code-line indent"><span class="keyword">return</span> 0;</div>
+            <div class="code-line">}</div>
           </div>
         </div>
         <div class="hero-stats">
-          <div class="stat-card-3d">
+          <div class="stat-card">
             <div class="stat-icon">💻</div>
             <span class="stat-number">1200+</span>
             <span class="stat-label">Problems</span>
           </div>
-          <div class="stat-card-3d">
+          <div class="stat-card">
             <div class="stat-icon">📚</div>
             <span class="stat-number">12</span>
             <span class="stat-label">Sections</span>
           </div>
-          <div class="stat-card-3d">
+          <div class="stat-card">
             <div class="stat-icon">🆓</div>
             <span class="stat-number">100%</span>
             <span class="stat-label">Free</span>
@@ -101,7 +100,7 @@
   <!-- Progress Section -->
   <section class="progress-section">
     <div class="container">
-      <div class="progress-card-3d">
+      <div class="progress-card">
         <div class="progress-header">
           <h2>Your Progress</h2>
           <span class="progress-percentage" id="overallProgress">0%</span>
@@ -140,22 +139,22 @@
       <h2 class="section-title">Why Practice Here?</h2>
       <p class="section-subtitle">Built for students who want to master C++ through real practice</p>
       <div class="features-grid">
-        <div class="feature-card-3d">
+        <div class="feature-card">
           <div class="feature-icon">💻</div>
           <h3>Solve in Your Own IDE</h3>
           <p>Read problems here, write code in VS Code or Code::Blocks, test locally.</p>
         </div>
-        <div class="feature-card-3d">
+        <div class="feature-card">
           <div class="feature-icon">📚</div>
           <h3>Structured Learning</h3>
           <p>From basics to advanced DSA — follow a clear learning path.</p>
         </div>
-        <div class="feature-card-3d">
+        <div class="feature-card">
           <div class="feature-icon">🏆</div>
           <h3>Track Your Progress</h3>
           <p>Mark problems as solved and watch your progress grow.</p>
         </div>
-        <div class="feature-card-3d">
+        <div class="feature-card">
           <div class="feature-icon">📱</div>
           <h3>Mobile Friendly</h3>
           <p>Practice anywhere on your phone, tablet, or computer.</p>
@@ -167,7 +166,7 @@
   <!-- Daily Challenge -->
   <section class="daily-challenge">
     <div class="container">
-      <div class="daily-card-3d">
+      <div class="daily-card">
         <div class="daily-header">
           <span class="daily-badge">Daily Challenge</span>
           <span class="daily-date" id="dailyDate">October 15, 2026</span>
@@ -232,84 +231,84 @@
       <h2 class="section-title">Learning Roadmap</h2>
       <p class="section-subtitle">Follow the path from beginner to advanced</p>
       <div class="roadmap-list">
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">01</span>
           <div class="roadmap-content">
             <h3>Input & Output</h3>
             <p>cout, cin, formatting, multiple inputs</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">02</span>
           <div class="roadmap-content">
             <h3>Variables & Data Types</h3>
             <p>int, float, double, char, bool, string</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">03</span>
           <div class="roadmap-content">
             <h3>Operators & Expressions</h3>
             <p>Arithmetic, logical, assignment, bitwise</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">04</span>
           <div class="roadmap-content">
             <h3>Conditions & Decision Making</h3>
             <p>if/else, switch, ternary, nested conditions</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">05</span>
           <div class="roadmap-content">
             <h3>Loops & Repetition</h3>
             <p>for, while, do-while, patterns, numbers</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">06</span>
           <div class="roadmap-content">
             <h3>Functions</h3>
             <p>Declaration, parameters, return, overloading</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">07</span>
           <div class="roadmap-content">
             <h3>Arrays</h3>
             <p>1D/2D arrays, searching, sorting, matrices</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">08</span>
           <div class="roadmap-content">
             <h3>Strings</h3>
             <p>std::string, traversal, palindromes, parsing</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">09</span>
           <div class="roadmap-content">
             <h3>Pointers & Memory</h3>
             <p>Addresses, dereferencing, dynamic allocation</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">10</span>
           <div class="roadmap-content">
             <h3>Object-Oriented Programming</h3>
             <p>Classes, encapsulation, inheritance, polymorphism</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">11</span>
           <div class="roadmap-content">
             <h3>STL</h3>
             <p>Vectors, stacks, queues, maps, sets, algorithms</p>
           </div>
         </div>
-        <div class="roadmap-item-3d">
+        <div class="roadmap-item">
           <span class="roadmap-number">12</span>
           <div class="roadmap-content">
             <h3>Data Structures & Algorithms</h3>
@@ -337,26 +336,24 @@
           </ol>
         </div>
         <div class="about-image">
-          <div class="code-card-3d">
-            <div class="code-card-face front">
-              <div class="code-header">
-                <div class="code-dots">
-                  <span class="dot red"></span>
-                  <span class="dot yellow"></span>
-                  <span class="dot green"></span>
-                </div>
-                <span class="code-lang">solution.cpp</span>
+          <div class="code-card">
+            <div class="code-header">
+              <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
               </div>
-              <div class="code-body">
-                <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
-                <div class="code-line"><span class="keyword">using namespace</span> std;</div>
-                <div class="code-line"></div>
-                <div class="code-line"><span class="comment">// Write your solution here</span></div>
-                <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
-                <div class="code-line indent">// Your code...</div>
-                <div class="code-line indent"><span class="keyword">return</span> 0;</div>
-                <div class="code-line">}</div>
-              </div>
+              <span class="code-lang">solution.cpp</span>
+            </div>
+            <div class="code-body">
+              <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
+              <div class="code-line"><span class="keyword">using namespace</span> std;</div>
+              <div class="code-line"></div>
+              <div class="code-line"><span class="comment">// Write your solution here</span></div>
+              <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
+              <div class="code-line indent">// Your code...</div>
+              <div class="code-line indent"><span class="keyword">return</span> 0;</div>
+              <div class="code-line">}</div>
             </div>
           </div>
         </div>
@@ -384,68 +381,66 @@
 
   <!-- Problem Detail Modal -->
   <div class="modal-overlay" id="problemModal">
-    <div class="modal-container-3d">
-      <div class="modal-card-face front">
-        <button class="modal-close" id="modalClose">&times;</button>
-        
-        <div class="modal-header">
-          <span class="modal-id" id="modalId">#001</span>
-          <span class="modal-badge" id="modalBadge">Easy</span>
+    <div class="modal-container">
+      <button class="modal-close" id="modalClose">&times;</button>
+      
+      <div class="modal-header">
+        <span class="modal-id" id="modalId">#001</span>
+        <span class="modal-badge" id="modalBadge">Easy</span>
+      </div>
+      
+      <h2 class="modal-title" id="modalTitle">Problem Title</h2>
+      
+      <div class="modal-meta">
+        <div class="meta-item">
+          <span class="meta-label">Category</span>
+          <span class="meta-value" id="modalCategory">Input & Output</span>
         </div>
-        
-        <h2 class="modal-title" id="modalTitle">Problem Title</h2>
-        
-        <div class="modal-meta">
-          <div class="meta-item">
-            <span class="meta-label">Category</span>
-            <span class="meta-value" id="modalCategory">Input & Output</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Difficulty</span>
-            <span class="meta-value" id="modalDifficulty">Easy</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">ID</span>
-            <span class="meta-value" id="modalProblemId">1</span>
-          </div>
+        <div class="meta-item">
+          <span class="meta-label">Difficulty</span>
+          <span class="meta-value" id="modalDifficulty">Easy</span>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Problem Statement</h3>
-          <div class="modal-statement" id="modalStatement"></div>
+        <div class="meta-item">
+          <span class="meta-label">ID</span>
+          <span class="meta-value" id="modalProblemId">1</span>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Example</h3>
-          <div class="example-box">
-            <div class="example-row">
-              <span class="example-label">Input</span>
-              <pre class="example-code" id="modalExampleInput"></pre>
-            </div>
-            <div class="example-row">
-              <span class="example-label">Output</span>
-              <pre class="example-code" id="modalExampleOutput"></pre>
-            </div>
+      </div>
+      
+      <div class="modal-section">
+        <h3 class="modal-section-title">Problem Statement</h3>
+        <div class="modal-statement" id="modalStatement"></div>
+      </div>
+      
+      <div class="modal-section">
+        <h3 class="modal-section-title">Example</h3>
+        <div class="example-box">
+          <div class="example-row">
+            <span class="example-label">Input</span>
+            <pre class="example-code" id="modalExampleInput"></pre>
+          </div>
+          <div class="example-row">
+            <span class="example-label">Output</span>
+            <pre class="example-code" id="modalExampleOutput"></pre>
           </div>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Instructions</h3>
-          <div class="modal-instructions">
-            <ol>
-              <li>Read the problem statement carefully above.</li>
-              <li>Open your own IDE (VS Code, Code::Blocks, or any C++ compiler).</li>
-              <li>Write your C++ code to solve this problem.</li>
-              <li>Test with the sample input/output shown.</li>
-              <li>Come back here and mark the problem as solved when you're done.</li>
-            </ol>
-          </div>
+      </div>
+      
+      <div class="modal-section">
+        <h3 class="modal-section-title">Instructions</h3>
+        <div class="modal-instructions">
+          <ol>
+            <li>Read the problem statement carefully above.</li>
+            <li>Open your own IDE (VS Code, Code::Blocks, or any C++ compiler).</li>
+            <li>Write your C++ code to solve this problem.</li>
+            <li>Test with the sample input/output shown.</li>
+            <li>Come back here and mark the problem as solved when you're done.</li>
+          </ol>
         </div>
-        
-        <div class="modal-actions">
-          <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
-          <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
-        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
+        <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
       </div>
     </div>
   </div>
