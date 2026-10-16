@@ -6,6 +6,8 @@
   <title>CPPractice Lab | Master C++ Programming</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Monaco Editor -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs/editor/editor.main.min.css">
 </head>
 <body>
 
@@ -152,8 +154,8 @@
       <div class="features-grid">
         <div class="feature-card-3d">
           <div class="feature-icon">💻</div>
-          <h3>Solve in Your Own IDE</h3>
-          <p>Read problems here, write code in VS Code or Code::Blocks, test locally.</p>
+          <h3>Online Code Editor</h3>
+          <p>Write, run and test C++ code right in your browser.</p>
         </div>
         <div class="feature-card-3d">
           <div class="feature-icon">📚</div>
@@ -197,7 +199,7 @@
       <div class="problems-header">
         <div>
           <h2 class="section-title">Practice Problems</h2>
-          <p class="section-subtitle">1200+ problems across 12 sections. Click any problem to view full details.</p>
+          <p class="section-subtitle">1200+ problems across 12 sections. Click any problem to view full details and solve online.</p>
         </div>
         <div class="search-filter">
           <input type="text" id="problemSearch" placeholder="Search problems..." class="search-input">
@@ -336,13 +338,13 @@
       <h2 class="section-title">About CPPractice Lab</h2>
       <div class="about-content">
         <div class="about-text">
-          <p>CPPractice Lab is built for students who want to master C++ programming through practice. No online compiler needed — solve problems in your own development environment.</p>
+          <p>CPPractice Lab is built for students who want to master C++ programming through practice. Solve problems in your own IDE or right here in the browser.</p>
           <p><strong>How to use:</strong></p>
           <ol>
             <li>Select a problem category</li>
             <li>Click any problem to view full statement and example</li>
-            <li>Open your IDE (VS Code, Code::Blocks, etc.)</li>
-            <li>Write and test your C++ code</li>
+            <li>Write your C++ code in the online editor</li>
+            <li>Click Run to test with sample input/output</li>
             <li>Mark the problem as solved when complete</li>
           </ol>
         </div>
@@ -392,72 +394,89 @@
 
   <!-- Problem Detail Modal -->
   <div class="modal-overlay" id="problemModal">
-    <div class="modal-container-3d">
-      <div class="modal-card-face front">
-        <button class="modal-close" id="modalClose">&times;</button>
-        
-        <div class="modal-header">
-          <span class="modal-id" id="modalId">#001</span>
-          <span class="modal-badge" id="modalBadge">Easy</span>
+    <div class="modal-container">
+      <button class="modal-close" id="modalClose">&times;</button>
+
+      <div class="modal-header">
+        <span class="modal-id" id="modalId">#001</span>
+        <span class="modal-badge" id="modalBadge">Easy</span>
+      </div>
+
+      <h2 class="modal-title" id="modalTitle">Problem Title</h2>
+
+      <div class="modal-meta">
+        <div class="meta-item">
+          <span class="meta-label">Category</span>
+          <span class="meta-value" id="modalCategory">Input & Output</span>
         </div>
-        
-        <h2 class="modal-title" id="modalTitle">Problem Title</h2>
-        
-        <div class="modal-meta">
-          <div class="meta-item">
-            <span class="meta-label">Category</span>
-            <span class="meta-value" id="modalCategory">Input & Output</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Difficulty</span>
-            <span class="meta-value" id="modalDifficulty">Easy</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">ID</span>
-            <span class="meta-value" id="modalProblemId">1</span>
-          </div>
+        <div class="meta-item">
+          <span class="meta-label">Difficulty</span>
+          <span class="meta-value" id="modalDifficulty">Easy</span>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Problem Statement</h3>
-          <div class="modal-statement" id="modalStatement"></div>
+        <div class="meta-item">
+          <span class="meta-label">ID</span>
+          <span class="meta-value" id="modalProblemId">1</span>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Example</h3>
-          <div class="example-box">
-            <div class="example-row">
-              <span class="example-label">Input</span>
-              <pre class="example-code" id="modalExampleInput"></pre>
-            </div>
-            <div class="example-row">
-              <span class="example-label">Output</span>
-              <pre class="example-code" id="modalExampleOutput"></pre>
-            </div>
+      </div>
+
+      <div class="modal-section">
+        <h3 class="modal-section-title">Problem Statement</h3>
+        <div class="modal-statement" id="modalStatement"></div>
+      </div>
+
+      <div class="modal-section">
+        <h3 class="modal-section-title">Example</h3>
+        <div class="example-box">
+          <div class="example-row">
+            <span class="example-label">Input</span>
+            <pre class="example-code" id="modalExampleInput"></pre>
+          </div>
+          <div class="example-row">
+            <span class="example-label">Output</span>
+            <pre class="example-code" id="modalExampleOutput"></pre>
           </div>
         </div>
-        
-        <div class="modal-section">
-          <h3 class="modal-section-title">Instructions</h3>
-          <div class="modal-instructions">
-            <ol>
-              <li>Read the problem statement carefully above.</li>
-              <li>Open your own IDE (VS Code, Code::Blocks, or any C++ compiler).</li>
-              <li>Write your C++ code to solve this problem.</li>
-              <li>Test with the sample input/output shown.</li>
-              <li>Come back here and mark the problem as solved when you're done.</li>
-            </ol>
-          </div>
+      </div>
+
+      <!-- Online Editor Section -->
+      <div class="modal-section editor-section">
+        <h3 class="modal-section-title">Online C++ Editor</h3>
+        <div class="editor-wrapper">
+          <div id="editor"></div>
         </div>
-        
-        <div class="modal-actions">
-          <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
-          <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
+        <div class="editor-controls">
+          <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
+          <button class="btn btn-outline" id="btnCopyLocal">Copy to Local IDE</button>
+          <button class="btn btn-outline" id="btnClearEditor">Clear</button>
         </div>
+        <div class="editor-output" id="editorOutput">
+          <div class="output-header">Output:</div>
+          <pre id="outputText"></pre>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <h3 class="modal-section-title">Instructions</h3>
+        <div class="modal-instructions">
+          <ol>
+            <li>Read the problem statement carefully above.</li>
+            <li>Write your C++ code in the editor below.</li>
+            <li>Test with the sample input/output shown.</li>
+            <li>Click Run to compile and execute online.</li>
+            <li>Mark the problem as solved when complete.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
+        <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
       </div>
     </div>
   </div>
 
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs/loader.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

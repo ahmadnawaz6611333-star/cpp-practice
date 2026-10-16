@@ -2,12 +2,12 @@
    CSS VARIABLES & RESET
    ======================================== */
 :root {
-  /* Colors - Unique Hybrid Theme: Deep Slate + Emerald Green + White */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-card: rgba(255, 255, 255, 0.05);
-  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  /* Colors - Unique Hybrid Theme: Lighter Dark + Emerald Green + White */
+  --bg-primary: #1e293b;
+  --bg-secondary: #334155;
+  --bg-tertiary: #475569;
+  --bg-card: rgba(255, 255, 255, 0.08);
+  --bg-card-hover: rgba(255, 255, 255, 0.12);
 
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;

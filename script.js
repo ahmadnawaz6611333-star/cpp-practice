@@ -35,7 +35,7 @@ generateProblems('io', 'Input & Output', 100, 1, [
   { title: 'Divide Two Numbers {n}', difficulty: 'Easy', statement: 'Read two integers and print quotient/remainder.', input: '17 5', output: '3 2' },
   { title: 'Average of Three Numbers {n}', difficulty: 'Easy', statement: 'Read three numbers and print average.', input: '10 20 30', output: '20' },
   { title: 'Convert Days to Years {n}', difficulty: 'Easy', statement: 'Read total days and convert to years/weeks/days.', input: '400', output: '1 year, 1 week, 3 days' },
-  { title: 'Read and Print String {n}', difficulty: 'Easy', statement: 'Read a string with spaces and print it.', input: 'Hello C++', output: 'Hello C++' },
+  { title: 'Read and Print String {n}', difficulty: 'Easy', statement: 'Read a string with spaces and print it back.', input: 'Hello C++', output: 'Hello C++' },
   { title: 'Character Input Output {n}', difficulty: 'Easy', statement: 'Read char using cin.get() and print.', input: 'Z', output: 'Z' },
   { title: 'Formatted Output {n}', difficulty: 'Easy', statement: 'Print float with 2 decimal places.', input: '3.14159', output: '3.14' },
   { title: 'Multiple Inputs {n}', difficulty: 'Easy', statement: 'Read int, float, char in one line.', input: '5 3.14 A', output: '5 3.14 A' },
@@ -293,7 +293,29 @@ function toggleSolved(id) {
 let currentCategory = 'all';
 let currentSearch = '';
 let currentDifficulty = 'all';
+let editor = null;
+let monacoLoaded = false;
 
+// Initialize Monaco Editor
+function initMonaco() {
+  if (monacoLoaded) return;
+  monacoLoaded = true;
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs' } });
+  require(['vs/editor/editor.main'], function (monaco) {
+    editor = monaco.editor.create(document.getElementById('editor'), {
+      value: '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    return 0;\n}',
+      language: 'cpp',
+      theme: 'vs-dark',
+      automaticLayout: true,
+      fontSize: 14,
+      lineNumbers: true,
+      minimap: { enabled: true },
+      wordWrap: 'on',
+    });
+  });
+}
+
+// Render problems
 function renderProblems(category = 'all') {
   currentCategory = category;
   const grid = document.getElementById("problemsGrid");
@@ -371,6 +393,16 @@ function openProblemModal(problem) {
   const alreadySolved = isProblemSolved(problem.id);
   solvedBtn.textContent = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
   solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
+
+  // Initialize Monaco editor on first modal open
+  if (!editor) {
+    initMonaco();
+  }
+
+  // Reset editor output
+  document.getElementById("outputText").textContent = "";
+  document.getElementById("editorOutput").style.display = "none";
+
   const modal = document.getElementById("problemModal");
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
@@ -379,6 +411,84 @@ function openProblemModal(problem) {
 function closeModal() {
   document.getElementById("problemModal").classList.remove("open");
   document.body.style.overflow = "";
+}
+
+// Run code via Judge0 API with fallback
+async function runCode() {
+  if (!editor) {
+    alert("Editor still loading, please wait...");
+    return;
+  }
+
+  const code = editor.getValue();
+  const outputEl = document.getElementById("outputText");
+  const outputContainer = document.getElementById("editorOutput");
+
+  // Show loading
+  outputEl.textContent = "Compiling & Running...";
+  outputContainer.style.display = "block";
+  outputEl.style.color = "#10b981";
+
+  try {
+    // Try Judge0 API (free C++ compiler)
+    const response = await fetch('https://ce-api.judge0.com/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_code: code,
+        language_id: 54, // C++ (G++)
+        stdin: "", // No input for now
+      }),
+    });
+
+    if (!response.ok) throw new Error("API error");
+
+    const data = await response.json();
+    const token = data.token;
+
+    // Wait for result
+    let result = null;
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const res = await fetch(`https://ce-api.judge0.com/submissions/${token}?base64_encoded=false`);
+      result = await res.json();
+      if (result.status.id !== 1 && result.status.id !== 2) break; // 1=In Queue, 2=Processing
+    }
+
+    if (result.status.id === 3) { // Accepted
+      outputEl.textContent = result.stdout || "Code executed successfully (no output).";
+      outputEl.style.color = "#10b981";
+    } else if (result.status.id === 4) { // Wrong Answer
+      outputEl.textContent = result.stdout || "Code ran but output may be incorrect.";
+      outputEl.style.color = "#f59e0b";
+    } else if (result.status.id === 5 || result.status.id === 6 || result.status.id === 7) { // Time Limit, etc.
+      outputEl.textContent = result.stderr || "Execution error or time limit exceeded.";
+      outputEl.style.color = "#ef4444";
+    } else if (result.status.id === 8 || result.status.id === 9 || result.status.id === 10 || result.status.id === 11 || result.status.id === 12 || result.status.id === 13) { // Compilation errors
+      outputEl.textContent = result.stderr || "Compilation error.";
+      outputEl.style.color = "#ef4444";
+    } else {
+      outputEl.textContent = result.stderr || result.stdout || "Unknown status.";
+      outputEl.style.color = "#ef4444";
+    }
+  } catch (err) {
+    console.error(err);
+    // Fallback: Show message to use local IDE
+    outputEl.textContent = `
+⚠️ Online compiler is temporarily unavailable.
+Please copy your code to your local IDE (VS Code, Code::Blocks, etc.) and run there.
+Code copied to clipboard - paste it into your IDE.
+    `;
+    outputEl.style.color = "#f59e0b";
+
+    // Auto-copy code to clipboard
+    try {
+      await navigator.clipboard.writeText(code);
+      outputEl.textContent += "\n\n✅ Code copied to clipboard!";
+    } catch (e) {
+      console.log("Clipboard not available");
+    }
+  }
 }
 
 document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -441,6 +551,33 @@ document.addEventListener("DOMContentLoaded", () => {
     solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  // Run button
+  document.getElementById("btnRun").addEventListener("click", runCode);
+
+  // Copy to local IDE button
+  document.getElementById("btnCopyLocal").addEventListener("click", async () => {
+    if (!editor) return;
+    const code = editor.getValue();
+    try {
+      await navigator.clipboard.writeText(code);
+      const btn = document.getElementById("btnCopyLocal");
+      const original = btn.textContent;
+      btn.textContent = "Copied to Clipboard!";
+      setTimeout(() => btn.textContent = original, 2000);
+    } catch (e) {
+      alert("Copy not supported. Please copy manually from editor.");
+    }
+  });
+
+  // Clear editor
+  document.getElementById("btnClearEditor").addEventListener("click", () => {
+    if (editor) {
+      editor.setValue('#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    return 0;\n}');
+      document.getElementById("outputText").textContent = "";
+      document.getElementById("editorOutput").style.display = "none";
+    }
+  });
 });
 
 function startDailyChallenge() {
