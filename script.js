@@ -415,7 +415,7 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-// Run code via Judge0 API with retry and fallback
+// Run code via Judge0 API with multiple fallbacks and retry
 async function runCode() {
   if (!editor) {
     alert("Editor still loading, please wait...");
@@ -428,6 +428,12 @@ async function runCode() {
   const outputContainer = document.getElementById("editorOutput");
   const btnRun = document.getElementById("btnRun");
 
+  // Judge0 API endpoints (fallback if one is down)
+  const API_ENDPOINTS = [
+    'https://ce-api.judge0.com/submissions',
+    'https://api.judge0.com/submissions',
+  ];
+
   // Show loading
   btnRun.disabled = true;
   btnRun.textContent = "Running...";
@@ -435,60 +441,92 @@ async function runCode() {
   outputEl.textContent = "Compiling & Running...";
   outputEl.style.color = "#22d3ee";
 
+  let lastError = null;
+
   try {
-    // Try Judge0 API (free C++ compiler)
-    const response = await fetch('https://ce-api.judge0.com/submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source_code: code,
-        language_id: 54, // C++ (G++)
-        stdin: stdin,
-      }),
-    });
+    // Try each API endpoint until one works
+    for (const endpoint of API_ENDPOINTS) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: 54, // C++ (G++)
+            stdin: stdin,
+          }),
+          signal: AbortSignal.timeout(15000), // 15 second timeout per attempt
+        });
 
-    if (!response.ok) throw new Error("API error: " + response.status);
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-    const data = await response.json();
-    const token = data.token;
+        const data = await response.json();
+        const token = data.token;
+        const resultEndpoint = endpoint.replace('/submissions', `/submissions/${token}`);
 
-    // Wait for result with retry
-    let result = null;
-    for (let i = 0; i < 15; i++) {
-      await new Promise(r => setTimeout(r, 800));
-      const res = await fetch(`https://ce-api.judge0.com/submissions/${token}?base64_encoded=false`);
-      result = await res.json();
-      if (result.status.id !== 1 && result.status.id !== 2) break; // 1=In Queue, 2=Processing
+        // Wait for result with retry
+        let result = null;
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 800));
+          const res = await fetch(`${resultEndpoint}?base64_encoded=false`, {
+            signal: AbortSignal.timeout(10000),
+          });
+          result = await res.json();
+          if (result.status.id !== 1 && result.status.id !== 2) break; // 1=In Queue, 2=Processing
+        }
+
+        // Display result based on status
+        if (result.status.id === 3) { // Accepted
+          outputEl.textContent = result.stdout || "Code executed successfully (no output).";
+          outputEl.style.color = "#34d399";
+        } else if (result.status.id === 4) { // Wrong Answer
+          outputEl.textContent = result.stdout || "Code ran but output may be incorrect.";
+          outputEl.style.color = "#fbbf24";
+        } else if (result.status.id === 5 || result.status.id === 6 || result.status.id === 7) { // Time Limit, etc.
+          outputEl.textContent = result.stderr || "Execution error or time limit exceeded.";
+          outputEl.style.color = "#f87171";
+        } else if (result.status.id >= 8 && result.status.id <= 13) { // Compilation errors
+          outputEl.textContent = result.stderr || "Compilation error.";
+          outputEl.style.color = "#f87171";
+        } else {
+          outputEl.textContent = result.stderr || result.stdout || "Unknown status.";
+          outputEl.style.color = "#f87171";
+        }
+
+        return; // Success, exit function
+      } catch (err) {
+        lastError = err;
+        console.error(`${endpoint} failed:`, err);
+        // Continue to next endpoint
+      }
     }
 
-    if (result.status.id === 3) { // Accepted
-      outputEl.textContent = result.stdout || "Code executed successfully (no output).";
-      outputEl.style.color = "#34d399";
-    } else if (result.status.id === 4) { // Wrong Answer
-      outputEl.textContent = result.stdout || "Code ran but output may be incorrect.";
-      outputEl.style.color = "#fbbf24";
-    } else if (result.status.id === 5 || result.status.id === 6 || result.status.id === 7) { // Time Limit, etc.
-      outputEl.textContent = result.stderr || "Execution error or time limit exceeded.";
-      outputEl.style.color = "#f87171";
-    } else if (result.status.id === 8 || result.status.id === 9 || result.status.id === 10 || result.status.id === 11 || result.status.id === 12 || result.status.id === 13) { // Compilation errors
-      outputEl.textContent = result.stderr || "Compilation error.";
-      outputEl.style.color = "#f87171";
-    } else {
-      outputEl.textContent = result.stderr || result.stdout || "Unknown status.";
-      outputEl.style.color = "#f87171";
-    }
+    // All APIs failed - show fallback
+    throw lastError || new Error("All compiler APIs unavailable");
+
   } catch (err) {
     console.error(err);
-    // Fallback: Show message to use local IDE
+    // Fallback: Show message to use local IDE with retry option
     outputEl.textContent = `
 ⚠️ Online compiler is temporarily unavailable.
 
-Please copy your code to your local IDE (VS Code, Code::Blocks, etc.) and run there.
+All compiler servers are down. Please try again later or use your local IDE.
 
 Sample Input:
 ${stdin || "(none provided)"}
+
+Your code is ready - copy it to VS Code, Code::Blocks, or any C++ compiler.
 `;
     outputEl.style.color = "#fbbf24";
+
+    // Add retry button
+    outputEl.textContent += "\n\n🔄 Click below to retry:";
+    const retryBtn = document.createElement("button");
+    retryBtn.textContent = "Try Again";
+    retryBtn.className = "btn btn-primary btn-small";
+    retryBtn.style.marginTop = "10px";
+    retryBtn.onclick = () => runCode();
+    outputContainer.appendChild(retryBtn);
 
     // Auto-copy code to clipboard
     try {
