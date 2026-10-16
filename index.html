@@ -394,12 +394,14 @@
 
   <!-- Problem Detail Modal -->
   <div class="modal-overlay" id="problemModal">
-    <div class="modal-container">
+    <div class="modal-container hackerrank-modal">
       <button class="modal-close" id="modalClose">&times;</button>
 
       <div class="modal-header">
-        <span class="modal-id" id="modalId">#001</span>
-        <span class="modal-badge" id="modalBadge">Easy</span>
+        <div class="modal-id-badge">
+          <span class="modal-id" id="modalId">#001</span>
+          <span class="modal-badge" id="modalBadge">Easy</span>
+        </div>
       </div>
 
       <h2 class="modal-title" id="modalTitle">Problem Title</h2>
@@ -419,64 +421,82 @@
         </div>
       </div>
 
-      <div class="modal-section">
-        <h3 class="modal-section-title">Problem Statement</h3>
-        <div class="modal-statement" id="modalStatement"></div>
-      </div>
+      <!-- HackerRank Style Split Layout -->
+      <div class="problem-layout">
 
-      <div class="modal-section">
-        <h3 class="modal-section-title">Example</h3>
-        <div class="example-box">
-          <div class="example-row">
-            <span class="example-label">Input</span>
-            <pre class="example-code" id="modalExampleInput"></pre>
+        <!-- LEFT: Problem Statement -->
+        <div class="problem-left">
+          <div class="problem-section">
+            <h3 class="section-title">Problem Statement</h3>
+            <div class="problem-statement" id="modalStatement"></div>
           </div>
-          <div class="example-row">
-            <span class="example-label">Output</span>
-            <pre class="example-code" id="modalExampleOutput"></pre>
+
+          <div class="problem-section">
+            <h3 class="section-title">Example</h3>
+            <div class="example-box">
+              <div class="example-row">
+                <span class="example-label">Input</span>
+                <pre class="example-code" id="modalExampleInput"></pre>
+              </div>
+              <div class="example-row">
+                <span class="example-label">Output</span>
+                <pre class="example-code" id="modalExampleOutput"></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="problem-section instructions-section">
+            <h3 class="section-title">Instructions</h3>
+            <div class="modal-instructions">
+              <ol>
+                <li>Read the problem statement carefully above.</li>
+                <li>Write your C++ code in the editor on the right.</li>
+                <li>Test with the sample input/output shown.</li>
+                <li>Click Run to compile and execute online.</li>
+                <li>Click Submit to verify against test cases.</li>
+                <li>Mark the problem as solved when complete.</li>
+              </ol>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Online Editor Section -->
-      <div class="modal-section editor-section">
-        <h3 class="modal-section-title">Online C++ Editor</h3>
-        <div class="editor-wrapper">
-          <div id="editor"></div>
-        </div>
-        <div class="editor-controls">
-          <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
-          <button class="btn btn-outline" id="btnSubmit">Submit ✓</button>
-          <button class="btn btn-outline" id="btnCopyLocal">Copy to Local IDE</button>
-          <button class="btn btn-outline" id="btnClearEditor">Clear</button>
-        </div>
-        <div class="editor-output" id="editorOutput">
-          <div class="output-header">
-            <span>Output:</span>
-            <span id="outputStatus" class="status-badge">Waiting...</span>
+        <!-- RIGHT: Code Editor -->
+        <div class="problem-right">
+          <div class="editor-header">
+            <span class="editor-lang">C++ (G++)</span>
+            <div class="editor-actions-top">
+              <button class="btn btn-outline btn-small" id="btnCopyLocalRight">Copy to Local IDE</button>
+              <button class="btn btn-outline btn-small" id="btnClearEditorRight">Clear</button>
+            </div>
           </div>
-          <pre id="outputText"></pre>
-          <div id="testResult" class="test-result" style="display:none;"></div>
+
+          <div class="editor-wrapper">
+            <div id="editor"></div>
+          </div>
+
+          <div class="editor-controls">
+            <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
+            <button class="btn btn-outline" id="btnSubmit">Submit ✓</button>
+          </div>
+
+          <div class="editor-output" id="editorOutput">
+            <div class="output-header">
+              <span>Output:</span>
+              <span id="outputStatus" class="status-badge">Waiting...</span>
+            </div>
+            <pre id="outputText"></pre>
+            <div id="testResult" class="test-result" style="display:none;"></div>
+          </div>
         </div>
+
       </div>
 
-      <div class="modal-section">
-        <h3 class="modal-section-title">Instructions</h3>
-        <div class="modal-instructions">
-          <ol>
-            <li>Read the problem statement carefully above.</li>
-            <li>Write your C++ code in the editor below.</li>
-            <li>Test with the sample input/output shown.</li>
-            <li>Click Run to compile and execute online.</li>
-            <li>Mark the problem as solved when complete.</li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="modal-actions">
+      <!-- Bottom Actions -->
+      <div class="modal-actions-bottom">
         <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
         <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
       </div>
+
     </div>
   </div>
 

@@ -725,30 +725,39 @@ document.addEventListener("DOMContentLoaded", () => {
   // Submit button - checks against sample test case
   document.getElementById("btnSubmit").addEventListener("click", submitCode);
 
-  // Copy to local IDE button
-  document.getElementById("btnCopyLocal").addEventListener("click", async () => {
-    if (!editor) return;
-    const code = editor.getValue();
-    try {
-      await navigator.clipboard.writeText(code);
-      const btn = document.getElementById("btnCopyLocal");
-      const original = btn.textContent;
-      btn.textContent = "Copied to Clipboard!";
-      setTimeout(() => btn.textContent = original, 2000);
-    } catch (e) {
-      alert("Copy not supported. Please copy manually from editor.");
-    }
-  });
+  // Copy to local IDE button (both left and right copies)
+  document.getElementById("btnCopyLocal").addEventListener("click", copyCodeToClipboard);
+  document.getElementById("btnCopyLocalRight").addEventListener("click", copyCodeToClipboard);
 
-  // Clear editor
-  document.getElementById("btnClearEditor").addEventListener("click", () => {
-    if (editor) {
-      editor.setValue('#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    return 0;\n}');
-      document.getElementById("outputText").textContent = "";
-      document.getElementById("editorOutput").style.display = "none";
-    }
-  });
+  // Clear editor button (both left and right copies)
+  document.getElementById("btnClearEditor").addEventListener("click", clearEditor);
+  document.getElementById("btnClearEditorRight").addEventListener("click", clearEditor);
 });
+
+function copyCodeToClipboard() {
+  if (!editor) return;
+  const code = editor.getValue();
+  navigator.clipboard.writeText(code).then(() => {
+    const btns = [document.getElementById("btnCopyLocal"), document.getElementById("btnCopyLocalRight")];
+    btns.forEach(btn => {
+      if (btn) {
+        const original = btn.textContent;
+        btn.textContent = "Copied to Clipboard!";
+        setTimeout(() => btn.textContent = original, 2000);
+      }
+    });
+  }).catch(() => {
+    alert("Copy not supported. Please copy manually from editor.");
+  });
+}
+
+function clearEditor() {
+  if (editor) {
+    editor.setValue('#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    return 0;\n}');
+    document.getElementById("outputText").textContent = "";
+    document.getElementById("editorOutput").style.display = "none";
+  }
+}
 
 function startDailyChallenge() {
   const dailyProblem = problems.find(p => p.title === 'Reverse a Number');
