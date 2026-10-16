@@ -1,4 +1,5 @@
 // ========================================
+const BACKEND_URL = 'https://cpp-backend-ahmadnawaz66113.replit.app';
 // PROBLEMS DATA - 1200 Problems (12 sections × 100)
 // ========================================
 
