@@ -303,19 +303,52 @@ function getDifficultyBadge(difficulty) {
   return map[difficulty] || "badge-easy";
 }
 
+// Get solved problems from localStorage
+function getSolvedProblems() {
+  const saved = localStorage.getItem('cpp-solved-problems');
+  return saved ? JSON.parse(saved) : [];
+}
+
+function isProblemSolved(id) {
+  return getSolvedProblems().includes(id);
+}
+
+function toggleSolved(id) {
+  const solved = getSolvedProblems();
+  if (solved.includes(id)) {
+    solved.splice(solved.indexOf(id), 1);
+  } else {
+    solved.push(id);
+  }
+  localStorage.setItem('cpp-solved-problems', JSON.stringify(solved));
+  updateProgress();
+  renderProblems(currentCategory);
+}
+
 // Render problems
-function renderProblems(category = "all") {
+let currentCategory = 'all';
+let currentSearch = '';
+let currentDifficulty = 'all';
+
+function renderProblems(category = 'all') {
+  currentCategory = category;
   const grid = document.getElementById("problemsGrid");
   const countEl = document.getElementById("problemsCount");
   grid.innerHTML = "";
 
-  const filtered = category === "all"
-    ? problems
-    : problems.filter(p => p.category === category);
+  const solved = getSolvedProblems();
+  const filtered = problems.filter(p => {
+    const matchCategory = category === 'all' || p.category === category;
+    const matchSearch = p.title.toLowerCase().includes(currentSearch.toLowerCase()) || 
+                       p.statement.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                       p.id.toString().includes(currentSearch);
+    const matchDiff = currentDifficulty === 'all' || p.difficulty === currentDifficulty;
+    return matchCategory && matchSearch && matchDiff;
+  });
 
   filtered.forEach(problem => {
     const card = document.createElement("div");
-    card.className = "problem-card";
+    card.className = `problem-card ${isProblemSolved(problem.id) ? 'solved' : ''}`;
     card.innerHTML = `
       <div class="problem-id">#${problem.id}</div>
       <h3>${problem.title}</h3>
@@ -326,30 +359,61 @@ function renderProblems(category = "all") {
       </div>
     `;
     
-    // Click to open modal with full details
     card.onclick = () => openProblemModal(problem);
     grid.appendChild(card);
   });
 
-  // Update count
   countEl.textContent = `Showing ${filtered.length} of ${problems.length} problems`;
 
-  // Update active tab
   document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.classList.remove("active");
     if (btn.dataset.category === category) {
       btn.classList.add("active");
     }
   });
+
+  updateProgress();
 }
 
-// Open problem modal with full statement and example
+// Update progress ring and stats
+function updateProgress() {
+  const solved = getSolvedProblems();
+  const total = problems.length;
+  const pct = total ? Math.round((solved.length / total) * 100) : 0;
+
+  document.getElementById('overallProgress').textContent = pct + '%';
+  document.getElementById('solvedCount').textContent = solved.length;
+
+  const easySolved = solved.filter(id => {
+    const p = problems.find(x => x.id === id);
+    return p && p.difficulty === 'Easy';
+  }).length;
+  const mediumSolved = solved.filter(id => {
+    const p = problems.find(x => x.id === id);
+    return p && p.difficulty === 'Medium';
+  }).length;
+  const hardSolved = solved.filter(id => {
+    const p = problems.find(x => x.id === id);
+    return p && p.difficulty === 'Hard';
+  }).length;
+
+  document.getElementById('easyCount').textContent = easySolved;
+  document.getElementById('mediumCount').textContent = mediumSolved;
+  document.getElementById('hardCount').textContent = hardSolved;
+
+  // Progress ring animation
+  const fill = document.getElementById('progressFill');
+  const circumference = 2 * Math.PI * 60;
+  const offset = circumference - (pct / 100) * circumference;
+  fill.style.strokeDasharray = circumference;
+  fill.style.strokeDashoffset = offset;
+}
+
+// Open problem modal
 let currentProblemId = null;
-let isSolved = false;
 
 function openProblemModal(problem) {
   currentProblemId = problem.id;
-  isSolved = localStorage.getItem(`cpp-solved-${problem.id}`) === "true";
 
   document.getElementById("modalId").textContent = `#${problem.id}`;
   document.getElementById("modalTitle").textContent = problem.title;
@@ -360,22 +424,19 @@ function openProblemModal(problem) {
   document.getElementById("modalExampleInput").textContent = problem.input || "None";
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
 
-  // Set badge color based on difficulty
   const badge = document.getElementById("modalBadge");
   badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
 
-  // Update solved button
   const solvedBtn = document.getElementById("modalMarkSolved");
-  solvedBtn.textContent = isSolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-  solvedBtn.className = isSolved ? "btn btn-outline" : "btn btn-primary";
+  const alreadySolved = isProblemSolved(problem.id);
+  solvedBtn.textContent = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
+  solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
 
-  // Open modal
   const modal = document.getElementById("problemModal");
   modal.classList.add("open");
   document.body.style.overflow = "hidden";
 }
 
-// Close modal
 function closeModal() {
   const modal = document.getElementById("problemModal");
   modal.classList.remove("open");
@@ -390,6 +451,17 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
   });
 });
 
+// Search and filter
+document.getElementById("problemSearch").addEventListener("input", (e) => {
+  currentSearch = e.target.value;
+  renderProblems(currentCategory);
+});
+
+document.getElementById("difficultyFilter").addEventListener("change", (e) => {
+  currentDifficulty = e.target.value;
+  renderProblems(currentCategory);
+});
+
 // Theme toggle
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -400,7 +472,6 @@ function toggleTheme() {
   icon.textContent = newTheme === "dark" ? "🌙" : "☀️";
 }
 
-// Load saved theme
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme) {
   document.documentElement.setAttribute("data-theme", savedTheme);
@@ -408,21 +479,26 @@ if (savedTheme) {
   if (icon) icon.textContent = savedTheme === "dark" ? "🌙" : "☀️";
 }
 
+// Daily challenge date
+const dailyDate = document.getElementById("dailyDate");
+if (dailyDate) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  dailyDate.textContent = new Date().toLocaleDateString('en-US', options);
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   renderProblems("all");
+  updateProgress();
 
-  // Modal close button
   document.getElementById("modalClose").addEventListener("click", closeModal);
 
-  // Close modal when clicking overlay
   document.getElementById("problemModal").addEventListener("click", (e) => {
     if (e.target === document.getElementById("problemModal")) {
       closeModal();
     }
   });
 
-  // Copy statement button
   document.getElementById("modalCopyStatement").addEventListener("click", () => {
     const statement = document.getElementById("modalStatement").textContent;
     navigator.clipboard.writeText(statement).then(() => {
@@ -433,19 +509,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Mark as solved button
   document.getElementById("modalMarkSolved").addEventListener("click", () => {
-    isSolved = !isSolved;
-    localStorage.setItem(`cpp-solved-${currentProblemId}`, isSolved);
+    toggleSolved(currentProblemId);
     const solvedBtn = document.getElementById("modalMarkSolved");
-    solvedBtn.textContent = isSolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-    solvedBtn.className = isSolved ? "btn btn-outline" : "btn btn-primary";
+    const alreadySolved = isProblemSolved(currentProblemId);
+    solvedBtn.textContent = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
+    solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
 
-  // Close modal with Escape key
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeModal();
     }
   });
 });
+
+function startDailyChallenge() {
+  const dailyProblem = problems.find(p => p.title === 'Reverse a Number');
+  if (dailyProblem) {
+    openProblemModal(dailyProblem);
+  }
+}
