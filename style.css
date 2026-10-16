@@ -2,27 +2,27 @@
    CSS VARIABLES & RESET
    ======================================== */
 :root {
-  /* Light Theme - Soft Green & Clean */
-  --bg-primary: #f0fdf4;
-  --bg-secondary: #ecfdf5;
-  --bg-tertiary: #d1fae5;
+  /* Light Theme - Clean Professional */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
   --bg-card: #ffffff;
-  --bg-card-hover: #f0fdf4;
+  --bg-card-hover: #f8fafc;
 
-  --text-primary: #064e3b;
-  --text-secondary: #047857;
-  --text-muted: #059669;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
 
-  --accent-primary: #059669;      /* Emerald Green */
-  --accent-secondary: #10b981;    /* Green */
-  --accent-glow: rgba(5, 150, 105, 0.15);
+  --accent-primary: #0891b2;      /* Cyan */
+  --accent-secondary: #0ea5e9;    /* Sky Blue */
+  --accent-glow: rgba(8, 145, 178, 0.15);
 
   --success: #22c55e;
-  --warning: #fbbf24;
+  --warning: #f59e0b;
   --error: #f87171;
 
-  --border: rgba(5, 150, 105, 0.12);
-  --border-light: rgba(5, 150, 105, 0.06);
+  --border: rgba(8, 145, 178, 0.12);
+  --border-light: rgba(8, 145, 178, 0.06);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -36,7 +36,7 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 40px rgba(5, 150, 105, 0.12);
+  --shadow-glow: 0 0 40px rgba(8, 145, 178, 0.12);
   --shadow-3d: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   /* Transitions */
@@ -45,29 +45,29 @@
   --transition-slow: 0.5s ease;
 }
 
-/* Dark Theme - Sophisticated Dark Green */
+/* Dark Theme - Professional Deep Slate + Cyan */
 [data-theme="dark"] {
-  --bg-primary: #0a0e0c;
-  --bg-secondary: #101613;
-  --bg-tertiary: #18201b;
-  --bg-card: #0c120f;
-  --bg-card-hover: #131a16;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #0f172a;
+  --bg-card-hover: #1e293b;
 
-  --text-primary: #dcfce7;
-  --text-secondary: #a7f3d0;
-  --text-muted: #6ee7b7;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
-  --accent-primary: #34d399;
-  --accent-secondary: #10b981;
-  --accent-glow: rgba(52, 211, 153, 0.25);
+  --accent-primary: #22d3ee;      /* Electric Cyan */
+  --accent-secondary: #38bdf8;    /* Sky Blue */
+  --accent-glow: rgba(34, 211, 238, 0.2);
 
-  --success: #4ade80;
+  --success: #34d399;
   --warning: #fbbf24;
   --error: #f87171;
 
-  --border: rgba(52, 211, 153, 0.15);
-  --border-light: rgba(52, 211, 153, 0.08);
-  --shadow-glow: 0 0 40px rgba(52, 211, 153, 0.12);
+  --border: rgba(34, 211, 238, 0.15);
+  --border-light: rgba(34, 211, 238, 0.08);
+  --shadow-glow: 0 0 40px rgba(34, 211, 238, 0.1);
   --shadow-3d: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 
@@ -110,8 +110,8 @@ code {
 }
 
 [data-theme="dark"] code {
-  background: rgba(52, 211, 153, 0.15);
-  color: #60a5fa;
+  background: rgba(34, 211, 238, 0.15);
+  color: #67e8f9;
 }
 
 /* ========================================
@@ -147,7 +147,7 @@ code {
 .orb-3 {
   width: 350px;
   height: 350px;
-  background: #10b981;
+  background: #22d3ee;
   top: 25%;
   right: 25%;
   animation-delay: 6s;
@@ -165,7 +165,7 @@ code {
 .orb-5 {
   width: 300px;
   height: 300px;
-  background: #34d399;
+  background: #38bdf8;
   top: 10%;
   left: 45%;
   animation-delay: 12s;
@@ -516,20 +516,20 @@ code {
   padding-left: 1.5rem;
 }
 
-.keyword { color: #86efac; }
+.keyword { color: #22d3ee; }
 .function { color: #67e8f9; }
-.string { color: #4ade80; }
-.comment { color: #6ee7b7; font-style: italic; }
+.string { color: #34d399; }
+.comment { color: #94a3b8; font-style: italic; }
 
-[data-theme="dark"] .keyword { color: #86efac; }
+[data-theme="dark"] .keyword { color: #22d3ee; }
 [data-theme="dark"] .function { color: #67e8f9; }
-[data-theme="dark"] .string { color: #4ade80; }
-[data-theme="dark"] .comment { color: #6ee7b7; font-style: italic; }
+[data-theme="dark"] .string { color: #34d399; }
+[data-theme="dark"] .comment { color: #94a3b8; font-style: italic; }
 
-[data-theme="light"] .keyword { color: #059669; }
-[data-theme="light"] .function { color: #047857; }
-[data-theme="light"] .string { color: #047857; }
-[data-theme="light"] .comment { color: #059669; font-style: italic; }
+[data-theme="light"] .keyword { color: #0891b2; }
+[data-theme="light"] .function { color: #0ea5e9; }
+[data-theme="light"] .string { color: #059669; }
+[data-theme="light"] .comment { color: #64748b; font-style: italic; }
 
 .hero-stats {
   display: flex;
