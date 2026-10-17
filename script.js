@@ -1,4 +1,10 @@
 // ========================================
+// BACKEND CONFIGURATION
+// ========================================
+// In production, set this via environment variable or use relative URL
+const BACKEND_URL = process.env.BACKEND_URL || window.location.origin + ':3001';
+
+// ========================================
 // PROBLEMS DATA - 2000+ Problems (12 sections)
 // Logical reasoning + Hard 1D Array problems included
 // ========================================
@@ -412,6 +418,9 @@ function openProblemModal(problem) {
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
   document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
 
+  // Initialize code editor with problem template
+  initCodeEditorForProblem(problem);
+
   const badge = document.getElementById("modalBadge");
   badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
 
@@ -468,7 +477,188 @@ function startDailyChallenge() {
 // Global so HTML onclick can find it
 window.startDailyChallenge = startDailyChallenge;
 
-document.addEventListener("DOMContentLoaded", () => {
+// ========================================
+// COMPILER INTEGRATION
+// ========================================
+let isCompiling = false;
+
+function showOutputPanel(show) {
+  const panel = document.getElementById('outputPanel');
+  if (panel) panel.style.display = show ? 'block' : 'none';
+}
+
+function switchOutputTab(tab) {
+  const stdoutEl = document.getElementById('outputStdout');
+  const stderrEl = document.getElementById('outputStderr');
+  const tabStdout = document.getElementById('tabStdout');
+  const tabStderr = document.getElementById('tabStderr');
+
+  if (tab === 'stderr') {
+    stdoutEl.style.display = 'none';
+    stderrEl.style.display = 'block';
+    tabStdout.classList.remove('active');
+    tabStderr.classList.add('active');
+  } else {
+    stdoutEl.style.display = 'block';
+    stderrEl.style.display = 'none';
+    tabStdout.classList.add('active');
+    tabStderr.classList.remove('active');
+  }
+}
+
+function setOutputStatus(status, message) {
+  const badge = document.getElementById('outputStatusBadge');
+  const stdoutEl = document.getElementById('outputStdout');
+  const stderrEl = document.getElementById('outputStderr');
+
+  if (badge) {
+    badge.textContent = message;
+    badge.className = 'status-badge ' + status;
+  }
+}
+
+function setOutputMeta(exitCode, execTime) {
+  const ecEl = document.getElementById('outputExitCode');
+  const etEl = document.getElementById('outputExecTime');
+  if (ecEl) ecEl.textContent = exitCode !== null ? exitCode : '-';
+  if (etEl) etEl.textContent = execTime !== null ? execTime + ' ms' : '-';
+}
+
+function setOutputText(stdout, stderr) {
+  const stdoutEl = document.getElementById('outputStdout');
+  const stderrEl = document.getElementById('outputStderr');
+  if (stdoutEl) stdoutEl.textContent = stdout || '(no output)';
+  if (stderrEl) stderrEl.textContent = stderr || '(no stderr)';
+}
+
+async function executeCode() {
+  if (isCompiling) return;
+
+  const editor = document.getElementById('codeEditor');
+  const stdinInput = document.getElementById('stdinInput');
+  const btnExecute = document.getElementById('btnExecute');
+  const executeStatus = document.getElementById('executeStatus');
+
+  if (!editor) return;
+
+  const sourceCode = editor.value;
+  const stdinText = stdinInput ? stdinInput.value : '';
+
+  // Show loading state
+  isCompiling = true;
+  btnExecute.disabled = true;
+  btnExecute.textContent = 'Compiling...';
+  executeStatus.style.display = 'inline';
+  executeStatus.textContent = '⏳ Compiling and executing...';
+  executeStatus.style.color = '#00f2ff';
+
+  showOutputPanel(true);
+  switchOutputTab('stdout');
+  setOutputStatus('status-running', 'Running...');
+  setOutputMeta('-', '-');
+  setOutputText('', '');
+
+  try {
+    const response = await fetch(BACKEND_URL + '/compile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_code: sourceCode,
+        stdin: stdinText,
+        timeout: 10000,
+      }),
+    });
+
+    const result = await response.json();
+
+    // Hide loading
+    btnExecute.disabled = false;
+    btnExecute.textContent = '▶ Execute Code';
+    isCompiling = false;
+    executeStatus.style.display = 'none';
+
+    // Display results based on status
+    if (result.error === null || result.error === 'success') {
+      setOutputStatus('status-accepted', 'Run executed successfully');
+      setOutputMeta(result.exitCode, result.executionTimeMs);
+      setOutputText(result.stdout, result.stderr);
+      switchOutputTab('stdout');
+    } else if (result.error === 'compilation_error') {
+      setOutputStatus('status-error', 'Compilation failed');
+      setOutputMeta(result.exitCode, result.executionTimeMs);
+      setOutputText(result.stdout || '', result.stderr || 'Compilation error details above.');
+      switchOutputTab('stderr');
+    } else if (result.error === 'time_limit_exceeded') {
+      setOutputStatus('status-error', 'Time limit exceeded');
+      setOutputMeta(result.exitCode, result.executionTimeMs);
+      setOutputText(result.stdout || '', result.stderr || 'Program exceeded the time limit.');
+      switchOutputTab('stdout');
+    } else if (result.error === 'runtime_error') {
+      setOutputStatus('status-error', 'Runtime error');
+      setOutputMeta(result.exitCode, result.executionTimeMs);
+      setOutputText(result.stdout || '', result.stderr || 'Program exited with non-zero status.');
+      switchOutputTab('stdout');
+    } else if (result.error === 'compiler_unavailable') {
+      setOutputStatus('status-error', 'Compiler unavailable');
+      setOutputMeta('-', '-');
+      setOutputText('', result.stderr || 'No C++ compiler installed on the server. Install g++ or clang++.');
+      switchOutputTab('stderr');
+    } else if (result.error === 'internal_error') {
+      setOutputStatus('status-error', 'Internal error');
+      setOutputMeta('-', '-');
+      setOutputText('', result.stderr || 'An unexpected error occurred.');
+      switchOutputTab('stderr');
+    } else if (result.error === 'invalid_request' || result.error === 'source_too_large' || result.error === 'invalid_timeout') {
+      setOutputStatus('status-error', 'Invalid request');
+      setOutputMeta('-', '-');
+      setOutputText('', result.message || 'Invalid submission.');
+      switchOutputTab('stderr');
+    } else {
+      setOutputStatus('status-error', 'Unknown error');
+      setOutputMeta('-', '-');
+      setOutputText('', result.message || 'An unknown error occurred.');
+      switchOutputTab('stderr');
+    }
+  } catch (err) {
+    btnExecute.disabled = false;
+    btnExecute.textContent = '▶ Execute Code';
+    isCompiling = false;
+    executeStatus.style.display = 'none';
+
+    setOutputStatus('status-error', 'Backend unavailable');
+    setOutputMeta('-', '-');
+    setOutputText('', 'Cannot connect to the compiler backend at ' + BACKEND_URL + '\n\nMake sure the backend server is running:\n  cd cpp-practice-website\n  npm install\n  npm start\n\nThen check http://localhost:3001/health');
+    switchOutputTab('stderr');
+  }
+}
+
+// Initialize code editor with problem template when modal opens
+function initCodeEditorForProblem(problem) {
+  const editor = document.getElementById('codeEditor');
+  if (!editor) return;
+
+  // Provide a starter template based on the problem
+  const template = `#include <iostream>
+using namespace std;
+
+int main() {
+    // Problem #${problem.id}: ${problem.title}
+    // ${problem.statement}
+    
+    // Write your solution here
+    
+    return 0;
+}`;
+  editor.value = template;
+
+  // Clear stdin
+  const stdinInput = document.getElementById('stdinInput');
+  if (stdinInput) stdinInput.value = '';
+
+  // Hide output panel
+  showOutputPanel(false);
+}
+
   renderProblems("all");
   updateProgress();
   const mc = document.getElementById("modalClose");
@@ -510,4 +700,16 @@ document.addEventListener("DOMContentLoaded", () => {
     solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeAIReview(); } });
+
+  // Execute button
+  const btnExecute = document.getElementById("btnExecute");
+  if (btnExecute) {
+    btnExecute.addEventListener("click", executeCode);
+  }
+
+  // Output tab switching
+  const tabStdout = document.getElementById("tabStdout");
+  const tabStderr = document.getElementById("tabStderr");
+  if (tabStdout) tabStdout.addEventListener("click", () => switchOutputTab('stdout'));
+  if (tabStderr) tabStderr.addEventListener("click", () => switchOutputTab('stderr'));
 });

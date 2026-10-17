@@ -1,0 +1,19 @@
+{
+  "name": "cpp-practice-compiler",
+  "version": "1.0.0",
+  "description": "Local C++ compiler backend for CPPractice Lab",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test-compiler.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["cpp", "compiler", "judge0-alternative", "local-execution"],
+  "license": "MIT"
+}

@@ -468,17 +468,26 @@
           </div>
         </div>
 
-        <!-- RIGHT: Code Preview -->
+        <!-- RIGHT: Interactive Code Editor -->
         <div class="problem-right">
           <div class="editor-header">
-            <span class="editor-lang">C++ (Your IDE)</span>
+            <span class="editor-lang">C++ (G++)</span>
             <div class="editor-actions-top">
               <button class="btn btn-outline btn-small" id="btnCopyStatement">Copy Statement</button>
               <button class="btn btn-outline btn-small" id="btnMarkSolvedRight">Mark as Solved</button>
             </div>
           </div>
 
-          <div class="code-preview-card">
+          <!-- Execute Button (prominently placed above editor) -->
+          <div class="execute-bar">
+            <button class="btn btn-primary btn-execute" id="btnExecute">
+              ▶ Execute Code
+            </button>
+            <span class="execute-status" id="executeStatus" style="display:none;"></span>
+          </div>
+
+          <!-- Code Editor -->
+          <div class="code-editor-card">
             <div class="code-header">
               <div class="code-dots">
                 <span class="dot red"></span>
@@ -488,13 +497,43 @@
               <span class="code-lang">solution.cpp</span>
             </div>
             <div class="code-body">
-              <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
-              <div class="code-line"><span class="keyword">using namespace</span> std;</div>
-              <div class="code-line"></div>
-              <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
-              <div class="code-line indent"><span class="comment">// Write your C++ code here</span></div>
-              <div class="code-line indent"><span class="keyword">return</span> 0;</div>
-              <div class="code-line">}</div>
+              <textarea id="codeEditor" spellcheck="false" wrap="off">#include <iostream>
+using namespace std;
+
+int main() {
+    // Write your C++ code here
+    return 0;
+}
+</textarea>
+            </div>
+          </div>
+
+          <!-- Stdin Input Panel -->
+          <div class="stdin-panel">
+            <div class="stdin-header">
+              <span class="stdin-label">📥 stdin (Input)</span>
+              <span class="stdin-placeholder">Leave empty if no input needed</span>
+            </div>
+            <textarea id="stdinInput" spellcheck="false" wrap="off" placeholder="Type input here... e.g. 10 20"></textarea>
+          </div>
+
+          <!-- Output Panel -->
+          <div class="output-panel" id="outputPanel" style="display:none;">
+            <div class="output-header">
+              <span class="output-label">📤 Output</span>
+              <div class="output-meta">
+                <span id="outputStatusBadge" class="status-badge status-waiting">Waiting...</span>
+                <span id="outputExitCode" class="exit-code">-</span>
+                <span id="outputExecTime" class="exec-time">-</span>
+              </div>
+            </div>
+            <div class="output-tabs">
+              <div class="output-tab active" id="tabStdout">stdout</div>
+              <div class="output-tab" id="tabStderr">stderr</div>
+            </div>
+            <div class="output-content">
+              <pre id="outputStdout"></pre>
+              <pre id="outputStderr" style="display:none;"></pre>
             </div>
           </div>
 
