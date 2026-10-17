@@ -1,38 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CPPractice Lab | Master C++ Programming</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Monaco Editor -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs/editor/editor.main.min.css">
 </head>
 <body>
 
-  <!-- 3D Background Orbs -->
+  <!-- Animated 3D Background Orbs -->
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
   <div class="orb orb-4"></div>
   <div class="orb orb-5"></div>
+  <div class="orb orb-6"></div>
 
   <!-- Navigation -->
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-logo">
         <div class="logo-badge">C++</div>
-        <span class="logo-text">CPPractice Lab</span>
+        <span class="logo-text">CPPractice<span class="dot">Lab</span></span>
       </div>
       <div class="nav-links">
         <a href="#home" class="nav-link active">Home</a>
         <a href="#problems" class="nav-link">Problems</a>
         <a href="#roadmap" class="nav-link">Roadmap</a>
         <a href="#about" class="nav-link">About</a>
-        <button class="btn btn-icon theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <span class="theme-icon">🌙</span>
-        </button>
       </div>
     </div>
   </nav>
@@ -50,7 +46,7 @@
         </h1>
         <p class="hero-subtitle">
           From your first <code>cin</code> and <code>cout</code> to advanced algorithms.
-          Solve independently in your own IDE — VS Code, Code::Blocks, or any compiler.
+          Solve problems using hints — no code given, only logic &amp; formulas.
         </p>
         <div class="hero-buttons">
           <a href="#problems" class="btn btn-large btn-primary">Start Practicing</a>
@@ -153,14 +149,14 @@
       <p class="section-subtitle">Built for students who want to master C++ through real practice</p>
       <div class="features-grid">
         <div class="feature-card-3d">
-          <div class="feature-icon">💻</div>
-          <h3>Online Code Editor</h3>
-          <p>Write, run and test C++ code right in your browser.</p>
+          <div class="feature-icon">💡</div>
+          <h3>Logic &amp; Hints Only</h3>
+          <p>No code solutions — only formulas, algorithms, and step-by-step hints.</p>
         </div>
         <div class="feature-card-3d">
           <div class="feature-icon">🔒</div>
-          <h3>Private & Local</h3>
-          <p>Code runs in your browser — nothing is uploaded to GitHub or any server.</p>
+          <h3>Private &amp; Local</h3>
+          <p>Nothing is uploaded to GitHub or any server. Progress stays in your browser.</p>
         </div>
         <div class="feature-card-3d">
           <div class="feature-icon">📚</div>
@@ -192,7 +188,7 @@
       <div class="daily-card-3d">
         <div class="daily-header">
           <span class="daily-badge">Daily Challenge</span>
-          <span class="daily-date" id="dailyDate">October 15, 2026</span>
+          <span class="daily-date" id="dailyDate">October 16, 2026</span>
         </div>
         <h2 class="daily-title">Reverse a Number</h2>
         <p class="daily-desc">Read an integer and print its digits in reverse order.</p>
@@ -209,7 +205,7 @@
       <div class="problems-header">
         <div>
           <h2 class="section-title">Practice Problems</h2>
-          <p class="section-subtitle">1200+ problems across 12 sections. Click any problem to view full details and solve online.</p>
+          <p class="section-subtitle">1200+ problems across 12 sections. Click any problem to view statement, example, and hint.</p>
         </div>
         <div class="search-filter">
           <input type="text" id="problemSearch" placeholder="Search problems..." class="search-input">
@@ -222,28 +218,23 @@
         </div>
       </div>
 
-      <!-- Category Tabs -->
       <div class="category-tabs">
         <button class="tab-btn active" data-category="all">All Problems</button>
-        <button class="tab-btn" data-category="io">Input & Output (100)</button>
-        <button class="tab-btn" data-category="variables">Variables & Data Types (100)</button>
-        <button class="tab-btn" data-category="operators">Operators & Expressions (100)</button>
-        <button class="tab-btn" data-category="conditionals">Conditions & Decision Making (100)</button>
-        <button class="tab-btn" data-category="loops">Loops & Repetition (100)</button>
-        <button class="tab-btn" data-category="functions">Functions (100)</button>
-        <button class="tab-btn" data-category="arrays">Arrays (100)</button>
-        <button class="tab-btn" data-category="strings">Strings (100)</button>
-        <button class="tab-btn" data-category="pointers">Pointers & Memory (100)</button>
-        <button class="tab-btn" data-category="oop">Object-Oriented Programming (100)</button>
-        <button class="tab-btn" data-category="stl">Standard Template Library (100)</button>
-        <button class="tab-btn" data-category="dsa">Data Structures & Algorithms (100)</button>
+        <button class="tab-btn" data-category="io">Input & Output</button>
+        <button class="tab-btn" data-category="variables">Variables & Data Types</button>
+        <button class="tab-btn" data-category="operators">Operators & Expressions</button>
+        <button class="tab-btn" data-category="conditionals">Conditions & Decision Making</button>
+        <button class="tab-btn" data-category="loops">Loops & Repetition</button>
+        <button class="tab-btn" data-category="functions">Functions</button>
+        <button class="tab-btn" data-category="arrays">Arrays</button>
+        <button class="tab-btn" data-category="strings">Strings</button>
+        <button class="tab-btn" data-category="pointers">Pointers & Memory</button>
+        <button class="tab-btn" data-category="oop">Object-Oriented Programming</button>
+        <button class="tab-btn" data-category="stl">Standard Template Library</button>
+        <button class="tab-btn" data-category="dsa">Data Structures & Algorithms</button>
       </div>
 
-      <!-- Problems Grid -->
-      <div class="problems-grid" id="problemsGrid">
-        <!-- Problems loaded by JavaScript -->
-      </div>
-
+      <div class="problems-grid" id="problemsGrid"></div>
       <div id="problemsCount" class="problems-count"></div>
     </div>
   </section>
@@ -348,13 +339,13 @@
       <h2 class="section-title">About CPPractice Lab</h2>
       <div class="about-content">
         <div class="about-text">
-          <p>CPPractice Lab is built for students who want to master C++ programming through practice. Solve problems in your own IDE or right here in the browser.</p>
+          <p>CPPractice Lab is built for students who want to master C++ programming through practice. Solve problems in your own IDE using only hints — no code given.</p>
           <p><strong>How to use:</strong></p>
           <ol>
             <li>Select a problem category</li>
             <li>Click any problem to view full statement and example</li>
-            <li>Write your C++ code in the online editor</li>
-            <li>Click Run to test with sample input/output</li>
+            <li>Read the <strong>Hint</strong> section for logic &amp; formula</li>
+            <li>Write your C++ code in VS Code, Code::Blocks, or any IDE</li>
             <li>Mark the problem as solved when complete</li>
           </ol>
           <div class="privacy-notice">
@@ -393,7 +384,7 @@
       <div class="footer-content">
         <div class="footer-logo">
           <div class="logo-badge">C++</div>
-          <span class="logo-text">CPPractice Lab</span>
+          <span class="logo-text">CPPractice<span class="dot">Lab</span></span>
         </div>
         <p class="footer-text">&copy; 2026 CPPractice Lab. Built for students learning C++.</p>
         <div class="footer-links">
@@ -407,7 +398,7 @@
 
   <!-- Problem Detail Modal -->
   <div class="modal-overlay" id="problemModal">
-    <div class="modal-container hackerrank-modal">
+    <div class="modal-container">
       <button class="modal-close" id="modalClose">&times;</button>
 
       <div class="modal-header">
@@ -434,9 +425,8 @@
         </div>
       </div>
 
-      <!-- HackerRank Style Split Layout -->
+      <!-- Split Layout -->
       <div class="problem-layout">
-
         <!-- LEFT: Problem Statement -->
         <div class="problem-left">
           <div class="problem-section">
@@ -458,128 +448,65 @@
             </div>
           </div>
 
+          <div class="problem-section hint-section">
+            <h3 class="section-title">💡 Hint (Logic &amp; Formula)</h3>
+            <div class="hint-content" id="modalHint"></div>
+          </div>
+
           <div class="problem-section instructions-section">
             <h3 class="section-title">Instructions</h3>
             <div class="modal-instructions">
               <ol>
                 <li>Read the problem statement carefully above.</li>
-                <li>Write your C++ code in the editor on the right.</li>
-                <li>Test with the sample input/output shown.</li>
-                <li>Click Run to compile and execute online.</li>
-                <li>Click Submit to verify against test cases.</li>
+                <li>Check the Example input/output shown.</li>
+                <li>Read the Hint section for logic and formula — <strong>no code is given</strong>.</li>
+                <li>Write your C++ code in your own IDE (VS Code, Code::Blocks, etc.).</li>
+                <li>Test with the sample input/output.</li>
                 <li>Mark the problem as solved when complete.</li>
               </ol>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT: Code Editor -->
+        <!-- RIGHT: Code Preview -->
         <div class="problem-right">
           <div class="editor-header">
-            <span class="editor-lang">C++ (G++)</span>
+            <span class="editor-lang">C++ (Your IDE)</span>
             <div class="editor-actions-top">
-              <button class="btn btn-outline btn-small" id="btnAiReview">🤖 AI Review</button>
-              <button class="btn btn-outline btn-small" id="btnCopyLocalRight">Copy to Local IDE</button>
-              <button class="btn btn-outline btn-small" id="btnClearEditorRight">Clear</button>
+              <button class="btn btn-outline btn-small" id="btnCopyStatement">Copy Statement</button>
+              <button class="btn btn-outline btn-small" id="btnMarkSolvedRight">Mark as Solved</button>
             </div>
           </div>
 
-          <div class="editor-wrapper">
-            <div id="editor"></div>
-          </div>
-
-          <!-- Run Mode Selector -->
-          <div class="run-mode-selector">
-            <label class="run-mode-label">Run Mode:</label>
-            <select id="runMode" class="run-mode-select">
-              <option value="judge0">Online Compiler (Judge0)</option>
-              <option value="local">Local Browser Only (No Upload)</option>
-            </select>
-          </div>
-
-          <div class="editor-controls">
-            <button class="btn btn-primary" id="btnRun">Run Code ▶</button>
-            <button class="btn btn-outline" id="btnSubmit">Submit ✓</button>
-            <button class="btn btn-outline" id="btnAiReview">🤖 AI Review</button>
-          </div>
-
-          <div class="editor-output" id="editorOutput">
-            <div class="output-header">
-              <span>Output:</span>
-              <span id="outputStatus" class="status-badge status-waiting">Waiting...</span>
+          <div class="code-preview-card">
+            <div class="code-header">
+              <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <span class="code-lang">solution.cpp</span>
             </div>
-            <pre id="outputText"></pre>
-            <div id="testResult" class="test-result" style="display:none;"></div>
+            <div class="code-body">
+              <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
+              <div class="code-line"><span class="keyword">using namespace</span> std;</div>
+              <div class="code-line"></div>
+              <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
+              <div class="code-line indent"><span class="comment">// Write your C++ code here</span></div>
+              <div class="code-line indent"><span class="keyword">return</span> 0;</div>
+              <div class="code-line">}</div>
+            </div>
           </div>
 
-          <!-- Local-only notice -->
-          <div id="localNotice" class="privacy-notice" style="margin-top: 10px; font-size: 0.85rem; display: none;">
-            🔒 <strong>Local Mode:</strong> Code runs entirely in your browser. Nothing is sent to any server or git.
+          <div class="editor-actions-bottom">
+            <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
           </div>
         </div>
-
-      </div>
-
-      <!-- Bottom Actions -->
-      <div class="modal-actions-bottom">
-        <button class="btn btn-outline" id="modalCopyStatement">Copy Statement</button>
-        <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
       </div>
 
     </div>
   </div>
 
-  <!-- AI Review Result Modal -->
-  <div class="modal-overlay" id="aiReviewModal">
-    <div class="modal-container hackerrank-modal" style="max-height: 95vh; max-width: 1100px;">
-      <button class="modal-close" id="aiReviewClose">&times;</button>
-
-      <div class="modal-header">
-        <div class="modal-id-badge">
-          <span class="modal-id">🤖 AI Review</span>
-          <span class="modal-badge" id="aiReviewBadge">Analyzing...</span>
-        </div>
-      </div>
-
-      <h2 class="modal-title" id="aiReviewTitle">Code Review Result</h2>
-
-      <div class="modal-meta">
-        <div class="meta-item">
-          <span class="meta-label">Status</span>
-          <span class="meta-value" id="aiReviewStatus">Sending to Gemini...</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Language</span>
-          <span class="meta-value">C++</span>
-        </div>
-      </div>
-
-      <!-- Split Layout: Code | Review -->
-      <div class="problem-layout" style="height: auto; min-height: 400px; margin: 0 1.5rem 1rem; flex-direction: row;">
-        <div class="problem-left" style="border-right: 1px solid var(--border); padding: 1.5rem; flex: 1; overflow-y: auto;">
-          <div class="problem-section">
-            <h3 class="section-title">Your Code</h3>
-            <pre id="aiReviewCode" style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); white-space: pre-wrap; margin: 0;"></pre>
-          </div>
-        </div>
-        <div class="problem-right" style="padding: 1.5rem; flex: 1.2; overflow-y: auto;">
-          <div class="problem-section">
-            <h3 class="section-title">Review Result</h3>
-            <div id="aiReviewResult" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-wrap; margin: 0;">Waiting for AI response...</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-actions-bottom">
-        <button class="btn btn-outline" id="aiReviewCopyResult">📋 Copy Review</button>
-        <button class="btn btn-primary" id="aiReviewCloseBtn">Close ✓</button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Monaco Editor Loader -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs/loader.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
