@@ -1,14 +1,15 @@
 {
   "name": "cpp-practice-website",
   "version": "2.0.0",
-  "description": "CPPractice Lab — a premium C++ practice platform with 2,040 problems, an in-browser IDE and a real local g++/clang++ compiler backend.",
+  "description": "CPPractice Lab — a premium C++ practice platform with 2,040 problems, an in-browser IDE and real C++ execution via a local g++/clang++ backend or a hosted cloud compiler.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node tests/api.test.js",
     "test:e2e": "node tests/e2e.browser.js",
-    "test:all": "node tests/api.test.js && node tests/e2e.browser.js",
+    "test:cloud": "node tests/cloud.test.js",
+    "test:all": "node tests/api.test.js && node tests/cloud.test.js && node tests/e2e.browser.js",
     "generate:data": "node scripts/generate-problems-json.js"
   },
   "dependencies": {
@@ -21,9 +22,11 @@
     "cpp",
     "compiler",
     "judge",
+    "judge0",
     "practice",
     "express",
-    "local-execution"
+    "local-execution",
+    "cloud-execution"
   ],
   "license": "MIT"
 }

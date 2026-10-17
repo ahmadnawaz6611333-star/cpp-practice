@@ -1,9 +1,15 @@
 # CPPractice Lab
 
 A premium, colourful C++ practice platform: **2,040 curated problems**, a multi-page
-workspace with an advanced in-browser editor, and a **genuinely working local
-C++ compiler backend** (real `g++` / `clang++` execution — no mock output, no Judge0,
-no external APIs).
+workspace with an advanced in-browser editor, and **genuinely working C++ execution** —
+real compilation, real stdout, no mock output.
+
+Code can run in one of two ways, and the active runtime is always displayed:
+
+| Runtime | What it is | Needs |
+| ------- | ---------- | ----- |
+| **Local** (default) | The bundled Node.js backend shells out to the `g++`/`clang++` on *your* machine. | Node.js + a C++ compiler; the backend must be running |
+| **Cloud** | The program is sent over HTTPS to the free hosted **Judge0 CE** service. | Only an internet connection — no laptop, no install, no API key |
 
 ---
 
@@ -22,13 +28,15 @@ no external APIs).
   numbers, bracket matching, find & replace, formatting, font-size controls, copy/download,
   reset-to-template, word wrap, editor themes — plus an automatic fallback editor if the
   Monaco CDN is unreachable.
-- ⚡ **Real execution** — Run Code compiles with `-std=c++17` and executes the binary,
-  showing real stdout, stderr, exit code and timing. Submit Solution checks the problem's
-  sample case and reports an honest sample verdict.
+- ⚡ **Two real runtimes** — *Local* (`g++ -std=c++17` on your machine) or *Cloud* (hosted
+  Judge0 CE). Run Code shows real stdout, stderr, exit code, timing and memory; Submit
+  Solution checks the problem's sample case and reports an honest sample verdict.
+- ☁️ **Works without your machine being on** — pick the Cloud runtime and the site runs from
+  any static host. Nothing to keep running.
 - 📈 **Progress tracking** — solved/attempted/bookmarked, per-section and per-difficulty
   progress, activity heatmap and streaks, all stored locally.
-- 🔒 **Local-first** — no database, no accounts, no uploads. Progress and code live in your
-  browser's `localStorage`.
+- 🔒 **No database, no accounts, no secrets** — progress and code live in your browser's
+  `localStorage`; neither runtime requires an API key.
 
 ---
 
@@ -38,16 +46,18 @@ no external APIs).
 cpp-practice-website/
 ├── index.html                  # App shell (single entry point for all routes)
 ├── styles.css                  # Design system (tokens, components, themes, responsive)
+├── _redirects                  # SPA fallback for static hosts (Netlify/Cloudflare Pages)
 ├── js/
 │   ├── data.js                 # The 2,040 problems (original catalogue) + indexes
-│   ├── core.js                 # Storage, theming, toasts, utils, backend API client
+│   ├── core.js                 # Storage, theming, toasts, utils, runtime clients (Local + Cloud)
 │   ├── editor.js               # Monaco loader + fallback editor + code formatter
 │   ├── views.js                # Every page/route renderer
 │   └── app.js                  # Router, nav, global keyboard shortcuts, bootstrap
 ├── server.js                   # Express: static hosting + /api/health + /api/run (compiler)
 ├── tests/
 │   ├── api.test.js             # Catalogue integrity + HTTP API + real compilation tests
-│   └── e2e.browser.js          # Headless-Chrome end-to-end test (render, run, submit)
+│   ├── cloud.test.js           # Judge0 cloud runtime contract test (skips when offline)
+│   └── e2e.browser.js          # Headless-Chrome end-to-end test (render, run, submit, cloud)
 ├── scripts/
 │   └── generate-problems-json.js   # Exports data/problems.json
 ├── data/problems.json          # Generated export of the catalogue
@@ -59,6 +69,28 @@ cpp-practice-website/
 **Backend:** Node.js + Express. It serves the site *and* exposes the compiler API on the
 same origin, so the frontend needs no configuration when run normally.
 
+### Execution runtimes
+
+The frontend talks to a runtime through one small client (`CPP.api` in `js/core.js`):
+
+- `CPP.api.local` → `POST /api/run` on the Node backend (bundled `server.js`).
+- `CPP.api.cloud` → `POST {judge0Url}/submissions` on hosted Judge0 CE.
+- `CPP.api.execute()` picks one and returns `{ provider, data }`, so the UI can always state
+  which runtime produced the result.
+
+**Settings → Runtime** offers `Auto` (use Local when it is reachable and has a compiler,
+otherwise Cloud), or you can pin `Local` / `Cloud`. When `Auto` falls back to the cloud you
+get a one-time toast, and the workspace metrics row plus the page footer always name the
+runtime that ran your code — switching is never silent.
+
+Three independent, verified facts about the cloud path (checked live, see Tests):
+
+- The public Piston API (`emkc.org`) is **not** usable — it became whitelist-only on
+  15 Feb 2026.
+- The public Judge0 CE instance at `https://ce.judge0.com` **does** work with **no API key**,
+  and reports C++ (GCC) plus real time and memory.
+- Because no key is involved, no secret ever ships in the browser bundle.
+
 The problem catalogue is loaded as a static JS module and indexed at load time
 (a `Map` for id lookups and a precomputed lowercase search blob). The list is paginated
 (25 per page) so rendering stays fast with 2,040 entries.
@@ -67,13 +99,17 @@ The problem catalogue is loaded as a static JS module and indexed at load time
 
 ## Requirements
 
-- **Node.js** v18 or newer (tested on v24)
-- **A C++ compiler** on `PATH`:
+- **Node.js** v18 or newer (tested on v24) — only needed for the **Local** runtime or to
+  serve the site yourself.
+- **A C++ compiler** on `PATH` — only needed for the **Local** runtime:
   - Windows: MinGW-w64 (`g++`), e.g. via Code::Blocks, MSYS2 or WinLibs
   - macOS/Linux: `g++` or `clang++`
 - Optional: **Chrome/Edge** for the browser end-to-end test
 
-> Node.js is **not** a C++ compiler. The backend shells out to your installed toolchain.
+> Neither is required if you use the **Cloud** runtime: a static host plus a browser is
+> enough. See [Deploying without your laptop](#deploying-without-your-laptop).
+
+> Node.js is **not** a C++ compiler. The Local backend shells out to your installed toolchain.
 
 ---
 
@@ -112,8 +148,75 @@ If no compiler is found, `status` is `compiler_not_found` and the UI shows
 ### Opening the frontend without the server
 
 You can still open `index.html` directly (double-click / `file://`). The UI loads and uses
-hash routes (`#/problems/1001`). In that mode set the backend URL in **Settings**
-(default `http://localhost:3001`) and start the backend with `node server.js`.
+hash routes (`#/problems/1001`). In that mode you can either set the backend URL in
+**Settings** (default `http://localhost:3001`) and start the backend with `node server.js`,
+or simply switch **Settings → Runtime** to **Cloud** and skip the backend entirely.
+
+---
+
+## Choosing a runtime
+
+### “Do I have to keep my laptop on?”
+
+**Only for the Local runtime.** Local execution is your own machine compiling and running the
+code, so it can only work while that machine is running `server.js`.
+
+Switch to **Cloud** and nothing needs to be running locally — the browser sends the program
+to the hosted Judge0 CE service and displays the result. That makes a plain static host
+enough to use the whole site from any device.
+
+| | Local | Cloud |
+| --- | --- | --- |
+| Needs your machine on | ✅ yes | ❌ no |
+| Needs Node.js + g++ | ✅ yes | ❌ no |
+| Works offline | ✅ yes | ❌ no |
+| Speed | fast, no queue | 1–5 s round trip |
+| Limits | your machine | shared public service; can be slow or rate-limit at peak times |
+| Where your code goes | stays on your machine | sent over HTTPS to Judge0 CE (a third party) |
+
+Use Local while developing on your own computer; use Cloud when you want to practise from a
+phone, a college lab PC, or a static deployment. Both produce real compiler output —
+`g++` locally, and GCC inside Judge0 in the cloud.
+
+---
+
+## Deploying without your laptop
+
+Because the Cloud runtime needs no server of your own, the site can be published as a static
+site:
+
+1. Push the folder to a repository (the frontend is just `index.html`, `styles.css`, `js/`).
+2. Host it anywhere that can serve static files:
+   - **Netlify / Cloudflare Pages / Vercel** — drag-and-drop the folder (or connect the repo).
+     The included `_redirects` file maps every path back to `index.html`, so clean URLs like
+     `/problems/1001` keep working.
+   - **GitHub Pages** — works too. If the site is *not* at the domain root (i.e. served from
+     `/<repo>/`), either set `<base href="/<repo>/">` in `index.html`, or just use the hash
+     links (`/#/problems/1001`), which need no configuration.
+3. Set **Settings → Runtime** to **Cloud** on each device (or leave it on `Auto`; with no
+   local backend reachable it will pick Cloud and tell you it did).
+
+The Node backend can also be deployed to a container host (Render, Fly.io, Railway, …) if you
+want the Local runtime available remotely — that requires a Docker image with `g++`
+installed, and the sandboxing warning below applies with full force.
+
+### Deploying the Node backend (optional)
+
+It must be a normal long-running container with `g++` available:
+
+```dockerfile
+FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends g++ && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY . .
+RUN npm install --omit=dev
+ENV PORT=3001
+EXPOSE 3001
+CMD ["node", "server.js"]
+```
+
+> Do not run this publicly without real isolation. The Local runtime executes untrusted code
+> by design; on a shared host that must be a locked-down container, not the bare process.
 
 ---
 
@@ -128,9 +231,9 @@ hash routes (`#/problems/1001`). In that mode set the backend URL in **Settings*
 | `/bookmarks`         | Saved problems with quick remove       |
 | `/roadmap`           | 12-step learning path with per-section progress |
 | `/reference`         | C++ quick-reference snippets           |
-| `/settings`          | Theme, editor, backend URL, data export/reset |
+| `/settings`          | Theme, editor, **runtime (Local/Cloud)**, backend URL, data export/reset |
 | `/about`             | About, architecture, troubleshooting   |
-| `/status`            | Live compiler backend status + pipeline test |
+| `/status`            | Live status of **both** runtimes + pipeline test |
 | `/health`            | **API** (JSON) — not the status page   |
 
 ---
@@ -143,8 +246,8 @@ Three panels (stacked with tabs on small screens):
    format, constraints note, hint, sample input/output with copy buttons, previous/next
    navigation, bookmark and solved controls.
 2. **Center — execution:** **Run Code** (real stdout/stderr/exit code/time) and
-   **Submit Solution**, a status pill, metrics row, Output / Errors / Tests console tabs,
-   and a custom stdin box below the output.
+   **Submit Solution**, a status pill, a metrics row that names the **runtime** used,
+   Output / Errors / Tests console tabs, and a custom stdin box below the output.
 3. **Right — editor:** Monaco with C++ highlighting, formatting, find, copy, download,
    reset, wrap and font-size controls.
 
@@ -163,7 +266,7 @@ Three panels (stacked with tabs on small screens):
 
 ---
 
-## Compiler backend
+## The Local runtime (bundled backend)
 
 `server.js` exposes:
 
@@ -226,34 +329,75 @@ No API keys or secrets are required.
 
 ---
 
+## The Cloud runtime (Judge0 CE)
+
+Nothing to install and nothing to keep running. The browser posts your program straight to a
+hosted Judge0 instance:
+
+```
+POST https://ce.judge0.com/submissions?base64_encoded=false&wait=true
+{ "source_code": "...", "language_id": 105, "stdin": "", "cpu_time_limit": 10, "wall_time_limit": 13 }
+```
+
+- **No API key.** The public CE instance is open, so there is no secret to leak or rotate.
+- **Language is discovered, not hard-coded.** The client fetches `/languages`, picks the newest
+  `C++ (GCC x.y.z)` entry and caches the choice for a week (ids drift between deployments).
+- **Real metrics.** Judge0 returns wall time and peak memory, so the metrics row shows a real
+  memory figure in cloud mode (the Local runtime reports `n/a`).
+- **Statuses are mapped, never invented**:
+  `Accepted → success`, `Wrong Answer → wrong_answer`, `Time Limit Exceeded → time_limit_exceeded`,
+  `Compilation Error → compilation_error`, `SIGSEGV/SIGFPE/… → runtime_error`, HTTP 429 →
+  `rate_limited`.
+
+The endpoint is configurable under **Settings → Runtime → Cloud compiler endpoint**, and the
+**Status** page tests both runtimes and runs a real end-to-end compile through whichever one
+is active.
+
+> ⚠️ `ce.judge0.com` is a free, shared, public service intended for light use. It can be slow
+> or rate-limit you. For heavy or private use, host your own Judge0 (or another sandboxed
+> runner) and point `judge0Url` at it.
+
+---
+
 ## Tests
 
 ```bash
 npm start              # terminal 1 — backend must be running
 npm test               # terminal 2 — catalogue + API + real compilation (39 checks)
-npm run test:e2e       # headless-Chrome end-to-end (render, run, submit) — needs Chrome
-npm run test:all       # both
+npm run test:cloud     # cloud runtime contract test (13 checks, skips if offline)
+npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome
+npm run test:all       # all three
 ```
 
 - `tests/api.test.js` — 2,040-problem integrity, unique ids, static hosting, and real
   compilation: hello world, stdin, loops, multi-test cases, compile error, runtime error,
   time-limit, **empty-output success**, whitespace preservation, caching, invalid requests.
+- `tests/cloud.test.js` — asserts the exact Judge0 contract the browser relies on: no API key,
+  a discoverable `C++ (GCC)` runtime, `status.id` mapping for Accepted and Compilation Error,
+  real stdout/wall-time/peak-memory, and stdin pass-through. Exits `0` with a SKIP notice when
+  there is no internet, so it never fails a build for being offline.
 - `tests/e2e.browser.js` — drives real Chrome over the DevTools Protocol: renders every
   page, searches/filters the catalogue, edits code in Monaco, presses Run and Submit,
-  asserts real output, checks the 404 page, theme toggle and that no page errors occur.
-  Override the browser with `CHROME_PATH=/path/to/chrome`.
+  asserts real output, **switches to the Cloud runtime and runs/submits real code there**
+  (skipped with a notice if the cloud service is unreachable), checks the 404 page, theme
+  toggle and that no page errors occur. Override the browser with `CHROME_PATH=/path/to/chrome`.
+  Current total: **43 checks**.
 
 ---
 
 ## Notes & limitations
 
-- **Memory usage** is reported as `n/a`: reliably measuring peak memory of a child process
-  is not portable across Windows/Linux without extra tooling, so the UI shows `n/a` rather
-  than inventing a number.
+- **Memory usage** is reported as `n/a` in Local mode: reliably measuring peak memory of a
+  child process is not portable across Windows/Linux without extra tooling, so the UI shows
+  `n/a` rather than inventing a number. (Cloud mode does report real memory, because Judge0
+  measures it.)
 - **One sample per problem** — see “Run vs Submit” above. Automatic judging needs a
   reference answer, which the source catalogue only provides for a subset of problems.
 - **Monaco is loaded from a CDN.** If you are offline the app transparently falls back to a
-  plain editor (with tab support) and tells you so.
+  plain editor (with tab support) and tells you so. Cloud execution also needs the network;
+  Local execution does not.
+- **The Cloud runtime is a third party.** Your program text leaves your browser when you run
+  it that way. Local execution keeps everything on your machine.
 - Progress is per-browser (localStorage). Cross-device sync would require a real service and
   is intentionally out of scope.
 
@@ -263,8 +407,11 @@ npm run test:all       # both
 
 Source: <https://github.com/ahmadnawaz6611333-star/cpp-practice>
 
-The repository stores source code only. Compilation and execution always happen on the
-machine running `server.js`; a static host (GitHub Pages) can serve the frontend but cannot
-run the C++ backend, in which case set the backend URL in Settings.
+The repository stores source code only. Choose how code runs:
+
+- **Cloud runtime** — a static host (Netlify, Cloudflare Pages, GitHub Pages, or just
+  `file://`) is enough. Nothing else needs to be running.
+- **Local runtime** — `node server.js` must be running on the machine that has your C++
+  toolchain, and the frontend points at it (same origin, or a URL set in Settings).
 
 MIT licensed.

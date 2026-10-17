@@ -281,6 +281,52 @@ async function main() {
     const stdinVal = await cdp.eval('document.querySelector("#wsStdin").value');
     ok('literal "None" marker is stripped from sample stdin', !/^none\b/i.test((stdinVal || '').trim()), JSON.stringify(stdinVal));
 
+    /* ---------------- 6b. Cloud compiler runtime (no local backend) ---------------- */
+    await cdp.send('Page.navigate', { url: BASE + '/problems/1' });
+    await cdp.waitFor('!!document.querySelector("#wsRun")', 15000);
+    await cdp.waitFor('!!(window.CPP && CPP.api && CPP.api.cloud)', 15000);
+    const cloudProbe = await cdp.eval(
+      `(async () => { try { const h = await CPP.api.cloud.health(); const l = await CPP.api.cloud.resolveLanguage(); return { ok: true, service: h.service, lang: l.name }; } catch (e) { return { ok: false, err: String(e && e.message || e) }; } })()`,
+      true
+    );
+    if (!cloudProbe || !cloudProbe.ok) {
+      console.log('⚠️  cloud compiler unreachable (' + (cloudProbe && cloudProbe.err) + ') — skipping cloud runtime checks');
+    } else {
+      console.log('     cloud service:', cloudProbe.service, '·', cloudProbe.lang);
+      await cdp.eval(`(function(){ CPP.store.saveSettings({ provider: 'cloud' }); return true; })()`);
+      await cdp.send('Page.navigate', { url: BASE + '/problems/1' });
+      await cdp.waitFor('!!document.querySelector("#wsRun")', 15000);
+      await cdp.waitFor('!!(window.monaco && monaco.editor.getModels().length) || !!document.querySelector("#edHost textarea")', 20000);
+
+      const runtimeLabel = await cdp.eval('document.querySelector("#wsRuntime").textContent');
+      ok('workspace reports the cloud runtime before running', /Cloud/.test(runtimeLabel || ''), runtimeLabel);
+
+      await cdp.eval(`(function(){
+        const code = '#include <iostream>\\nint main(){ std::cout << "Hello, World!" << std::endl; return 0; }';
+        if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(code);
+        else { const ta = document.querySelector('#edHost textarea'); ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); }
+        document.querySelector('#wsMode [data-mode="sample"]').click();
+        return true;
+      })()`);
+      await cdp.eval('document.querySelector("#wsRun").click(); true');
+      const cloudDone = await cdp.waitFor('document.querySelector("#wsStatus").textContent.trim() === "Completed"', 90000);
+      ok('cloud compiler executes real C++ code', cloudDone, await cdp.eval('document.querySelector("#wsStatus").textContent'));
+      const cloudOut = await cdp.eval('document.querySelector("#wsConsole").textContent');
+      ok('cloud run returns genuine program output', /Hello, World!/.test(cloudOut || ''), JSON.stringify((cloudOut || '').slice(0, 80)));
+      const cloudMem = await cdp.eval('document.querySelector("#wsMem").textContent');
+      ok('cloud run reports real memory usage', (cloudMem || '').trim() !== 'n/a' && cloudMem.trim() !== '–', cloudMem);
+      const afterRun = await cdp.eval('document.querySelector("#wsRuntime").textContent');
+      ok('metrics row names the runtime after running', /Cloud/.test(afterRun || ''), afterRun);
+
+      // Submit must also work through the cloud runtime.
+      await cdp.eval('document.querySelector("#wsSubmit").click(); true');
+      const cloudSubmit = await cdp.waitFor('document.querySelector("#wsStatus").textContent.trim() === "Sample passed"', 90000);
+      ok('Submit Solution works on the cloud runtime', cloudSubmit, await cdp.eval('document.querySelector("#wsStatus").textContent'));
+
+      // Restore the default runtime for the remaining checks.
+      await cdp.eval(`(function(){ CPP.store.saveSettings({ provider: 'auto' }); return true; })()`);
+    }
+
     /* ---------------- 7. Deep link + other pages ---------------- */
     await cdp.send('Page.navigate', { url: BASE + '/problems/2050' });
     await cdp.waitFor('!!document.querySelector(".statement h1")', 15000);
@@ -291,9 +337,9 @@ async function main() {
       ['/progress', '#pgReset', 'progress dashboard'],
       ['/roadmap', '.card-grid', 'roadmap'],
       ['/reference', '[data-copy-ref]', 'reference'],
-      ['/settings', '#setBackend', 'settings'],
+      ['/settings', '#setProvider', 'settings'],
       ['/about', '.section-title', 'about'],
-      ['/status', '#healthCard', 'compiler status'],
+      ['/status', '#healthLocal', 'compiler status'],
     ]) {
       await cdp.send('Page.navigate', { url: BASE + route });
       const okp = await cdp.waitFor(`!!document.querySelector('${sel}')`, 15000);

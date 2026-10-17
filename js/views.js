@@ -152,7 +152,7 @@
               <span class="chip emerald">real compiler</span>
               <span class="chip amber">no mock output</span>
             </div>
-            <p class="hero-code-note">Runs compile and execute on a local Node.js backend. No code is uploaded anywhere.</p>
+            <p class="hero-code-note">Choose where code runs: your own machine, or a hosted cloud compiler. The active runtime is always shown.</p>
           </div>
         </div>
       </section>
@@ -486,6 +486,7 @@ int main() {
       tests: [],
       editor: null,
       activeTab: 'out',
+      provider: null,
     };
 
     root.innerHTML = `
@@ -573,7 +574,7 @@ int main() {
             </div>
 
             <div class="metric-row" id="wsMetrics">
-              <span>Backend: <b id="wsBackend">${esc(CPP.api.displayBase() || 'same-origin')}</b></span>
+              <span>Runtime: <b id="wsRuntime">${esc(CPP.api.providerLabel(CPP.api.activeProvider()))}</b></span>
               <span>Exit code: <b id="wsExit">–</b></span>
               <span>Time: <b id="wsTime">–</b></span>
               <span>Memory: <b id="wsMem">n/a</b></span>
@@ -619,10 +620,20 @@ int main() {
             <div>
               <h4 class="mb-1">How execution works here</h4>
               <p class="muted mb-0 small">
-                <strong>Run Code</strong> sends your source and stdin to the local Node.js backend, which compiles it with
-                <code>g++ -std=c++17</code> and executes the resulting binary, returning real stdout, stderr, exit code and timing.
-                <strong>Submit Solution</strong> does the same against this problem's sample input. Because the catalogue stores only one
+                <strong>Run Code</strong> compiles your source with <code>g++ -std=c++17</code> and executes the resulting binary,
+                returning real stdout, stderr, exit code and timing. Two runtimes are supported and the active one is always shown
+                in the metrics row above:
+              </p>
+              <ul class="muted small mb-0" style="margin:.4rem 0 0 1.1rem;padding:0">
+                <li><strong>Local (your machine)</strong> — the bundled Node.js backend (<code>npm start</code>) shells out to your installed g++.
+                  Works offline, no rate limits, but the backend must be running.</li>
+                <li><strong>Cloud (Judge0 CE)</strong> — code is sent to the free hosted Judge0 <code>ce.judge0.com</code> service over HTTPS.
+                  Nothing to install and no laptop required; it is a shared public service, so it is rate-limited and slower.</li>
+              </ul>
+              <p class="muted mb-0 small mt-2">
+                <strong>Submit Solution</strong> runs the same code against this problem's sample input. Because the catalogue stores only one
                 example per problem (and some examples are written in words), Submit reports a <em>sample check</em>, not a hidden-test verdict.
+                Pick a runtime in <a href="${href('/settings')}" data-link>Settings</a>.
               </p>
             </div>
           </div>
@@ -779,12 +790,17 @@ int main() {
     }
 
     async function callBackend(stdin) {
-      return CPP.api.run({
+      const out = await CPP.api.execute({
         source_code: ws.editor.getValue(),
         stdin: stdin == null ? '' : stdin,
         language: 'cpp',
         timeout: 10000,
       });
+      ws.provider = out.provider;
+      const label = $('#wsRuntime');
+      if (label) label.textContent = CPP.api.providerLabel(out.provider);
+      CPP.runtime.announceProvider(out.provider);
+      return out;
     }
 
     function applyResult(res) {
@@ -794,8 +810,30 @@ int main() {
       const errDot = $('#wsErrDot');
       if (errDot) errDot.classList.toggle('hidden', !ws.stderr);
       setMetrics(d.exitCode, d.executionTimeMs, d.memoryUsedKb);
+      const label = $('#wsRuntime');
+      if (label && d.provider) {
+        label.textContent = CPP.api.providerLabel(d.provider) + (d.language ? ' · ' + d.language : '');
+      }
       paintConsole();
       return d;
+    }
+
+    /* Message shown when the chosen runtime could not be reached at all. */
+    function offlineMessage(err) {
+      const provider = Store.settings().provider;
+      if (provider === 'cloud') {
+        return 'Could not reach the cloud compiler (' + CPP.api.cloud.baseUrl() + ').\n\n' +
+          (err.message || err) +
+          '\n\nCheck your internet connection, or switch to the local runtime in Settings.';
+      }
+      if (provider === 'local') {
+        return 'Could not reach the local backend.\n\n' + (err.message || err) +
+          '\n\nStart it with:\n  cd cpp-practice-website\n  npm start\n\nBackend: ' + CPP.api.displayBase() +
+          '\n\nNo laptop? Switch the runtime to Cloud in Settings.';
+      }
+      return 'Could not reach any compiler runtime.\n\n' + (err.message || err) +
+        '\n\nLocal backend: ' + CPP.api.displayBase() + ' (start with "npm start")\n' +
+        'Cloud compiler: ' + CPP.api.cloud.baseUrl() + ' (needs internet)';
     }
 
     /* --- RUN --- */
@@ -818,13 +856,13 @@ int main() {
         else if (d.error === 'compilation_error') setStatus('compilation_error', 'Compilation error');
         else if (d.error === 'runtime_error') setStatus('runtime_error', 'Runtime error');
         else if (d.error === 'time_limit_exceeded') setStatus('time_limit_exceeded', 'Time limit exceeded');
+        else if (d.error === 'rate_limited') setStatus('internal_error', 'Cloud rate limit');
         else if (d.error === 'compiler_unavailable') { setStatus('internal_error', 'Compiler unavailable'); }
         else setStatus('internal_error', d.error || 'Error');
       } catch (err) {
-        ws.stderr = 'Could not reach the compiler backend.\n\n' + (err.message || err) +
-          '\n\nStart it with:\n  cd cpp-practice-website\n  npm start\n\nBackend: ' + CPP.api.displayBase();
+        ws.stderr = offlineMessage(err);
         switchTab('err');
-        setStatus('internal_error', 'Backend offline');
+        setStatus('internal_error', 'Runtime offline');
         setMetrics(null, null, null);
       } finally {
         setBusy(false);
@@ -859,8 +897,9 @@ int main() {
           tests.push({ name: 'Sample test #1', state: 'fail', note: 'Time limit exceeded' });
           setStatus('time_limit_exceeded', 'Time limit exceeded');
         } else if (d.error) {
-          tests.push({ name: 'Sample test #1', state: 'skip', note: d.error });
-          setStatus('internal_error', 'Execution error');
+          const friendly = d.error === 'rate_limited' ? 'Cloud compiler rate limit — try again shortly' : d.error;
+          tests.push({ name: 'Sample test #1', state: 'skip', note: friendly });
+          setStatus('internal_error', d.error === 'rate_limited' ? 'Cloud rate limit' : 'Execution error');
         } else if (!ver.ok) {
           tests.push({ name: 'Sample test #1', state: 'skip', note: 'Not auto-judged — ' + ver.reason });
           setStatus('accepted', 'Ran (not judged)');
@@ -880,10 +919,10 @@ int main() {
         ws.tests = tests;
         switchTab('test');
       } catch (err) {
-        ws.stderr = 'Could not reach the compiler backend.\n\n' + (err.message || err);
-        ws.tests = [{ name: 'Sample test #1', state: 'skip', note: 'Backend offline' }];
+        ws.stderr = offlineMessage(err);
+        ws.tests = [{ name: 'Sample test #1', state: 'skip', note: 'Runtime offline' }];
         switchTab('err');
-        setStatus('internal_error', 'Backend offline');
+        setStatus('internal_error', 'Runtime offline');
       } finally {
         setBusy(false);
       }
@@ -891,6 +930,17 @@ int main() {
 
     /* --- keyboard shortcut (Ctrl/Cmd+Enter) is wired globally in app.js --- */
     CPP.workspaceRun = () => { if (!ws.busy) $('#wsRun').click(); };
+
+    /* --- runtime label: keep it accurate until the first real run --- */
+    const syncRuntimeLabel = () => {
+      if (ws.provider) return;
+      const label = $('#wsRuntime');
+      if (label) label.textContent = CPP.api.providerLabel(CPP.api.activeProvider());
+    };
+    if (CPP.runtime.state.provider) syncRuntimeLabel();
+    else {
+      const unsub = CPP.runtime.subscribe(() => { syncRuntimeLabel(); unsub(); });
+    }
 
     setStatus('idle', 'Idle');
     renderTests();
@@ -1236,8 +1286,35 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
           </div>
 
           <div class="card card-pad mb-3">
-            <h3>Compiler backend</h3>
-            <p class="muted small">Leave blank to use the same origin that serves this page (recommended when you run <code>npm start</code>). Set it when the site is opened from <code>file://</code>.</p>
+            <h3>Runtime</h3>
+            <p class="muted small">Where your C++ is compiled and executed. The active runtime is always shown in the workspace metrics row and in the page footer — nothing switches silently.</p>
+            <div class="seg mb-2" id="setProvider">
+              <button data-v="auto" class="${s.provider === 'auto' ? 'active' : ''}">Auto</button>
+              <button data-v="local" class="${s.provider === 'local' ? 'active' : ''}">Local</button>
+              <button data-v="cloud" class="${s.provider === 'cloud' ? 'active' : ''}">Cloud</button>
+            </div>
+            <div class="small muted mb-2" id="setProviderState"></div>
+            <div class="row">
+              <button class="btn btn-outline btn-small" id="setProviderTestLocal">Test local</button>
+              <button class="btn btn-outline btn-small" id="setProviderTestCloud">Test cloud</button>
+            </div>
+            <div class="small mt-2" id="setProviderResult"></div>
+            <details class="mt-2">
+              <summary class="small muted" style="cursor:pointer">Cloud compiler endpoint</summary>
+              <div class="row mt-2">
+                <input class="input" id="setJudge0Url" value="${esc(s.judge0Url)}" placeholder="https://ce.judge0.com" style="flex:1">
+                <button class="btn btn-primary btn-small" id="setJudge0Save">Save</button>
+              </div>
+              <p class="small muted mt-1 mb-0">
+                Default is the free public Judge0 CE instance at <code>https://ce.judge0.com</code> — no API key required.
+                It is a shared service, so expect occasional slowness or rate limiting.
+              </p>
+            </details>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Local backend URL</h3>
+            <p class="muted small">Only used by the <strong>Local</strong> runtime. Leave blank to use the same origin that serves this page (recommended when you run <code>npm start</code>). Set it when the site is opened from <code>file://</code>.</p>
             <div class="row">
               <input class="input" id="setBackend" value="${esc(CPP.api.base)}" placeholder="http://localhost:3001" style="flex:1">
               <button class="btn btn-primary" id="setBackendSave">Save</button>
@@ -1265,6 +1342,59 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
     seg('setEditorTheme', (v) => { Store.saveSettings({ editorTheme: v }); CPP.editor.setTheme(v); });
     seg('setTab', (v) => Store.saveSettings({ tabSize: Number(v) }));
     seg('setWrap', (v) => Store.saveSettings({ wrap: v === 'on' }));
+
+    /* --- runtime provider --- */
+    const provState = root.querySelector('#setProviderState');
+    const renderProvState = () => {
+      const st = CPP.runtime.state;
+      const active = CPP.api.activeProvider();
+      const local = st.online === null ? 'checking…'
+        : st.online ? ('online' + (st.compiler ? ' · ' + st.compiler : ' · no compiler')) : 'offline';
+      const cloud = Store.settings().provider === 'local' ? 'not checked'
+        : st.cloudOnline === null ? 'checking…'
+        : st.cloudOnline ? 'reachable · ' + (st.cloudName || 'Judge0 CE') : 'unreachable (' + st.cloudMessage + ')';
+      provState.innerHTML = `Active runtime: <b>${esc(CPP.api.providerLabel(active))}</b><br>
+        Local backend: <b>${esc(local)}</b><br>
+        Cloud compiler (${esc(CPP.api.cloud.baseUrl())}): <b>${esc(cloud)}</b>`;
+    };
+    seg('setProvider', (v) => {
+      Store.saveSettings({ provider: v });
+      CPP.toast.show('Runtime: ' + v, 'info');
+      CPP.runtime.lastAnnounced = null;
+      CPP.runtime.probe().then(renderProvState);
+    });
+    renderProvState();
+    // Resolve the live state once on entry, then refresh the summary line.
+    CPP.runtime.probe().then(renderProvState, renderProvState);
+
+    root.querySelector('#setProviderTestLocal').addEventListener('click', async () => {
+      const out = root.querySelector('#setProviderResult');
+      out.textContent = 'Testing the local backend…';
+      try {
+        const h = await CPP.api.local.health();
+        out.innerHTML = `✅ Local online — compiler: <b>${esc(h.compiler || 'none')}</b> · ${esc(h.message || '')}`;
+      } catch (e) {
+        out.innerHTML = `⛔ Local unreachable — ${esc(e.message)}. Start it with <code>npm start</code>, or use the Cloud runtime.`;
+      }
+    });
+    root.querySelector('#setProviderTestCloud').addEventListener('click', async () => {
+      const out = root.querySelector('#setProviderResult');
+      out.textContent = 'Testing the cloud compiler…';
+      try {
+        const h = await CPP.api.cloud.health();
+        const lang = await CPP.api.cloud.resolveLanguage();
+        out.innerHTML = `✅ Cloud online — ${esc(h.service)}${h.version ? ' v' + esc(h.version) : ''} · <b>${esc(lang.name)}</b>`;
+      } catch (e) {
+        out.innerHTML = `⛔ Cloud unreachable — ${esc(e.message)}. Check your internet connection.`;
+      }
+    });
+    root.querySelector('#setJudge0Save').addEventListener('click', () => {
+      Store.saveSettings({ judge0Url: root.querySelector('#setJudge0Url').value.trim() || 'https://ce.judge0.com' });
+      try { localStorage.removeItem('cpp-judge0-language'); } catch (e) {}
+      CPP.toast.show('Cloud compiler endpoint saved', 'success');
+      renderProvState();
+      CPP.runtime.probe().then(renderProvState);
+    });
 
     const fontVal = root.querySelector('#setFontVal');
     root.querySelector('#setFontDown').addEventListener('click', () => { const n = U.clamp(Store.settings().fontSize - 1, 10, 28); Store.saveSettings({ fontSize: n }); fontVal.textContent = n + 'px'; });
@@ -1339,18 +1469,19 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
               <ul class="muted small" style="padding-left:1.1rem">
                 <li><strong>Frontend:</strong> static HTML/CSS/JS (no build step). Works from a server or <code>file://</code>.</li>
                 <li><strong>Editor:</strong> Monaco (VS Code engine) loaded from a CDN, with a built-in fallback editor.</li>
-                <li><strong>Backend:</strong> Node.js + Express in <code>server.js</code>.</li>
-                <li><strong>Compiler:</strong> the local <code>g++</code>/<code>clang++</code> on your machine, run with <code>-std=c++17</code>.</li>
-                <li><strong>Storage:</strong> the browser's localStorage. No database, no accounts, no uploads.</li>
+                <li><strong>Backend:</strong> Node.js + Express in <code>server.js</code> (the <em>Local</em> runtime).</li>
+                <li><strong>Compilers:</strong> your machine's <code>g++</code>/<code>clang++</code> (<code>-std=c++17</code>) for the Local runtime, or the hosted Judge0 CE service for the Cloud runtime.</li>
+                <li><strong>Storage:</strong> the browser's localStorage. No database, no accounts.</li>
               </ul>
             </div>
             <div class="card card-pad">
               <h3>Troubleshooting</h3>
               <ul class="muted small" style="padding-left:1.1rem">
-                <li>“Backend offline” → run <code>npm install</code> then <code>npm start</code>.</li>
-                <li>“Compiler unavailable” → install MinGW-w64 (Windows) or <code>g++</code>/<code>clang++</code> and add it to PATH.</li>
+                <li>“Runtime offline” → for <em>Local</em>, run <code>npm install</code> then <code>npm start</code>; for <em>Cloud</em>, check your internet connection.</li>
+                <li>“Compiler unavailable” → install MinGW-w64 (Windows) or <code>g++</code>/<code>clang++</code> and add it to PATH, or switch to the Cloud runtime.</li>
+                <li>No laptop available? Set <strong>Settings → Runtime</strong> to <strong>Cloud</strong> — nothing needs to be running locally.</li>
                 <li>Deep links like <code>/problems/1001</code> work when served over HTTP; from <code>file://</code> the app uses <code>#/problems/1001</code>.</li>
-                <li>Check the live backend state on the <a href="${href('/status')}" data-link>status page</a>.</li>
+                <li>Check both runtimes on the <a href="${href('/status')}" data-link>status page</a>.</li>
               </ul>
             </div>
           </div>
@@ -1358,9 +1489,14 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
           <div class="card card-pad">
             <h3>Privacy &amp; safety</h3>
             <p class="muted small mb-0">
-              Your code and progress never leave your computer. Submitted programs are compiled and executed by the local backend
-              in an isolated temporary directory with source-size, compile-time and run-time limits, and are deleted afterwards.
-              Do not expose the backend to the public internet without additional sandboxing — it executes untrusted code by design.
+              With the <strong>Local</strong> runtime your code stays on your computer: the bundled Node backend compiles and runs it in an
+              isolated temporary directory with source-size, compile-time and run-time limits, then deletes it. Do not expose that backend
+              to the public internet without extra sandboxing — it executes untrusted code by design.
+            </p>
+            <p class="muted small mb-0 mt-2">
+              With the <strong>Cloud</strong> runtime the program you run is sent over HTTPS to the hosted Judge0 CE service and its output is
+              returned to your browser. Nothing is stored here, but this is a third-party service — avoid running anything sensitive.
+              Your progress, saved code and bookmarks never leave your browser either way.
             </p>
           </div>
         </div>
@@ -1371,71 +1507,121 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
   views.health = function (root) {
     root.innerHTML = `
       <section class="section">
-        <div class="container" style="max-width:760px">
+        <div class="container" style="max-width:860px">
           <div class="section-head">
             <span class="eyebrow">System</span>
-            <h2 class="section-title">Compiler backend status</h2>
-            <p class="section-subtitle">Live check of the local execution service.</p>
+            <h2 class="section-title">Compiler status</h2>
+            <p class="section-subtitle">Live check of both execution runtimes. The active one is highlighted.</p>
           </div>
-          <div class="card card-pad" id="healthCard">
-            <div class="center-box"><div class="spinner"></div><p class="muted mb-0">Contacting ${esc(CPP.api.displayBase() || 'same-origin')}…</p></div>
+
+          <div class="grid-2" style="align-items:start">
+            <div class="card card-pad" id="healthLocal">
+              <h3 class="mb-2" style="font-size:1.05rem">Local backend <span class="badge badge-brand hidden" id="healthLocalBadge">active</span></h3>
+              <div id="healthLocalBody"><div class="center-box"><div class="spinner"></div><p class="muted mb-0">Contacting local backend…</p></div></div>
+            </div>
+            <div class="card card-pad" id="healthCloud">
+              <h3 class="mb-2" style="font-size:1.05rem">Cloud compiler <span class="badge badge-brand hidden" id="healthCloudBadge">active</span></h3>
+              <div id="healthCloudBody"><div class="center-box"><div class="spinner"></div><p class="muted mb-0">Contacting cloud compiler…</p></div></div>
+            </div>
           </div>
+
           <div class="card card-pad mt-3">
             <h3>Test the pipeline</h3>
-            <p class="muted small">Compiles and runs a tiny program end-to-end so you can confirm real execution works.</p>
+            <p class="muted small">Compiles and runs a tiny program through the <strong>active runtime</strong>
+              (<b id="healthRuntime">detecting…</b>) so you can confirm real execution works.</p>
             <button class="btn btn-primary" id="healthRun">Run hello test</button>
             <pre class="console mt-2" id="healthOut" style="max-height:none">Waiting…</pre>
           </div>
         </div>
       </section>`;
 
-    const card = root.querySelector('#healthCard');
-    CPP.api.health().then((h) => {
+    /* The "active" highlight is decided only once both runtimes have reported,
+       so it never depends on which probe happened to answer first. */
+    function paintActive() {
+      const active = CPP.api.activeProvider();
+      const rt = root.querySelector('#healthRuntime');
+      if (rt) rt.textContent = CPP.api.providerLabel(active);
+      const lb = root.querySelector('#healthLocalBadge');
+      const cb = root.querySelector('#healthCloudBadge');
+      if (lb) lb.classList.toggle('hidden', active !== 'local');
+      if (cb) cb.classList.toggle('hidden', active !== 'cloud');
+    }
+
+    const localCard = root.querySelector('#healthLocalBody');
+    const pLocal = CPP.api.local.health().then((h) => {
       const ok = h.compiler;
-      card.innerHTML = `
+      localCard.innerHTML = `
         <div class="row" style="align-items:flex-start">
-          <span style="font-size:2rem">${ok ? '🟢' : '🟠'}</span>
+          <span style="font-size:1.4rem">${ok ? '🟢' : '🟠'}</span>
           <div style="flex:1">
-            <h3 class="mb-1">${ok ? 'Backend online — compiler ready' : 'Backend online — no C++ compiler'}</h3>
             <table class="table"><tbody>
               <tr><td>Endpoint</td><td class="mono">${esc(CPP.api.displayBase() || location.origin)}</td></tr>
               <tr><td>Status</td><td class="mono">${esc(h.status)}</td></tr>
               <tr><td>Compiler</td><td class="mono">${esc(h.compiler || '—')}</td></tr>
-              <tr><td>Version</td><td class="mono">${esc(h.compilerVersion || h.version || '—')}</td></tr>
               <tr><td>Standard</td><td class="mono">${esc(h.standard || 'c++17')}</td></tr>
-              <tr><td>Message</td><td>${esc(h.message || '')}</td></tr>
             </tbody></table>
-            ${ok ? '' : '<p class="muted small mb-0">Install MinGW-w64 (Windows) or <code>g++</code>/<code>clang++</code> and restart the backend.</p>'}
+            ${ok ? '' : '<p class="muted small mb-0">Install MinGW-w64 (Windows) or <code>g++</code>/<code>clang++</code>, then restart the backend. Or switch to the Cloud runtime — it needs nothing installed.</p>'}
           </div>
         </div>`;
     }).catch((e) => {
-      card.innerHTML = `
+      localCard.innerHTML = `
         <div class="row" style="align-items:flex-start">
-          <span style="font-size:2rem">🔴</span>
+          <span style="font-size:1.4rem">🔴</span>
           <div>
-            <h3 class="mb-1">Backend unreachable</h3>
-            <p class="muted mb-2">${esc(e.message)} at <span class="mono">${esc(CPP.api.displayBase() || 'same-origin')}</span></p>
-            <pre class="console" style="max-height:none">Start the backend:
-
-  cd cpp-practice-website
-  npm install
-  npm start
-
-Then open http://localhost:3001/api/health
-or set a custom backend URL in Settings.</pre>
+            <p class="muted small mb-2"><b>Offline</b> — ${esc(e.message)} at <span class="mono">${esc(CPP.api.displayBase() || 'same-origin')}</span></p>
+            <pre class="console" style="max-height:none">cd cpp-practice-website
+npm install
+npm start</pre>
+            <p class="muted small mb-0">No laptop available? Pick <strong>Cloud</strong> under Settings → Runtime.</p>
           </div>
         </div>`;
     });
+
+    const cloudCard = root.querySelector('#healthCloudBody');
+    const pCloud = CPP.api.cloud.health().then(async (h) => {
+      let langLine = '';
+      try {
+        const lang = await CPP.api.cloud.resolveLanguage();
+        langLine = `<tr><td>C++ runtime</td><td class="mono">${esc(lang.name)}</td></tr>`;
+      } catch (e) {}
+      cloudCard.innerHTML = `
+        <div class="row" style="align-items:flex-start">
+          <span style="font-size:1.4rem">🟢</span>
+          <div style="flex:1">
+            <table class="table"><tbody>
+              <tr><td>Service</td><td class="mono">${esc(h.service)}</td></tr>
+              <tr><td>Endpoint</td><td class="mono">${esc(h.url)}</td></tr>
+              ${h.version ? `<tr><td>Version</td><td class="mono">${esc(h.version)}</td></tr>` : ''}
+              ${langLine}
+            </tbody></table>
+            <p class="muted small mb-0">Shared public service — no API key, but it can be slow or rate-limit you at peak times.</p>
+          </div>
+        </div>`;
+    }).catch((e) => {
+      cloudCard.innerHTML = `
+        <div class="row" style="align-items:flex-start">
+          <span style="font-size:1.4rem">🔴</span>
+          <div>
+            <p class="muted small mb-2"><b>Unreachable</b> — ${esc(e.message)} at <span class="mono">${esc(CPP.api.cloud.baseUrl())}</span></p>
+            <p class="muted small mb-0">Check your internet connection, or change the endpoint in Settings → Runtime.</p>
+          </div>
+        </div>`;
+    });
+
+    // Refresh the shared runtime state, then decide the highlight + footer badge.
+    Promise.all([pLocal, pCloud])
+      .then(() => CPP.runtime.probe({ cloud: true }))
+      .then(paintActive, paintActive);
 
     root.querySelector('#healthRun').addEventListener('click', async (e) => {
       const out = root.querySelector('#healthOut');
       e.target.disabled = true;
       out.textContent = 'Compiling & running…';
       try {
-        const res = await CPP.api.run({ source_code: '#include <iostream>\nint main(){ std::cout << "compiler ok\\n"; return 0; }', stdin: '' });
-        out.textContent = JSON.stringify(res.data, null, 2);
+        const res = await CPP.api.execute({ source_code: '#include <iostream>\nint main(){ std::cout << "compiler ok\\n"; return 0; }', stdin: '', timeout: 10000 });
+        out.textContent = 'Ran on: ' + CPP.api.providerLabel(res.provider) + '\n\n' + JSON.stringify(res.data, null, 2);
       } catch (err) {
-        out.textContent = 'Failed: ' + err.message;
+        out.textContent = 'Failed on ' + CPP.api.providerLabel(Store.settings().provider === 'cloud' ? 'cloud' : 'local') + ': ' + err.message;
       } finally {
         e.target.disabled = false;
       }

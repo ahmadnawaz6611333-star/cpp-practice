@@ -372,7 +372,8 @@ function healthPayload() {
 }
 app.get(['/api/health', '/health'], (req, res) => res.json(healthPayload()));
 app.get('/api/info', (req, res) => res.json({
-  service: 'CPPractice Lab compiler backend',
+  service: 'CPPractice Lab compiler backend (Local runtime)',
+  runtime: 'local',
   standard: CONFIG.STANDARD,
   limits: {
     maxSourceBytes: CONFIG.MAX_SOURCE_SIZE,
@@ -484,7 +485,7 @@ app.use((req, res) => {
 ensureDirs().then(() => {
   app.listen(PORT, HOST, () => {
     console.log('===============================================');
-    console.log('CPPractice Lab — compiler + web server');
+    console.log('CPPractice Lab — compiler + web server (Local runtime)');
     console.log('===============================================');
     console.log(`Site:      http://localhost:${PORT}/`);
     console.log(`API:       http://localhost:${PORT}/api/health`);

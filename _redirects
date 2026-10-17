@@ -1,0 +1,5 @@
+# Netlify / Cloudflare Pages SPA fallback.
+# Clean URLs such as /problems/1001 are served by index.html, where the client router
+# reads location.pathname. Only relevant when you host the frontend statically AND use
+# the Cloud runtime (no Node backend required).
+/*    /index.html   200
