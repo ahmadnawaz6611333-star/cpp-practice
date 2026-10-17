@@ -141,6 +141,105 @@
     return U.normalizeOutput(actual) === U.normalizeOutput(expected);
   };
 
+  /* -------------------------- Brand identity --------------------------- */
+  // js/brand.js is the single source of truth; these are fallbacks so the app
+  // still renders if that file is missing.
+  CPP.brand = Object.assign({
+    name: 'CppPractice',
+    wordmark: { main: 'Cpp', accent: 'Practice' },
+    tagline: '',
+    shortDescription: '',
+    description: '',
+    copyrightHolder: 'CppPractice',
+    repository: '',
+    liveUrl: '',
+    locale: 'en',
+    jurisdiction: '',
+    contactEmail: '',
+    policiesUpdated: '',
+  }, window.CPP_BRAND || {});
+
+  CPP.brand.wordmark = Object.assign({ main: 'Cpp', accent: 'Practice' }, CPP.brand.wordmark || {});
+  // Wordmark as HTML: <span>Main<span class="dot">Accent</span></span>
+  CPP.brand.wordmarkHtml = function () {
+    return CPP.util.escapeHtml(CPP.brand.wordmark.main) +
+      '<span class="dot">' + CPP.util.escapeHtml(CPP.brand.wordmark.accent) + '</span>';
+  };
+
+  /* --------------------------- Advertising ----------------------------- */
+  const Ads = (CPP.ads = Object.assign({
+    publisherId: '',
+    slots: {},
+    requireConsent: true,
+    format: 'auto',
+  }, window.CPP_ADS || {}));
+  Ads.slots = Object.assign({ home: '', problems: '', problem: '', reference: '' },
+    (window.CPP_ADS && window.CPP_ADS.slots) || {});
+
+  const PUBLISHER_RE = /^ca-pub-\d{16}$/;
+  Ads.publisher = function () { return String(Ads.publisherId || '').trim(); };
+  /**
+   * Advertising is only ever active for a well-formed publisher id, so an
+   * unconfigured deployment (or a fork) never loads Google's script, never
+   * sets an advertising cookie, and therefore needs no consent banner.
+   */
+  Ads.enabled = function () { return PUBLISHER_RE.test(Ads.publisher()); };
+
+  /* ------------------------- Advertising consent ----------------------- */
+  // This choice only governs *advertising* cookies. Progress/bookmarks/code are
+  // stored in localStorage for the site's own functionality and are unaffected.
+  const CONSENT_KEY = 'cpp-consent';
+  const Consent = (CPP.consent = {
+    KEY: CONSENT_KEY,
+    /** 'granted' | 'denied' | null (not asked yet) */
+    get: function () { try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; } },
+    set: function (value) { try { localStorage.setItem(CONSENT_KEY, value); } catch (e) {} return value; },
+    clear: function () { try { localStorage.removeItem(CONSENT_KEY); } catch (e) {} },
+    needed: function () { return Ads.enabled() && Ads.requireConsent && Consent.get() === null; },
+    allowsAds: function () { return Ads.enabled() && (!Ads.requireConsent || Consent.get() === 'granted'); },
+  });
+
+  /* ------------------------------ Ad units ----------------------------- */
+  // Returns the markup for one placement, or '' when ads are off/unconfigured/
+  // not consented — in which case no ad markup reaches the DOM at all.
+  Ads.slotHtml = function (key) {
+    if (!Consent.allowsAds() || !Ads.slots[key]) return '';
+    return '<aside class="ad-slot" aria-label="Advertisement">' +
+      '<span class="ad-label">Advertisement</span>' +
+      '<ins class="adsbygoogle" style="display:block" data-ad-client="' + CPP.util.escapeAttr(Ads.publisher()) + '"' +
+      ' data-ad-slot="' + CPP.util.escapeAttr(Ads.slots[key]) + '"' +
+      ' data-ad-format="' + CPP.util.escapeAttr(Ads.format) + '" data-full-width-responsive="true"></ins>' +
+      '</aside>';
+  };
+
+  let adsScriptState; // undefined = not started · 'loading' · 'ready' · 'failed'
+
+  function fillAdSlots(root) {
+    const scope = root || document;
+    if (!scope.querySelectorAll) return;
+    scope.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])').forEach(function () {
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { /* blocked */ }
+    });
+  }
+
+  Ads.activate = function (root) {
+    if (!Consent.allowsAds()) return false;
+    if (adsScriptState === undefined) {
+      adsScriptState = 'loading';
+      const s = document.createElement('script');
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' +
+        encodeURIComponent(Ads.publisher());
+      s.onload = function () { adsScriptState = 'ready'; fillAdSlots(); };
+      s.onerror = function () { adsScriptState = 'failed'; };
+      document.head.appendChild(s);
+      return true;
+    }
+    if (adsScriptState === 'ready') fillAdSlots(root);
+    return true;
+  };
+
   /* ------------------------------ Storage ------------------------------ */
   const KEYS = {
     solved: 'cpp-solved-problems',

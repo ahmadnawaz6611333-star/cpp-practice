@@ -1,5 +1,5 @@
 /* ==========================================================================
- * CPPractice Lab — Views
+ * CppPractice — Views
  * Every page of the app. Each view sets root.innerHTML then wires listeners.
  * ========================================================================== */
 (function () {
@@ -1327,10 +1327,22 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
 
           <div class="card card-pad">
             <h3>Data</h3>
-            <p class="muted small">Solved, attempted, bookmarks, activity, saved code and preferences are kept in <code>localStorage</code>. Nothing leaves your device.</p>
+            <p class="muted small">Solved, attempted, bookmarks, activity, saved code and preferences are kept in <code>localStorage</code> on this device — there is no account and no database. (Your program text leaves the device only when you press Run/Submit in the <strong>Cloud</strong> runtime.)</p>
             <div class="row">
               <button class="btn btn-outline" id="setExport">Export progress (JSON)</button>
               <button class="btn btn-danger" id="setReset">Reset everything</button>
+            </div>
+          </div>
+
+          <div class="card card-pad mt-3">
+            <h3>Advertising &amp; cookies</h3>
+            <p class="muted small mb-0" id="setAdsState"></p>
+            <p class="muted small">Ads are optional. “Essential only” keeps the site working with no advertising cookies at all. Read the
+              <a href="${href('/privacy')}" data-link>Privacy Policy</a> for what the ad network does.</p>
+            <div class="row" id="setConsentBtns">
+              <button class="btn btn-outline" data-consent="denied">Essential only</button>
+              <button class="btn btn-primary" data-consent="granted">Accept personalised ads</button>
+              <button class="btn btn-ghost" data-consent="unset">Ask me again on next visit</button>
             </div>
           </div>
         </div>
@@ -1434,13 +1446,42 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
       URL.revokeObjectURL(a.href);
     });
     root.querySelector('#setReset').addEventListener('click', () => {
-      if (confirm('Erase ALL local data for CPPractice Lab?')) {
+      if (confirm('Erase ALL local data for ' + CPP.brand.name + '?')) {
         Store.resetAll();
         CPP.toast.show('All local data cleared', 'info');
         CPP.theme.apply('dark');
         views.settings(root);
       }
     });
+
+    /* --- advertising consent --- */
+    const adsState = root.querySelector('#setAdsState');
+    const renderAdsState = () => {
+      if (!CPP.ads.enabled()) {
+        // No publisher id configured: nothing to consent to, so say so plainly.
+        adsState.innerHTML = 'Advertising is <b>off</b> on this deployment — no ad network is loaded and no advertising cookie is set.';
+        root.querySelector('#setConsentBtns').hidden = true;
+        return;
+      }
+      const c = CPP.consent.get();
+      const label = c === 'granted' ? 'advertising cookies accepted'
+        : c === 'denied' ? 'essential storage only'
+        : 'not chosen yet';
+      adsState.innerHTML = 'Current choice: <b>' + label + '</b>.';
+    };
+    renderAdsState();
+    root.querySelectorAll('#setConsentBtns [data-consent]').forEach((b) => b.addEventListener('click', () => {
+      const v = b.getAttribute('data-consent');
+      if (v === 'unset') {
+        CPP.consent.clear();
+        CPP.toast.show('We will ask again on your next visit', 'info');
+      } else {
+        CPP.consent.set(v);
+        CPP.toast.show(v === 'granted' ? 'Advertising cookies accepted' : 'Essential storage only — no ad cookies', 'info');
+      }
+      renderAdsState();
+      CPP.ads.activate(document);
+    }));
   };
 
   /* ============================== ABOUT ================================ */
@@ -1450,8 +1491,8 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
         <div class="container" style="max-width:900px">
           <div class="section-head">
             <span class="eyebrow">About</span>
-            <h2 class="section-title">About CPPractice Lab</h2>
-            <p class="section-subtitle">A local-first C++ practice platform with a genuine compiler backend.</p>
+            <h2 class="section-title">About ${esc(CPP.brand.name)}</h2>
+            <p class="section-subtitle">A C++ practice platform with a genuine compiler backend — local or cloud.</p>
           </div>
 
           <div class="card card-pad mb-3">
@@ -1499,6 +1540,235 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
               With the <strong>Cloud</strong> runtime the program you run is sent over HTTPS to the hosted Judge0 CE service and its output is
               returned to your browser. Nothing is stored here, but this is a third-party service — avoid running anything sensitive.
               Your progress, saved code and bookmarks never leave your browser either way.
+            </p>
+            <p class="muted small mb-0 mt-2">
+              <strong>Advertising:</strong> this site can display ads served by Google AdSense. Advertising is optional and never loads before an
+              explicit choice on the cookie banner; it uses your browser's advertising cookies, not your code or your progress. See the
+              <a href="${href('/privacy')}" data-link>Privacy Policy</a> for the details, and
+              <a href="${href('/settings')}" data-link>Settings</a> to change your choice at any time.
+            </p>
+          </div>
+
+          <div class="card card-pad mt-3">
+            <h3>Legal</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li><a href="${href('/privacy')}" data-link>Privacy Policy</a> — what is stored, what leaves your device, and how advertising cookies work.</li>
+              <li><a href="${href('/terms')}" data-link>Terms of Use</a> — acceptable use, the status of the compiler results, and liability.</li>
+            </ul>
+          </div>
+        </div>
+      </section>`;
+  };
+
+  /* ============================= PRIVACY =============================== */
+  // Written against what the code actually does (see js/core.js → KEYS and the
+  // advertising config in js/ads.js). If you change what is stored, change this.
+  const STORED_KEYS = [
+    ['cpp-solved-problems', 'Ids of the problems you marked as solved'],
+    ['cpp-attempted-problems', 'Ids of the problems you ran code on'],
+    ['cpp-bookmarked-problems', 'The problems you bookmarked'],
+    ['cpp-activity', 'Per-day counts behind the heatmap and streaks'],
+    ['cpp-settings', 'Theme, editor options and your runtime (Local/Cloud) preference'],
+    ['cpp-code-&lt;id&gt;', 'The C++ code you typed for a problem'],
+    ['cpp-backend-url', 'A custom Local backend URL, if you set one'],
+    ['cpp-judge0-language', 'Cached cloud compiler version, so it is not re-detected every visit'],
+    ['cpp-router', 'Whether you forced clean URLs or hash URLs'],
+    ['cpp-consent', 'Your advertising-cookie choice'],
+  ];
+
+  function policyContact() {
+    const email = String(CPP.brand.contactEmail || '').trim();
+    if (email && email.indexOf('example.com') === -1) {
+      return '<a href="mailto:' + esc(email) + '">' + esc(email) + '</a>';
+    }
+    return CPP.brand.repository
+      ? 'the contact details in the <a href="' + esc(CPP.brand.repository) + '" target="_blank" rel="noopener noreferrer">project repository</a>'
+      : 'the project maintainer';
+  }
+
+  views.privacy = function (root) {
+    const brand = CPP.brand;
+    root.innerHTML = `
+      <section class="section">
+        <div class="container" style="max-width:860px">
+          <div class="section-head">
+            <span class="eyebrow">Legal</span>
+            <h2 class="section-title">Privacy Policy</h2>
+            <p class="section-subtitle">Last updated: ${esc(brand.policiesUpdated || '')}</p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>The short version</h3>
+            <ul class="muted" style="padding-left:1.1rem">
+              <li>There is <strong>no account and no server-side database</strong>. Your progress, bookmarks and code are stored only in this browser.</li>
+              <li>With the <strong>Local</strong> runtime your code never leaves your computer.</li>
+              <li>With the <strong>Cloud</strong> runtime the program you run (and the input you type) is sent to a third-party compiler service to be executed.</li>
+              <li>Ads are <strong>optional</strong>. If advertising is enabled you are asked first, and nothing is loaded until you accept.</li>
+              <li>You can delete everything with one button in <a href="${href('/settings')}" data-link>Settings</a>.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>What is stored in your browser</h3>
+            <p class="muted small">The site uses your browser's <code>localStorage</code> for its own functionality. This is not sent to us and not used for advertising:</p>
+            <div class="table-wrap">
+              <table class="table">
+                <thead><tr><th>Key</th><th>What it holds</th></tr></thead>
+                <tbody>
+                  ${STORED_KEYS.map(([k, d]) => `<tr><td class="mono">${k}</td><td>${d}</td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+            <p class="muted small mb-0">Export it any time (Settings → Export progress) or erase it (Settings → Reset everything). It stays until you clear it or clear your browser data.</p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>What leaves your device</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li><strong>Local runtime:</strong> nothing. The bundled Node backend compiles and runs your program in a temporary directory on the same machine that serves the page, then deletes it.</li>
+              <li><strong>Cloud runtime:</strong> the source code you submitted and the standard input you typed are sent over HTTPS to the hosted compiler service (<span class="mono">${esc(Store.settings().judge0Url || 'https://ce.judge0.com')}</span>, Judge0 CE) and the program output comes back. That service is a third party with its own policies; treat it as public — do not submit anything confidential.</li>
+              <li><strong>Pages and fonts:</strong> the site is served by a static host (for example GitHub Pages) and loads the Inter/Fira Code fonts from Google Fonts and the code editor from jsDelivr, so those providers see a normal web request from your browser. No account is involved.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Advertising and cookies</h3>
+            <p class="muted small">
+              This site can show advertising served by <strong>Google AdSense</strong> to keep it free. When advertising is enabled and you accept,
+              Google and its partners may set cookies or read device identifiers to select and measure ads, including personalised ads based on
+              your prior visits to this and other websites. Advertising is not loaded before you make a choice, and choosing
+              “Essential only” keeps it off entirely for your browser.
+            </p>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li>Google's use of advertising cookies is described at <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">policies.google.com/technologies/ads</a>.</li>
+              <li>You can turn off personalised advertising at <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a>, and opt out of participating vendors at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">aboutads.info/choices</a>.</li>
+              <li>Visitors in the EU/UK/EEA: consent is collected before any advertising cookie is set, as required by Google's EU user consent policy and by GDPR/ePrivacy.</li>
+              <li>Change or withdraw your choice at any time in <a href="${href('/settings')}" data-link>Settings → Advertising &amp; cookies</a>.</li>
+            </ul>
+            <p class="muted small mb-0"><strong>We never receive your code, your progress or your identity from the ad network</strong>, and the ad code has no access to the files or editor on this site.</p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Legal bases and your rights</h3>
+            <p class="muted small">
+              Where the GDPR applies: advertising cookies are used on the basis of your <strong>consent</strong> (which you may withdraw at any time),
+              and the local storage above is used because it is <strong>strictly necessary</strong> to provide the feature you asked for.
+            </p>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li><strong>Access / portability:</strong> Settings → Export progress downloads everything held about you as JSON.</li>
+              <li><strong>Erasure:</strong> Settings → Reset everything deletes it; clearing your browser storage does the same.</li>
+              <li><strong>Withdraw consent:</strong> Settings → Advertising &amp; cookies.</li>
+              <li><strong>Object / complain:</strong> contact us, or your local data-protection authority.</li>
+            </ul>
+            <p class="muted small mb-0">Because there is no server-side account or database, most data is already exclusively under your control.</p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Children, third parties and changes</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li>This site is an educational tool aimed at students and is not directed at children under 13.</li>
+              <li>Links to third-party sites (for example the compiler service or GitHub) are governed by those sites' own privacy policies.</li>
+              <li>If this policy changes, the date at the top of this page changes with it.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad">
+            <h3>Contact</h3>
+            <p class="muted small mb-0">Questions about this policy or your data: ${policyContact()}.</p>
+          </div>
+        </div>
+      </section>`;
+  };
+
+  /* ============================== TERMS ================================ */
+  views.terms = function (root) {
+    const brand = CPP.brand;
+    root.innerHTML = `
+      <section class="section">
+        <div class="container" style="max-width:860px">
+          <div class="section-head">
+            <span class="eyebrow">Legal</span>
+            <h2 class="section-title">Terms of Use</h2>
+            <p class="section-subtitle">Last updated: ${esc(brand.policiesUpdated || '')}</p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Using ${esc(brand.name)}</h3>
+            <p class="muted small mb-0">
+              By using this site you agree to these terms. The site is a free educational tool for practising C++. Use it for learning and
+              teaching; if you do not agree with these terms, please do not use the site.
+            </p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>What the compiler results mean — and do not mean</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li>Code is compiled and executed by a <strong>real</strong> compiler and the output shown is the program's actual output. Nothing is simulated and empty output is shown as empty.</li>
+              <li><strong>Submit Solution performs a sample check, not full judging.</strong> It compares your output with the sample shown in the statement and reports “Sample passed”, “Wrong answer (sample)” or “Ran (not judged)”. It does <strong>not</strong> verify hidden tests, so a “Sample passed” result is not a guarantee that a solution is correct or efficient.</li>
+              <li>The Local runtime uses the compiler installed on your own machine; the Cloud runtime uses a third-party service that may be slow, rate-limited or temporarily unavailable.</li>
+              <li>Wording in the catalogue (including hints and sample values) is provided for learning and may contain mistakes — always trust the problem statement and your own testing.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Acceptable use</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li>Do not use the site to run malicious code, attempt to escape execution sandboxes, attack the compiler backend, or interfere with other users.</li>
+              <li>Do not abuse the cloud compiler with automated or bulk submissions beyond normal human practice; it is a shared public service and you may be rate-limited.</li>
+              <li>Do not attempt to disrupt, overload or gain unauthorised access to any part of the service.</li>
+              <li>You are responsible for the code you submit and for making sure you have the right to use it.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Your code and your progress</h3>
+            <p class="muted small mb-0">
+              Your solutions and progress are yours. They are stored in your own browser and are not sent to us. Please keep your own copy of
+              anything important: clearing your browser data, using private browsing or a different device means your progress is not there.
+            </p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Advertisements</h3>
+            <p class="muted small mb-0">
+              The site may display third-party advertising (Google AdSense) to cover its running costs. Ads are labelled, and their placement does
+              not affect the problems, the editor or the results. Advertising is optional and subject to your cookie choice — see the
+              <a href="${href('/privacy')}" data-link>Privacy Policy</a>.
+            </p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>No warranty</h3>
+            <p class="muted small mb-0">
+              The site is provided “as is”, without warranties of any kind, express or implied, including fitness for a particular purpose or
+              uninterrupted availability. Compiler output comes from tools we do not control, and the third-party compiler service is offered by
+              others under their own terms.
+            </p>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Intellectual property</h3>
+            <ul class="muted small" style="padding-left:1.1rem">
+              <li>The site's source code is released under the MIT licence (see the <a href="${esc(brand.repository)}" target="_blank" rel="noopener noreferrer">repository</a>).</li>
+              <li>The problem catalogue, wording and hints are provided for educational practice. If you believe material here infringes your rights, contact us and it will be reviewed and removed if appropriate.</li>
+              <li>Names of third-party services (Google AdSense, Judge0, GitHub, Monaco, Google Fonts, jsDelivr) belong to their respective owners and are used only to describe what the site uses.</li>
+            </ul>
+          </div>
+
+          <div class="card card-pad mb-3">
+            <h3>Limitation of liability</h3>
+            <p class="muted small mb-0">
+              To the fullest extent permitted by law, we are not liable for any indirect or consequential loss, loss of data, loss of marks or
+              grades, or any damage arising from use of the site, its compiler results or third-party services. Nothing in these terms limits
+              rights that cannot be limited by law.
+            </p>
+          </div>
+
+          <div class="card card-pad">
+            <h3>Changes and governing law</h3>
+            <p class="muted small mb-0">
+              These terms may be updated; the date at the top of this page will change with them, and continued use means you accept the update.
+              They are governed by the laws of ${esc(brand.jurisdiction || 'the operator\'s jurisdiction')}. Questions: ${policyContact()}.
             </p>
           </div>
         </div>

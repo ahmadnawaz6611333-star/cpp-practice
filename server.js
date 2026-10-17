@@ -32,6 +32,11 @@ const PORT = parseInt(process.env.PORT, 10) || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const ROOT = __dirname;
 
+// Brand and advertising live in one place for the whole project: js/brand.js
+// and js/ads.js (loaded by the browser as window.CPP_BRAND / window.CPP_ADS).
+const BRAND = require('./js/brand.js');
+const ADS = require('./js/ads.js');
+
 /* --------------------------------------------------------------------------
  * Configuration
  * ------------------------------------------------------------------------ */
@@ -372,7 +377,7 @@ function healthPayload() {
 }
 app.get(['/api/health', '/health'], (req, res) => res.json(healthPayload()));
 app.get('/api/info', (req, res) => res.json({
-  service: 'CPPractice Lab compiler backend (Local runtime)',
+  service: BRAND.name + ' compiler backend (Local runtime)',
   runtime: 'local',
   standard: CONFIG.STANDARD,
   limits: {
@@ -501,7 +506,32 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.use('/js', express.static(path.join(ROOT, 'js'), { dotfiles: 'ignore', maxAge: '1h' }));
 app.get('/styles.css', (req, res) => res.sendFile(path.join(ROOT, 'styles.css')));
-app.get('/robots.txt', (req, res) => res.type('text/plain').send('User-agent: *\nDisallow: /api/\n'));
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(
+  'User-agent: *\n' +
+  'Allow: /\n' +
+  'Disallow: /api/\n' +
+  (BRAND.liveUrl ? 'Sitemap: ' + BRAND.liveUrl.replace(/\/?$/, '/') + 'sitemap.xml\n' : '')
+));
+
+// AdSense reads ads.txt from the *domain root*. It is served here for a
+// root-mounted deployment; a static host serves the committed ./ads.txt file.
+// The line is generated from js/ads.js so it can never disagree with the
+// publisher id the page actually uses.
+app.get('/ads.txt', (req, res) => {
+  const pub = String(ADS.publisherId || '').trim();
+  res.type('text/plain');
+  if (!/^ca-pub-\d{16}$/.test(pub)) {
+    return res.send('# Advertising is not configured on this deployment.\n' +
+      '# Set publisherId in js/ads.js, then run `npm run brand:sync`.\n');
+  }
+  res.send('google.com, ' + pub + ', DIRECT, f08c47fec0942fa0\n');
+});
+
+app.get('/sitemap.xml', (req, res, next) => {
+  res.sendFile(path.join(ROOT, 'sitemap.xml'), (err) => {
+    if (err && !res.headersSent) next();
+  });
+});
 
 // SPA fallback: any GET that is not /api/* and looks like a page route.
 app.get(/^\/(?!api\/).*/, (req, res, next) => {
@@ -519,7 +549,7 @@ app.use((req, res) => {
 ensureDirs().then(() => {
   app.listen(PORT, HOST, () => {
     console.log('===============================================');
-    console.log('CPPractice Lab — compiler + web server (Local runtime)');
+    console.log(BRAND.name + ' — compiler + web server (Local runtime)');
     console.log('===============================================');
     console.log(`Site:      http://localhost:${PORT}/`);
     console.log(`API:       http://localhost:${PORT}/api/health`);

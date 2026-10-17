@@ -565,3 +565,75 @@ kbd { background: var(--panel-2); border: 1px solid var(--border-strong); border
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ==========================================================================
+   Advertising (opt-in — see js/ads.js)
+   Nothing here is visible unless a publisher id is configured *and* the visitor
+   accepted advertising cookies, because js/core.js then emits no markup at all.
+   ========================================================================== */
+.ad-section { padding-top: .5rem; }
+
+.ad-slot {
+  display: block;
+  margin: 0 auto;
+  max-width: 970px;
+  /* Reserve room so a filling unit cannot shove the page around. */
+  min-height: 120px;
+  padding: .7rem .8rem .9rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  text-align: center;
+}
+
+.ad-label {
+  display: block;
+  margin-bottom: .45rem;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.ad-slot ins.adsbygoogle { display: block; }
+
+/* ==========================================================================
+   Advertising consent card — only rendered when ads are configured
+   ========================================================================== */
+#consentHost {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 400;
+  padding: .8rem;
+  pointer-events: none;
+}
+#consentHost[hidden] { display: none; }
+
+.consent-card {
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .9rem 1.2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: .95rem 1.1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow-lg);
+}
+
+.consent-text { flex: 1 1 26rem; min-width: 0; }
+.consent-text strong { display: block; margin-bottom: .25rem; }
+.consent-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+@media (max-width: 560px) {
+  .consent-card { padding: .85rem; }
+  .consent-actions { width: 100%; }
+  .consent-actions .btn { flex: 1 1 auto; }
+}

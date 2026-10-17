@@ -1,4 +1,4 @@
-# CPPractice Lab
+# CppPractice
 
 A premium, colourful C++ practice platform: **2,040 curated problems**, a multi-page
 workspace with an advanced in-browser editor, and **genuinely working C++ execution** —
@@ -37,6 +37,12 @@ Code can run in one of two ways, and the active runtime is always displayed:
   progress, activity heatmap and streaks, all stored locally.
 - 🔒 **No database, no accounts, no secrets** — progress and code live in your browser's
   `localStorage`; neither runtime requires an API key.
+- 🧾 **Privacy Policy + Terms of Use built in** — real pages that describe exactly what is
+  stored (down to the `localStorage` keys) and where your code goes. Includes a GDPR-style
+  advertising consent banner and a "reset my choice" control.
+- 💰 **AdSense-ready, but honest about it** — advertising is wired up but **completely inert**
+  until you put a publisher id in `js/ads.js`: no script, no cookie, no banner. See
+  [Monetising with Google AdSense](#monetising-with-google-adsense).
 
 ---
 
@@ -48,19 +54,28 @@ cpp-practice-website/
 ├── styles.css                  # Design system (tokens, components, themes, responsive)
 ├── _redirects                  # SPA fallback for static hosts (Netlify/Cloudflare Pages)
 ├── .nojekyll                   # Keeps GitHub Pages from running Jekyll
+├── ads.txt                     # AdSense authorisation (must sit at a domain root)
+├── robots.txt                  # Written by `npm run sitemap`
+├── sitemap.xml                 # Written by `npm run sitemap`
 ├── js/
+│   ├── brand.js                # ⭐ Site name, links, legal details (single source of truth)
+│   ├── ads.js                  # ⭐ AdSense config — advertising is OFF until this is filled in
 │   ├── data.js                 # The 2,040 problems (original catalogue) + indexes
-│   ├── core.js                 # Storage, theming, toasts, utils, runtime clients (Local + Cloud)
+│   ├── core.js                 # Storage, theming, toasts, utils, runtime clients, ads/consent
 │   ├── editor.js               # Monaco loader + fallback editor + code formatter
-│   ├── views.js                # Every page/route renderer
+│   ├── views.js                # Every page/route renderer (incl. Privacy Policy + Terms)
 │   └── app.js                  # Router, nav, global keyboard shortcuts, bootstrap
 ├── server.js                   # Express: static hosting + /api/health + /api/run (compiler)
 ├── tests/
 │   ├── api.test.js             # Catalogue integrity + HTTP API + real compilation tests
 │   ├── cloud.test.js           # Judge0 cloud runtime contract test (skips when offline)
 │   ├── e2e.browser.js          # Headless-Chrome end-to-end test (render, run, submit, cloud)
-│   └── deploy.browser.js       # Verifies a live static deployment works end to end
+│   ├── deploy.browser.js       # Verifies a live static deployment works end to end
+│   └── adsense.test.js         # Brand, legal pages and "ads can never leak" guarantees
 ├── scripts/
+│   ├── sync-brand.js           # Pushes js/brand.js + js/ads.js into the static files
+│   ├── gen-sitemap.js          # Writes sitemap.xml + robots.txt
+│   ├── check-adsense.js        # AdSense readiness report (what is still missing)
 │   └── generate-problems-json.js   # Exports data/problems.json
 ├── data/problems.json          # Generated export of the catalogue
 ├── package.json
@@ -70,6 +85,23 @@ cpp-practice-website/
 **Frontend:** plain HTML/CSS/JS (no build step). Monaco is the only CDN dependency.
 **Backend:** Node.js + Express. It serves the site *and* exposes the compiler API on the
 same origin, so the frontend needs no configuration when run normally.
+
+### One place for the name
+
+The site's name, tagline, links and legal details live **only** in `js/brand.js`, and the
+advertising configuration (publisher id, ad units, consent) lives **only** in `js/ads.js`.
+The running app reads both files directly, and this pushes them into the files that cannot:
+
+```bash
+npm run brand:sync     # index.html head tags + ads.txt + package.json + README.md
+npm run brand:check    # fails if those files have drifted from js/brand.js
+npm run sitemap        # writes sitemap.xml + robots.txt
+npm run check:adsense  # AdSense readiness report
+```
+
+So renaming the site later is: edit `name`/`wordmark`/`title`/`description` in `js/brand.js`,
+then run `npm run brand:sync`. `npm run test:adsense` fails if the static files and
+`js/brand.js` ever disagree, so they cannot silently drift apart.
 
 ### Execution runtimes
 
@@ -237,6 +269,81 @@ CMD ["node", "server.js"]
 
 ---
 
+## Monetising with Google AdSense
+
+### Does it cost money?
+
+Only one thing, and it is genuinely unavoidable:
+
+| Item | Cost | Required? |
+| ---- | ---- | --------- |
+| AdSense account | **free** | yes, to run ads |
+| The code in this repository | **free** (already done) | — |
+| A **domain you own** (e.g. `cpppractice.com`) | **≈ $10–12 / year** | **yes** — see below |
+| Paid hosting | not needed | — |
+| A paid email address | not needed | — |
+
+So: **no money is required to prepare the site** (that work is already in this repo), but
+**AdSense itself needs a domain you own**, and that is the one real cost — roughly the price
+of a coffee per year. You also need to be 18+ and have a bank account/address for payouts.
+
+**Why the domain is mandatory.** Google will not approve `https://<user>.github.io/<repo>/`:
+
+- `ads.txt` must be served from the **root of the domain** (`https://your-domain/ads.txt`).
+  A GitHub Pages *project* site is served from `/<repo>/`, so it can never satisfy this.
+- Google wants the site to belong to you. A shared subdomain does not.
+
+Buy a domain (`.com` is ~$10–12/year; `cpppractice.com` is currently unregistered), point it
+at whatever host serves the folder, and HTTPS stays free — GitHub Pages, Netlify and
+Cloudflare Pages all issue a certificate for a custom domain automatically.
+
+### What is already done in this repository
+
+- `js/brand.js` — your contact email and jurisdiction are the only fields you must fill in
+  (the AdSense check refuses to pass while they are placeholders).
+- `/privacy` — a real Privacy Policy: every `localStorage` key listed, what leaves your device
+  in Local vs Cloud mode, the advertising cookies, opt-out links, GDPR legal bases and your
+  users' rights (access/export, erasure, withdrawal of consent).
+- `/terms` — Terms of Use: acceptable use, and an honest description of what **Submit**
+  actually does (a sample check, never a hidden-test verdict).
+- A **cookie consent banner** that only appears when advertising is actually configured, with
+  "Accept" and "Essential only", plus a "change my choice" control in Settings.
+- Ad units that **cannot leak**: until `publisherId` is set *and* the visitor accepts, no ad
+  markup is rendered, no Google script is requested and no cookie is set. This is enforced in
+  `js/core.js` and covered by `npm run test:adsense`.
+- `ads.txt`, `robots.txt`, `sitemap.xml`, canonical/Open Graph/Twitter tags, the AdSense
+  account-verification meta, and a checker that tells you exactly what is still missing.
+
+### Checklist
+
+1. **Buy a domain** and point it at your host (GitHub Pages / Netlify / Cloudflare Pages).
+2. Edit `js/brand.js`: set `liveUrl` to the domain and `contactEmail` to a real address you
+   read. Set `jurisdiction` if you are not in Pakistan.
+3. `npm run brand:sync && npm run sitemap` — writes the new canonical/OG tags, the
+   verification meta once a publisher id exists, `ads.txt` and `robots.txt`.
+4. **Apply at <https://adsense.google.com>**, add the site, and verify ownership (the meta tag
+   or ads.txt is already in place and is regenerated from `js/ads.js`).
+5. Once approved, paste your `ca-pub-…` id into `js/ads.js`, create an ad unit per placement
+   and paste each unit id into `slots` (`home`, `problems`, `problem`, `reference`).
+6. Run `npm run check:adsense` — it must say *ready to apply* (or list exactly what is left) —
+   then `npm run brand:sync` and redeploy.
+7. In AdSense, switch on **Privacy & messaging → GDPR / IAB TCF** messaging. For visitors in
+   the EEA/UK Google actually requires their certified consent platform in addition to the
+   on-page banner: leave `requireConsent: true` in `js/ads.js`.
+
+### Honest caveats
+
+- **Approval is Google's decision, not something code can guarantee.** Sites are commonly
+  rejected for “low value content”, a missing privacy policy, or thin pages.
+- **The 2,040 problems must be yours to publish.** AdSense rejects sites whose content is
+  copied from somewhere else. Make sure you hold the rights to the catalogue you ship.
+- **Traffic is what earns money.** `2,040` problems and a working compiler make the site
+  *useful*, but without visitors ads earn close to nothing. See the note below.
+- **Ads and a coding workspace are an awkward mix** — that is why every placement here is
+  below the content, clearly labelled `Advertisement`, and never inside the editor.
+
+---
+
 ## Routes
 
 | Route                | Page                                   |
@@ -248,9 +355,11 @@ CMD ["node", "server.js"]
 | `/bookmarks`         | Saved problems with quick remove       |
 | `/roadmap`           | 12-step learning path with per-section progress |
 | `/reference`         | C++ quick-reference snippets           |
-| `/settings`          | Theme, editor, **runtime (Local/Cloud)**, backend URL, data export/reset |
+| `/settings`          | Theme, editor, **runtime (Local/Cloud)**, backend URL, **advertising choice**, data export/reset |
 | `/about`             | About, architecture, troubleshooting   |
 | `/status`            | Live status of **both** runtimes + pipeline test |
+| `/privacy`           | Privacy Policy — storage, data flows, advertising cookies, your rights |
+| `/terms`             | Terms of Use — acceptable use, what compiler results mean, liability |
 | `/health`            | **API** (JSON) — not the status page   |
 
 > On a static host the same routes are reached with a `#` prefix (`/#/problems/1001`). See
@@ -385,9 +494,17 @@ is active.
 npm start              # terminal 1 — backend must be running
 npm test               # terminal 2 — catalogue + API + real compilation (39 checks)
 npm run test:cloud     # cloud runtime contract test (13 checks, skips if offline)
-npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome (44 checks)
+npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome (63 checks)
+npm run test:adsense   # brand, legal pages and "ads can never leak" (59 checks, no browser)
 npm run test:deploy    # verifies a live deployment (12 checks, skips if unreachable)
-npm run test:all       # the local suites
+npm run test:all       # the local suites: api + cloud + e2e + adsense
+```
+
+Also useful:
+
+```bash
+npm run brand:check    # fails if index.html/ads.txt/package.json/README.md drifted from js/brand.js
+npm run check:adsense  # AdSense readiness report (what is missing, what is blocking)
 ```
 
 - `tests/api.test.js` — 2,040-problem integrity, unique ids, static hosting, and real
@@ -400,15 +517,25 @@ npm run test:all       # the local suites
 - `tests/e2e.browser.js` — drives real Chrome over the DevTools Protocol: renders every
   page, searches/filters the catalogue, edits code in Monaco, presses Run and Submit,
   asserts real output, **switches to the Cloud runtime and runs/submits real code there**
-  (skipped with a notice if the cloud service is unreachable), checks the 404 page, theme
-  toggle and that no page errors occur. Override the browser with `CHROME_PATH=/path/to/chrome`.
-  Current total: **44 checks**.
+  (skipped with a notice if the cloud service is unreachable), checks the brand comes from
+  `js/brand.js`, renders the Privacy Policy and Terms pages, proves that advertising is inert
+  when unconfigured (no ad unit, no Google script, no advert request, no cookie banner),
+  checks the 404 page, theme toggle and that no page errors occur. Override the browser with
+  `CHROME_PATH=/path/to/chrome`. Current total: **63 checks**.
 - `tests/deploy.browser.js` — verifies a **real deployment** (default: the GitHub Pages URL)
   in real Chrome: the stylesheet truly applied, the router chose hash mode, static nav links
   were rewritten, in-app navigation stays inside the deployment, a shareable deep link opens
   the right problem, and the Cloud runtime compiles and runs code there. Run it against any
   host: `node tests/deploy.browser.js https://example.com/my-app/`. It exits `0` with a SKIP
   notice if the host or the cloud compiler is unreachable.
+- `tests/adsense.test.js` — loads `js/core.js` in a sandbox and proves the guarantees that
+  matter for consent and for an AdSense review: advertising does nothing without a valid
+  publisher id, a malformed id is rejected, neither markup nor Google's script appear before
+  an explicit Accept, `"Essential only"` and withdrawing consent keep ads off, every unit is
+  labelled, the catalogue is still exactly 2,040 intact problems, `index.html` carries the
+  right title/description/canonical and no hard-coded ad script, `ads.txt`/`robots.txt`/
+  `sitemap.xml` are valid, the legal pages contain the required disclosures, and the generated
+  files match `js/brand.js`.
 
 ---
 
@@ -425,6 +552,16 @@ npm run test:all       # the local suites
   Local execution does not.
 - **The Cloud runtime is a third party.** Your program text leaves your browser when you run
   it that way. Local execution keeps everything on your machine.
+- **Advertising is off until configured.** With no publisher id in `js/ads.js` the site is
+  completely ad-free, loads no Google script and asks nobody about cookies. Once you enable
+  ads, the consent banner appears and ads load only after an explicit Accept.
+- **Search visibility is limited by design.** This is a client-rendered single-page app, so
+  every route is served from the same `index.html`. On a static host the addressable form is
+  `#/problems/1001`, and fragments are not separate pages to a search engine: effectively
+  **one indexable URL**. That is why `sitemap.xml` honestly lists a single URL. Adding a real
+  prerendered page per route is the way to change this — worth doing before expecting organic
+  traffic, and worth doing carefully, because mass-generated thin pages can be penalised as
+  “scaled content”.
 - Progress is per-browser (localStorage). Cross-device sync would require a real service and
   is intentionally out of scope.
 

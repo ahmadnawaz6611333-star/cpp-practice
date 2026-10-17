@@ -1,0 +1,13 @@
+# Normalise all text files to LF in the repository *and* in the working tree.
+# This keeps `npm run brand:check` stable (it compares generated text byte for
+# byte, so mixed CRLF/LF line endings would report false drift) and avoids
+# whole-file diffs on Windows checkouts.
+* text=auto eol=lf
+
+# Real binaries, if any are ever added
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://ahmadnawaz6611333-star.github.io/cpp-practice/sitemap.xml

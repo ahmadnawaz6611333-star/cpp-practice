@@ -21,7 +21,19 @@
     ['settings', /^\/settings\/?$/, () => views.settings],
     ['about', /^\/about\/?$/, () => views.about],
     ['status', /^\/status\/?$/, () => views.health],
+    ['privacy', /^\/privacy\/?$/, () => views.privacy],
+    ['terms', /^\/terms\/?$/, () => views.terms],
   ];
+
+  // Which pages may show an ad unit (key into CPP.ads.slots). Content pages
+  // only — problem statements, the catalogue, the reference — never the utility
+  // pages (settings, status, legal) and never inside the editor.
+  const AD_SLOT_BY_ROUTE = {
+    home: 'home',
+    problems: 'problems',
+    workspace: 'problem',
+    reference: 'reference',
+  };
 
   function currentPath() {
     if (CPP.routerMode === 'hash') {
@@ -102,6 +114,7 @@
     setActiveNav(route.name);
     document.title = titleFor(route);
     closeNav();
+    let renderOk = true;
     try {
       route.view(root, route);
     } catch (err) {
@@ -113,15 +126,108 @@
           <p class="muted">${CPP.util.escapeHtml(err && err.message ? err.message : String(err))}</p>
           <a class="btn btn-primary mt-2" href="${CPP.href('/')}" data-link>Go home</a>
         </div></div></section>`;
+      renderOk = false;
     }
+    CPP.currentRouteName = route.name;
+    // Advertising is opt-in and appears on content pages only: one clearly
+    // labelled unit below the page. Emitted here rather than inside each view so
+    // a page cannot double up, and nothing at all is emitted when advertising is
+    // unconfigured or consent has not been granted.
+    if (renderOk) {
+      const adKey = AD_SLOT_BY_ROUTE[route.name];
+      const adHtml = adKey ? CPP.ads.slotHtml(adKey) : '';
+      if (adHtml) {
+        root.insertAdjacentHTML('beforeend',
+          '<section class="section ad-section"><div class="container">' + adHtml + '</div></section>');
+      }
+    }
+    CPP.ads.activate(root);
+    syncConsentBanner();
+
     if (!route.query.anchor) window.scrollTo({ top: 0, behavior: 'auto' });
   }
   CPP.render = render;
 
+  /* ------------------------ advertising consent ------------------------ */
+  // Shown only when ads are configured *and* the visitor has not chosen yet, so
+  // a site without ads never nags anyone about cookies.
+  function syncConsentBanner() {
+    const host = document.getElementById('consentHost');
+    if (!host) return;
+    if (!CPP.consent.needed()) {
+      host.innerHTML = '';
+      host.hidden = true;
+      return;
+    }
+    host.hidden = false;
+    if (host.dataset.shown === '1') return;
+    host.dataset.shown = '1';
+    host.innerHTML = `
+      <div class="consent-card" role="dialog" aria-label="Advertising cookies">
+        <div class="consent-text">
+          <strong>Cookies for advertising</strong>
+          <p class="muted small mb-0">
+            Ads from Google AdSense keep this site free, and they may use cookies.
+            Your progress, bookmarks and code are stored only in this browser and
+            do not depend on this choice.
+            <a href="${CPP.href('/privacy')}" data-link>Privacy Policy</a>
+          </p>
+        </div>
+        <div class="consent-actions">
+          <button type="button" class="btn btn-ghost btn-small" data-consent="denied">Essential only</button>
+          <button type="button" class="btn btn-primary btn-small" data-consent="granted">Accept</button>
+        </div>
+      </div>`;
+  }
+
+  function wireConsent() {
+    const host = document.getElementById('consentHost');
+    if (!host) return;
+    host.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-consent]');
+      if (!btn) return;
+      CPP.consent.set(btn.getAttribute('data-consent'));
+      syncConsentBanner();
+      if (CPP.consent.allowsAds()) CPP.ads.activate(document);
+      // Re-render so consented slots appear. Skipped on the workspace, where a
+      // re-render could interrupt code the user is typing.
+      if (CPP.currentRouteName !== 'workspace') render();
+    });
+  }
+
+  /* ------------------------- shell branding --------------------------- */
+  // index.html carries the name statically so crawlers and no-JS visitors see
+  // it; this refreshes it from js/brand.js so a rename only ever edits one file.
+  function applyBrandToShell() {
+    const brand = CPP.brand;
+    document.querySelectorAll('[data-brand="wordmark"]').forEach((el) => { el.innerHTML = brand.wordmarkHtml(); });
+    document.querySelectorAll('[data-brand="copyright"]').forEach((el) => { el.textContent = brand.copyrightHolder; });
+    const logo = document.querySelector('a.nav-logo');
+    if (logo) logo.setAttribute('aria-label', brand.name + ' home');
+  }
+
+  /* ---------------------- clean-path → hash hand-off -------------------- */
+  // Some static hosts do rewrite deep links to index.html (the bundled
+  // `_redirects` does). The router still prefers hash URLs there, so translate
+  // a delivered clean path such as /problems/1001 into #/problems/1001 instead
+  // of quietly landing on the home page. On GitHub Pages such a URL 404s before
+  // it ever reaches us, so this is a no-op there.
+  function adoptCleanPathAsHash() {
+    if (CPP.routerMode !== 'hash') return;
+    if (location.hash && location.hash.indexOf('#/') === 0) return;
+    let p = location.pathname || '/';
+    if (CPP.mount && p.indexOf(CPP.mount) === 0) p = p.slice(CPP.mount.length);
+    if (!p || p.charAt(0) !== '/') p = '/' + p;
+    if (!/^\/(problems|progress|bookmarks|roadmap|reference|settings|about|status|privacy|terms)(\/|$)/.test(p)) return;
+    try {
+      history.replaceState({}, '', (CPP.mount || '') + '/' + CPP.href(p + (location.search || '')));
+    } catch (e) { /* history unavailable — the hash still resolves */ }
+  }
+
   function titleFor(route) {
-    const base = 'CPPractice Lab';
+    const base = CPP.brand.name;
     switch (route.name) {
-      case 'home': return base + ' — Master C++ with 2,040 Problems';
+      case 'home': return CPP.brand.title || base;
       case 'problems': return 'All Problems · ' + base;
       case 'workspace': {
         const p = window.CATALOGUE.byId.get(Number(route.params.id));
@@ -134,6 +240,8 @@
       case 'settings': return 'Settings · ' + base;
       case 'about': return 'About · ' + base;
       case 'status': return 'Compiler Status · ' + base;
+      case 'privacy': return 'Privacy Policy · ' + base;
+      case 'terms': return 'Terms of Use · ' + base;
       default: return 'Not found · ' + base;
     }
   }
@@ -213,7 +321,10 @@
     CPP.theme.apply(s.theme);
 
     wireGlobal();
+    wireConsent();
+    applyBrandToShell();
     rewriteStaticLinks();
+    adoptCleanPathAsHash();
     CPP.runtime.probe();
 
     // Preload Monaco in the background so the first workspace is instant.

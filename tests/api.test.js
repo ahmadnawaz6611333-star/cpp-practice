@@ -1,5 +1,5 @@
 /**
- * CPPractice Lab — automated test suite
+ * CppPractice — automated test suite
  * ---------------------------------------------------------------------------
  * Part A: catalogue integrity (no server required)
  * Part B: HTTP API + real C++ compilation/execution (server required)
@@ -14,6 +14,7 @@
 
 const http = require('http');
 const path = require('path');
+const BRAND = require(path.join(__dirname, '..', 'js', 'brand.js'));
 
 const BASE = process.env.TEST_BASE_URL || 'http://localhost:3001';
 
@@ -98,7 +99,7 @@ async function partB() {
 
   // --- static frontend ---
   const index = await request('GET', '/');
-  ok('GET / serves index.html', index.status === 200 && /CPPractice Lab/.test(index.raw));
+  ok('GET / serves index.html', index.status === 200 && index.raw.indexOf('<title>' + BRAND.title + '</title>') !== -1, 'title of the served shell');
   const deep = await request('GET', '/problems/1001');
   ok('GET /problems/1001 (deep link) serves the SPA shell', deep.status === 200 && /id="app"/.test(deep.raw));
   const css = await request('GET', '/styles.css');
@@ -169,7 +170,7 @@ async function partB() {
 
 (async function main() {
   console.log('================================================');
-  console.log('CPPractice Lab · test suite');
+  console.log('CppPractice · test suite');
   console.log('================================================');
   await partA();
   await partB();

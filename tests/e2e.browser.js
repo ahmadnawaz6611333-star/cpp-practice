@@ -345,6 +345,53 @@ async function main() {
     const nf = await cdp.eval('document.querySelector(".center-box h2").textContent');
     ok('unknown route shows the 404 page', /not found/i.test(nf || ''), nf);
 
+    /* ---------------- 7b. Brand + legal pages + advertising ---------------- */
+    await cdp.send('Page.navigate', { url: BASE + '/' });
+    await cdp.waitFor('!!document.querySelector(".hero h1")', 15000);
+
+    const brandName = await cdp.eval('CPP.brand.name');
+    ok('the app reads its name from js/brand.js', /^[A-Za-z][A-Za-z0-9]*$/.test(brandName || ''), brandName);
+    const wordmark = await cdp.eval('document.querySelector("a.nav-logo .logo-text").textContent');
+    ok('the navbar wordmark matches the config', wordmark === brandName, wordmark);
+    const footerBrand = await cdp.eval('document.querySelector(\'[data-brand="copyright"]\').textContent');
+    ok('the footer copyright matches the config', footerBrand === brandName, footerBrand);
+    const docTitle = await cdp.eval('document.title');
+    ok('the page title uses the brand', (docTitle || '').indexOf(brandName) === 0, docTitle);
+
+    // Advertising must be completely inert on an unconfigured deployment.
+    const adState = await cdp.eval(`(function(){
+      return JSON.stringify({
+        enabled: CPP.ads.enabled(),
+        units: document.querySelectorAll('ins.adsbygoogle').length,
+        script: !!document.querySelector('script[src*="googlesyndication"]'),
+        requested: performance.getEntriesByType('resource').some(function(e){ return /googlesyndication|doubleclick/.test(e.name); }),
+        consentHost: !!document.getElementById('consentHost'),
+        bannerVisible: !!(document.getElementById('consentHost') && !document.getElementById('consentHost').hidden && document.querySelector('.consent-card'))
+      });
+    })()`);
+    const ad = JSON.parse(adState || '{}');
+    ok('advertising is disabled with no publisher id configured', ad.enabled === false, adState);
+    ok('no ad unit is in the DOM', ad.units === 0, 'units=' + ad.units);
+    ok("Google's ad script is never loaded", ad.script === false);
+    ok('no advert request is ever made', ad.requested === false);
+    ok('no cookie banner is shown when nothing needs consent', ad.bannerVisible === false);
+    ok('the consent host exists for when ads are enabled', ad.consentHost === true);
+
+    for (const [route, label, needles] of [
+      ['/privacy', 'Privacy Policy', [/Privacy Policy/i, /advertising cookies/i, /cpp-solved-problems/, /adssettings\.google\.com/]],
+      ['/terms', 'Terms of Use', [/Terms of Use/i, /sample check, not full judging/, /Acceptable use/]],
+    ]) {
+      await cdp.send('Page.navigate', { url: BASE + route });
+      const reached = await cdp.waitFor('!!document.querySelector(".section-title")', 15000);
+      await sleep(120);
+      const text = await cdp.eval('document.getElementById("app").innerText');
+      const crashed = /Something went wrong/.test(text || '');
+      ok(`${label} renders at ${route}`, reached && !crashed);
+      for (const needle of needles) {
+        ok(`${label} contains ${String(needle)}`, needle.test(text || ''));
+      }
+    }
+
     /* ---------------- 8. Theme toggle ---------------- */
     await cdp.send('Page.navigate', { url: BASE + '/' });
     await cdp.waitFor('!!document.querySelector("#themeToggle")', 15000);
