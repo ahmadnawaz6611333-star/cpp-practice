@@ -494,9 +494,9 @@ is active.
 npm start              # terminal 1 — backend must be running
 npm test               # terminal 2 — catalogue + API + real compilation (39 checks)
 npm run test:cloud     # cloud runtime contract test (13 checks, skips if offline)
-npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome (63 checks)
+npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome (71 checks)
 npm run test:adsense   # brand, legal pages and "ads can never leak" (59 checks, no browser)
-npm run test:deploy    # verifies a live deployment (12 checks, skips if unreachable)
+npm run test:deploy    # verifies a live deployment (19 checks, skips if unreachable)
 npm run test:all       # the local suites: api + cloud + e2e + adsense
 ```
 
@@ -518,10 +518,10 @@ npm run check:adsense  # AdSense readiness report (what is missing, what is bloc
   page, searches/filters the catalogue, edits code in Monaco, presses Run and Submit,
   asserts real output, **switches to the Cloud runtime and runs/submits real code there**
   (skipped with a notice if the cloud service is unreachable), checks the brand comes from
-  `js/brand.js`, renders the Privacy Policy and Terms pages, proves that advertising is inert
+  `js/brand.js`, renders the Privacy Policy and Terms pages, proves that advertising is inert and that the consent banner + Accept/Essential-only flow behave correctly once ads are configured
   when unconfigured (no ad unit, no Google script, no advert request, no cookie banner),
   checks the 404 page, theme toggle and that no page errors occur. Override the browser with
-  `CHROME_PATH=/path/to/chrome`. Current total: **63 checks**.
+  `CHROME_PATH=/path/to/chrome`. Current total: **71 checks**.
 - `tests/deploy.browser.js` — verifies a **real deployment** (default: the GitHub Pages URL)
   in real Chrome: the stylesheet truly applied, the router chose hash mode, static nav links
   were rewritten, in-app navigation stays inside the deployment, a shareable deep link opens

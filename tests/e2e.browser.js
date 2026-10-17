@@ -392,6 +392,52 @@ async function main() {
       }
     }
 
+    /* ---------------- 7c. The consent banner works when ads ARE configured ---------------- */
+    // Configure advertising in-page only (never in the repo), stub out the
+    // network loader so the test cannot phone home, and check the real banner.
+    const banner = await cdp.eval(`(function(){
+      CPP.ads.publisherId = 'ca-pub-1234567890123456';
+      CPP.ads.slots = { home: '1112223333' };
+      var realActivate = CPP.ads.activate;
+      var loaded = 0;
+      CPP.ads.activate = function(){ loaded++; return true; };
+      CPP.consent.clear();
+      CPP.nav.go('/');
+      CPP.render();
+      var host = document.getElementById('consentHost');
+      var before = {
+        visible: !host.hidden && !!host.querySelector('.consent-card'),
+        buttons: Array.from(host.querySelectorAll('[data-consent]')).map(function(b){ return b.getAttribute('data-consent'); }),
+        adUnits: document.querySelectorAll('ins.adsbygoogle').length
+      };
+      // Accept, which must store the choice, hide the banner and fill the unit.
+      host.querySelector('[data-consent="granted"]').click();
+      var after = {
+        stored: CPP.consent.get(),
+        visible: !host.hidden,
+        adUnits: document.querySelectorAll('ins.adsbygoogle').length,
+        labelled: /Advertisement/.test((document.querySelector('.ad-slot') || {}).textContent || ''),
+        loaded: loaded
+      };
+      // Deny, then restore the real loader and a clean slate.
+      CPP.consent.clear(); CPP.render();
+      var denyBtn = document.querySelector('#consentHost [data-consent="denied"]');
+      if (denyBtn) denyBtn.click();
+      var denied = { stored: CPP.consent.get(), adUnits: document.querySelectorAll('ins.adsbygoogle').length };
+      CPP.ads.publisherId = ''; CPP.ads.slots = {}; CPP.ads.activate = realActivate;
+      CPP.consent.clear(); CPP.nav.go('/'); CPP.render();
+      return JSON.stringify({ before: before, after: after, denied: denied, restored: { enabled: CPP.ads.enabled(), units: document.querySelectorAll('ins.adsbygoogle').length } });
+    })()`);
+    const bc = JSON.parse(banner || '{}');
+    ok('once configured, the consent banner is shown', bc.before && bc.before.visible === true, banner);
+    ok('the banner offers Accept and Essential only', !!bc.before && bc.before.buttons.indexOf('granted') !== -1 && bc.before.buttons.indexOf('denied') !== -1, bc.before && bc.before.buttons.join(','));
+    ok('no ad unit exists before consent', !!bc.before && bc.before.adUnits === 0);
+    ok('accepting stores the choice and hides the banner', bc.after && bc.after.stored === 'granted' && bc.after.visible === false, bc.after && JSON.stringify(bc.after));
+    ok('accepting produces a clearly labelled ad unit', bc.after && bc.after.adUnits >= 1 && bc.after.labelled === true, bc.after && JSON.stringify(bc.after));
+    ok('the loader is called exactly once per activation', !!bc.after && bc.after.loaded >= 1);
+    ok('"essential only" removes every ad unit again', bc.denied && bc.denied.stored === 'denied' && bc.denied.adUnits === 0, bc.denied && JSON.stringify(bc.denied));
+    ok('the test restored an unconfigured, ad-free site', bc.restored && bc.restored.enabled === false && bc.restored.units === 0);
+
     /* ---------------- 8. Theme toggle ---------------- */
     await cdp.send('Page.navigate', { url: BASE + '/' });
     await cdp.waitFor('!!document.querySelector("#themeToggle")', 15000);

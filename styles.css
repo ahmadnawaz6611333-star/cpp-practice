@@ -467,6 +467,9 @@ img { max-width: 100%; }
 .table th { text-align: left; padding: .6rem .7rem; color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); }
 .table td { padding: .6rem .7rem; border-bottom: 1px solid var(--border); color: var(--text-soft); }
 .table tr:hover td { background: var(--panel-2); }
+/* Horizontally scrollable wrapper for wide tables (privacy policy keys) */
+.table-wrap { overflow-x: auto; }
+.table-wrap .table { min-width: 460px; }
 
 /* ---------- Toast ---------- */
 .toast-stack { position: fixed; right: 1.1rem; bottom: 1.1rem; z-index: 200; display: flex; flex-direction: column; gap: .6rem; max-width: min(360px, 90vw); }

@@ -157,6 +157,7 @@
     if (!CPP.consent.needed()) {
       host.innerHTML = '';
       host.hidden = true;
+      delete host.dataset.shown; // so the card is rebuilt if it is ever needed again
       return;
     }
     host.hidden = false;

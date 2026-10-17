@@ -1,5 +1,5 @@
 /**
- * CPPractice Lab — static-deployment browser test
+ * CppPractice — static-deployment browser test
  * ---------------------------------------------------------------------------
  * The bundled Node server serves the app from a domain root with clean history
  * URLs. A static host (GitHub Pages, Netlify, Cloudflare Pages, ...) usually
@@ -111,7 +111,7 @@ class CDP {
 
 async function main() {
   console.log('================================================');
-  console.log('CPPractice Lab · static deployment test');
+  console.log('CppPractice · static deployment test');
   console.log('target:', URL_UNDER_TEST);
   console.log('================================================');
   if (!CHROME) {
@@ -192,6 +192,33 @@ async function main() {
     ok('shareable deep link opens the right problem', deep && /Longest Increasing Subsequence/.test(deepTitle || ''), deepTitle);
     const sw = await cdp.eval('!!document.querySelector("#wsRun")');
     ok('the workspace (not an error page) is shown for the deep link', sw === true);
+
+    /* ---------------- 4b. Brand + legal pages + advertising ---------------- */
+    await cdp.eval(`(function () { window.CPP.nav.go('/'); return true; })()`);
+    await cdp.waitFor('!!document.querySelector("#app .hero h1")', 25000);
+    const liveBrand = await cdp.eval('(function(){ return JSON.stringify({ name: CPP.brand.name, title: document.title, logo: document.querySelector("a.nav-logo .logo-text").textContent, footer: document.querySelector(\'[data-brand="copyright"]\').textContent }); })()');
+    const lb = JSON.parse(liveBrand || '{}');
+    ok('the deployed site shows its name', !!lb.name && lb.logo === lb.name && lb.footer === lb.name, liveBrand);
+    ok('the deployed title starts with the brand', (lb.title || '').indexOf(lb.name) === 0, lb.title);
+
+    const liveAds = await cdp.eval(`(function(){
+      return JSON.stringify({
+        enabled: CPP.ads.enabled(),
+        units: document.querySelectorAll('ins.adsbygoogle').length,
+        script: !!document.querySelector('script[src*="googlesyndication"]'),
+        requested: performance.getEntriesByType('resource').some(function(e){ return /googlesyndication|doubleclick/.test(e.name); })
+      });
+    })()`);
+    const la = JSON.parse(liveAds || '{}');
+    ok('no advertising is active on the deployed site yet', la.enabled === false, liveAds);
+    ok('the deployed site loads no ad script and makes no advert request', la.script === false && la.requested === false);
+
+    await cdp.eval(`(function () { window.CPP.nav.go('/privacy'); return true; })()`);
+    const legalOk = await cdp.waitFor('/Privacy Policy/i.test(document.getElementById("app").innerText)', 20000);
+    const legalText = await cdp.eval('document.getElementById("app").innerText');
+    ok('the Privacy Policy is reachable on the deployed site', legalOk === true);
+    ok('it discloses the advertising cookies', /advertising cookies/i.test(legalText || ''));
+    ok('it stays on the deployment root (hash routing)', (await cdp.eval('location.origin + "/"')) === new URL(URL_UNDER_TEST).origin + '/');
 
     /* ---------------- 5. The Cloud runtime really works ---------------- */
     const cloud = await cdp.eval(
