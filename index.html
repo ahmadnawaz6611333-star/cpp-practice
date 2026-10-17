@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    Asset-path note: this document deliberately declares NO <base> tag and uses
+    relative asset URLs. That makes the same file work whether it is served from
+    a domain root, a sub-path (e.g. a GitHub Pages project site at /cpp-practice/)
+    or opened from file://. The bundled Node backend injects a <base href="/">
+    plus window.CPP_APP_BASE when it serves this file, which is what enables
+    clean deep links like /problems/1001 there.
+  -->
   <meta name="description" content="CPPractice Lab — a premium C++ practice platform with 2,040 curated problems, an in-browser IDE and a real C++ (g++) compiler that runs locally or in the cloud.">
-  <base href="/">
-  <script>
-    // When opened directly from the filesystem (file://) there is no server
-    // root, so fall back to relative asset paths.
-    if (location.protocol === 'file:') {
-      document.querySelector('base').remove();
-    }
-  </script>
   <title>CPPractice Lab — Master C++ with 2,040 Problems</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

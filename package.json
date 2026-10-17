@@ -9,6 +9,7 @@
     "test": "node tests/api.test.js",
     "test:e2e": "node tests/e2e.browser.js",
     "test:cloud": "node tests/cloud.test.js",
+    "test:deploy": "node tests/deploy.browser.js",
     "test:all": "node tests/api.test.js && node tests/cloud.test.js && node tests/e2e.browser.js",
     "generate:data": "node scripts/generate-problems-json.js"
   },

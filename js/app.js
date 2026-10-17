@@ -24,10 +24,19 @@
   ];
 
   function currentPath() {
-    if (location.hash && location.hash.indexOf('#/') === 0) {
-      return location.hash.slice(1);
+    if (CPP.routerMode === 'hash') {
+      // '#/problems/1001' — or the site root when there is no hash yet.
+      const h = location.hash;
+      if (h && h.indexOf('#/') === 0) return h.slice(1);
+      return '/';
     }
-    return location.pathname || '/';
+    let p = location.pathname || '/';
+    // Strip the mount prefix so '/cpp-practice/problems' matches '/problems'.
+    if (CPP.mount && p.indexOf(CPP.mount) === 0) {
+      p = p.slice(CPP.mount.length);
+      if (!p || p.charAt(0) !== '/') p = '/' + p;
+    }
+    return p || '/';
   }
 
   function parseRoute(rawPath) {
@@ -35,8 +44,9 @@
     let search = '';
     const qi = path.indexOf('?');
     if (qi !== -1) { search = path.slice(qi + 1); path = path.slice(0, qi); }
-    // When there is no query in the hash, fall back to the real query string.
-    if (!search && location.protocol !== 'file:') search = location.search.replace(/^\?/, '');
+    // When there is no query in the hash, fall back to the real query string
+    // (only meaningful when the router reads location.pathname).
+    if (!search && CPP.routerMode === 'path') search = location.search.replace(/^\?/, '');
 
     const query = {};
     new URLSearchParams(search).forEach((v, k) => { query[k] = v; });
@@ -54,15 +64,26 @@
 
   nav.go = function (to, opts) {
     opts = opts || {};
-    if (location.protocol === 'file:') {
+    if (CPP.routerMode === 'hash') {
       if (('#' + to) === location.hash) { render(); return; }
       location.hash = '#' + to;
       return;
     }
-    if (opts.replace) history.replaceState({}, '', to);
-    else history.pushState({}, '', to);
+    const url = (CPP.mount || '') + to;
+    if (opts.replace) history.replaceState({}, '', url);
+    else history.pushState({}, '', url);
     render();
   };
+
+  // Static links in index.html are written as app-root paths ("/problems").
+  // On a sub-path host they must become hash links, otherwise they would leave
+  // the deployment entirely.
+  function rewriteStaticLinks() {
+    if (CPP.routerMode !== 'hash') return;
+    document.querySelectorAll('a[href^="/"]').forEach((a) => {
+      a.setAttribute('href', '#' + a.getAttribute('href'));
+    });
+  }
 
   function setActiveNav(name) {
     const map = { home: 'home', problems: 'problems', workspace: 'problems', progress: 'progress', bookmarks: 'bookmarks', roadmap: 'roadmap', reference: 'reference' };
@@ -158,7 +179,7 @@
     // Nav search
     const nsb = document.getElementById('navSearchBtn');
     if (nsb) nsb.addEventListener('click', () => {
-      if (CPP.nav && location.pathname.replace(/\/$/, '') === '/problems') {
+      if (/^\/problems(\/|\?|$)/.test(currentPath())) {
         const inp = document.getElementById('pSearch');
         if (inp) { inp.focus(); return; }
       }
@@ -192,6 +213,7 @@
     CPP.theme.apply(s.theme);
 
     wireGlobal();
+    rewriteStaticLinks();
     CPP.runtime.probe();
 
     // Preload Monaco in the background so the first workspace is instant.

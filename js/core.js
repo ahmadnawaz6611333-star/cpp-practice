@@ -8,6 +8,50 @@
 
   const CPP = (window.CPP = window.CPP || {});
 
+  /* ------------------------ Where is the app hosted? -------------------- */
+  // CPP.mount is the path the app is served under: "" at a domain root,
+  // "/cpp-practice" on a GitHub Pages project site, etc. It is derived from the
+  // URL this script itself was loaded from, so no configuration is needed.
+  CPP.mount = (function () {
+    try {
+      const src = document.currentScript && document.currentScript.src;
+      if (src) return new URL(src).pathname.replace(/\/js\/[^/]*$/, '');
+    } catch (e) {}
+    return '';
+  })();
+
+  // The bundled Node backend injects window.CPP_APP_BASE ('/' plus a matching
+  // <base> tag) because it serves the app from a domain root with an SPA
+  // fallback, so clean URLs like /problems/1001 can be used directly.
+  //
+  // Static hosts cannot rewrite deep links — and rewriting relative assets would
+  // break them — so everywhere else the router uses '#/problems/1001', which is
+  // still a unique, shareable link. Force either mode with ?router=path|hash.
+  CPP.appBase = (function () {
+    const b = window.CPP_APP_BASE || null;
+    return b ? String(b).replace(/\/+$/, '') : null;
+  })();
+
+  CPP.routerMode = (function () {
+    try {
+      const forced = new URLSearchParams(location.search).get('router');
+      if (forced === 'hash' || forced === 'path') {
+        localStorage.setItem('cpp-router', forced);
+        return forced;
+      }
+      const saved = localStorage.getItem('cpp-router');
+      if (saved === 'hash') return 'hash';
+      if (saved === 'path' && CPP.appBase) return 'path';
+    } catch (e) {}
+    if (location.protocol === 'file:') return 'hash';
+    return CPP.appBase !== null ? 'path' : 'hash';
+  })();
+
+  CPP.href = function (path) {
+    if (CPP.routerMode === 'hash') return '#' + path;
+    return (CPP.appBase || '') + path;
+  };
+
   /* ----------------------------- Utilities ----------------------------- */
   const U = (CPP.util = {});
 

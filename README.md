@@ -47,6 +47,7 @@ cpp-practice-website/
 ├── index.html                  # App shell (single entry point for all routes)
 ├── styles.css                  # Design system (tokens, components, themes, responsive)
 ├── _redirects                  # SPA fallback for static hosts (Netlify/Cloudflare Pages)
+├── .nojekyll                   # Keeps GitHub Pages from running Jekyll
 ├── js/
 │   ├── data.js                 # The 2,040 problems (original catalogue) + indexes
 │   ├── core.js                 # Storage, theming, toasts, utils, runtime clients (Local + Cloud)
@@ -57,7 +58,8 @@ cpp-practice-website/
 ├── tests/
 │   ├── api.test.js             # Catalogue integrity + HTTP API + real compilation tests
 │   ├── cloud.test.js           # Judge0 cloud runtime contract test (skips when offline)
-│   └── e2e.browser.js          # Headless-Chrome end-to-end test (render, run, submit, cloud)
+│   ├── e2e.browser.js          # Headless-Chrome end-to-end test (render, run, submit, cloud)
+│   └── deploy.browser.js       # Verifies a live static deployment works end to end
 ├── scripts/
 │   └── generate-problems-json.js   # Exports data/problems.json
 ├── data/problems.json          # Generated export of the catalogue
@@ -183,18 +185,33 @@ phone, a college lab PC, or a static deployment. Both produce real compiler outp
 ## Deploying without your laptop
 
 Because the Cloud runtime needs no server of your own, the site can be published as a static
-site:
+site — no configuration, no build step:
 
-1. Push the folder to a repository (the frontend is just `index.html`, `styles.css`, `js/`).
-2. Host it anywhere that can serve static files:
-   - **Netlify / Cloudflare Pages / Vercel** — drag-and-drop the folder (or connect the repo).
-     The included `_redirects` file maps every path back to `index.html`, so clean URLs like
-     `/problems/1001` keep working.
-   - **GitHub Pages** — works too. If the site is *not* at the domain root (i.e. served from
-     `/<repo>/`), either set `<base href="/<repo>/">` in `index.html`, or just use the hash
-     links (`/#/problems/1001`), which need no configuration.
-3. Set **Settings → Runtime** to **Cloud** on each device (or leave it on `Auto`; with no
-   local backend reachable it will pick Cloud and tell you it did).
+1. Push the folder to a repository. The frontend is just `index.html`, `styles.css` and `js/`.
+2. Host it anywhere that serves static files:
+   - **GitHub Pages** — Settings → Pages → Deploy from branch → `main` / `root`. Your site
+     appears at `https://<user>.github.io/<repo>/`. This repository is live at
+     <https://ahmadnawaz6611333-star.github.io/cpp-practice/>.
+   - **Netlify / Cloudflare Pages / Vercel** — drag-and-drop the folder, or connect the repo.
+3. Set **Settings → Runtime** to **Cloud** on each device (or leave it on `Auto`: with no local
+   backend reachable it picks Cloud and tells you it did).
+
+### About URLs on a static host
+
+`index.html` deliberately contains **no `<base>` tag** and uses relative asset paths, so the
+same file works from a domain root, from a sub-path (`/<repo>/`) and from `file://`.
+
+The router then adapts automatically:
+
+| Host | URLs | Why |
+| --- | --- | --- |
+| Bundled Node server | `/problems/1001` (clean) | It rewrites deep links to `index.html` and injects `<base href="/">` |
+| Static host (GitHub Pages, Netlify, `file://`) | `/#/problems/1001` (hash) | A static host cannot rewrite deep links, and rewriting relative assets would break the CSS/JS |
+
+Both forms are unique, shareable links; only the prefix differs. You can force a mode with
+`?router=path` or `?router=hash` (remembered per browser), which is useful if you put a
+rewrite rule in front of a static host — the included `_redirects` does that for
+Netlify/Cloudflare Pages.
 
 The Node backend can also be deployed to a container host (Render, Fly.io, Railway, …) if you
 want the Local runtime available remotely — that requires a Docker image with `g++`
@@ -235,6 +252,9 @@ CMD ["node", "server.js"]
 | `/about`             | About, architecture, troubleshooting   |
 | `/status`            | Live status of **both** runtimes + pipeline test |
 | `/health`            | **API** (JSON) — not the status page   |
+
+> On a static host the same routes are reached with a `#` prefix (`/#/problems/1001`). See
+> [About URLs on a static host](#about-urls-on-a-static-host).
 
 ---
 
@@ -366,7 +386,8 @@ npm start              # terminal 1 — backend must be running
 npm test               # terminal 2 — catalogue + API + real compilation (39 checks)
 npm run test:cloud     # cloud runtime contract test (13 checks, skips if offline)
 npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome
-npm run test:all       # all three
+npm run test:deploy    # verifies a live deployment (12 checks, skips if unreachable)
+npm run test:all       # the local suites
 ```
 
 - `tests/api.test.js` — 2,040-problem integrity, unique ids, static hosting, and real
@@ -382,6 +403,12 @@ npm run test:all       # all three
   (skipped with a notice if the cloud service is unreachable), checks the 404 page, theme
   toggle and that no page errors occur. Override the browser with `CHROME_PATH=/path/to/chrome`.
   Current total: **43 checks**.
+- `tests/deploy.browser.js` — verifies a **real deployment** (default: the GitHub Pages URL)
+  in real Chrome: the stylesheet truly applied, the router chose hash mode, static nav links
+  were rewritten, in-app navigation stays inside the deployment, a shareable deep link opens
+  the right problem, and the Cloud runtime compiles and runs code there. Run it against any
+  host: `node tests/deploy.browser.js https://example.com/my-app/`. It exits `0` with a SKIP
+  notice if the host or the cloud compiler is unreachable.
 
 ---
 
@@ -406,6 +433,8 @@ npm run test:all       # all three
 ## GitHub
 
 Source: <https://github.com/ahmadnawaz6611333-star/cpp-practice>
+
+Live site (GitHub Pages, Cloud runtime): <https://ahmadnawaz6611333-star.github.io/cpp-practice/>
 
 The repository stores source code only. Choose how code runs:
 

@@ -462,7 +462,41 @@ app.post(['/api/run', '/api/compile', '/compile', '/api/execute'], handleRun);
 /* --------------------------------------------------------------------------
  * Static frontend + SPA fallback
  * ------------------------------------------------------------------------ */
-const sendIndex = (req, res) => res.sendFile(path.join(ROOT, 'index.html'));
+
+// The shipped index.html deliberately has no <base> tag so the identical file
+// works on a domain root, on a sub-path (GitHub Pages project sites) and from
+// file://. When *this* server hosts it, we know the app lives at the root and
+// that deep links are rewritten to index.html, so we inject the base tag (making
+// relative assets resolve from "/" even at /problems/1001) plus a marker the
+// client router uses to enable clean history URLs.
+const INDEX_PATH = path.join(ROOT, 'index.html');
+let shellCache = { mtimeMs: -1, html: null };
+
+function readShell(cb) {
+  fs.stat(INDEX_PATH, (err, st) => {
+    const mtimeMs = err ? -1 : st.mtimeMs;
+    if (shellCache.html && shellCache.mtimeMs === mtimeMs) return cb(null, shellCache.html);
+    fs.readFile(INDEX_PATH, 'utf8', (e, raw) => {
+      if (e) return cb(e);
+      const inject = '<base href="/">\n    <script>window.CPP_APP_BASE = "/";</script>\n  ';
+      const html = raw.indexOf('<head>') !== -1
+        ? raw.replace('<head>', '<head>\n  ' + inject)
+        : inject + raw;
+      shellCache = { mtimeMs, html };
+      cb(null, html);
+    });
+  });
+}
+
+const sendIndex = (req, res, next) => {
+  readShell((err, html) => {
+    if (err) {
+      if (next) return next(err);
+      return res.status(500).type('text/plain').send('index.html could not be read');
+    }
+    res.type('html').set('Cache-Control', 'no-cache').send(html);
+  });
+};
 app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.use('/js', express.static(path.join(ROOT, 'js'), { dotfiles: 'ignore', maxAge: '1h' }));

@@ -1,0 +1,2 @@
+# Keep GitHub Pages from running Jekyll over the folder (faster builds, and it
+# avoids any chance of the underscore-prefixed files being skipped).

@@ -13,10 +13,8 @@
   const LABELS = CATALOGUE.categoryLabels;
 
   /* --------------------------- shared helpers -------------------------- */
-  CPP.href = function (path) {
-    if (location.protocol === 'file:') return '#' + path;
-    return path;
-  };
+  // CPP.href is defined in core.js (it needs the detected mount path / router
+  // mode), so views just reuse it.
 
   const views = (CPP.views = {});
 
@@ -1480,7 +1478,7 @@ if (n > 0 && (n & (n - 1)) == 0) { /* yes */ }`],
                 <li>“Runtime offline” → for <em>Local</em>, run <code>npm install</code> then <code>npm start</code>; for <em>Cloud</em>, check your internet connection.</li>
                 <li>“Compiler unavailable” → install MinGW-w64 (Windows) or <code>g++</code>/<code>clang++</code> and add it to PATH, or switch to the Cloud runtime.</li>
                 <li>No laptop available? Set <strong>Settings → Runtime</strong> to <strong>Cloud</strong> — nothing needs to be running locally.</li>
-                <li>Deep links like <code>/problems/1001</code> work when served over HTTP; from <code>file://</code> the app uses <code>#/problems/1001</code>.</li>
+                <li>Deep links like <code>/problems/1001</code> work when the bundled server hosts the site; on a static host (or <code>file://</code>) the router uses <code>#/problems/1001</code> instead — both are shareable.</li>
                 <li>Check both runtimes on the <a href="${href('/status')}" data-link>status page</a>.</li>
               </ul>
             </div>
