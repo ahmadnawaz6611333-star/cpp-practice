@@ -93,13 +93,31 @@ console.log('================================================');
 
 console.log('\nAdvertising is inert without configuration');
 {
-  const { CPP, created } = sandbox();
+  // A fork or a fresh checkout with no publisher id must stay completely clean,
+  // so this case is pinned explicitly rather than relying on the repo's config.
+  const { CPP, created } = sandbox({ ads: { publisherId: '', slots: {} } });
   ok('brand is read from window.CPP_BRAND', CPP.brand.name === brand.name, CPP.brand.name);
   ok('wordmark renders from config', CPP.brand.wordmarkHtml() === brand.wordmark.main + '<span class="dot">' + brand.wordmark.accent + '</span>', CPP.brand.wordmarkHtml());
   ok('ads are disabled with no publisher id', CPP.ads.enabled() === false);
   ok('no ad markup is produced', CPP.ads.slotHtml('home') === '' && CPP.ads.slotHtml('problems') === '');
   ok('activate() loads nothing', CPP.ads.activate() === false && created.length === 0, JSON.stringify(created.map((c) => c.tagName)));
   ok('no consent banner is demanded when there are no ads', CPP.consent.needed() === false);
+}
+
+console.log('\nThe publisher id in this checkout');
+{
+  const pub = String(ads.publisherId || '').trim();
+  if (!pub) {
+    ok('advertising is not configured in this checkout (nothing loads)', true);
+  } else {
+    ok('js/ads.js carries a well-formed publisher id', /^ca-pub-\d{16}$/.test(pub), pub);
+    const { CPP, created } = sandbox();
+    ok('a configured publisher activates advertising', CPP.ads.enabled() === true);
+    ok('but the visitor is asked before anything loads', CPP.consent.needed() === true && CPP.consent.allowsAds() === false);
+    ok('and activate() still loads nothing on its own', CPP.ads.activate() === false && created.length === 0);
+    ok('no placement renders without an ad unit id',
+      CPP.ads.slotHtml('home') === '' || /data-ad-slot="[^"]+"/.test(CPP.ads.slotHtml('home')));
+  }
 }
 
 console.log('\nConsent gates every ad, even once a publisher id exists');
@@ -166,7 +184,13 @@ if (html) {
   ok('footer links to the legal pages', /href="\/privacy"/.test(html) && /href="\/terms"/.test(html));
   ok('a consent host exists for the banner', /id="consentHost"/.test(html));
   ok('the wordmark is configurable at runtime', /data-brand="wordmark"/.test(html));
-  ok('the AdSense verification meta is absent while advertising is off', !/google-adsense-account/.test(html));
+  const pubForMeta = String(ads.publisherId || '').trim();
+  if (pubForMeta) {
+    ok('the AdSense verification meta names the publisher',
+      new RegExp('name="google-adsense-account" content="' + pubForMeta + '"').test(html), pubForMeta);
+  } else {
+    ok('the AdSense verification meta is absent while advertising is off', !/google-adsense-account/.test(html));
+  }
 }
 
 console.log('\nads.txt, robots.txt, sitemap.xml');
@@ -175,7 +199,13 @@ ok('ads.txt exists at the repository root', !!adsTxt);
 if (adsTxt) {
   const pub = String(ads.publisherId || '').trim();
   if (!pub) ok('while advertising is off it explains itself instead of authorising anyone', adsTxt.trim().startsWith('#'));
-  else ok('it authorises the configured publisher id', adsTxt.indexOf(pub) !== -1 && /^google\.com, ca-pub-\d{16}, DIRECT, f08c47fec0942fa0$/m.test(adsTxt));
+  else {
+    const sellerId = pub.replace(/^ca-/, '');
+    ok('it authorises the configured publisher id',
+      adsTxt.indexOf(sellerId) !== -1 && new RegExp('^google\\.com, pub-\\d{16}, DIRECT, f08c47fec0942fa0$', 'm').test(adsTxt));
+    // ads.txt uses the bare `pub-…` seller id; `ca-pub-…` belongs to the tag.
+    ok('it uses the ads.txt seller-id form, not the tag form', adsTxt.indexOf('ca-pub-') === -1);
+  }
 }
 const robots = read('robots.txt');
 ok('robots.txt exists', !!robots && /User-agent: \*/.test(robots));

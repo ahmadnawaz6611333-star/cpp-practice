@@ -372,9 +372,12 @@ async function main() {
     const docTitle = await cdp.eval('document.title');
     ok('the page title uses the brand', (docTitle || '').indexOf(brandName) === 0, docTitle);
 
-    // Advertising must be completely inert on an unconfigured deployment.
+    // Nothing may load before the visitor chooses, whether or not a publisher id
+    // is configured. The fresh profile has no stored consent, so the banner (if
+    // advertising is configured at all) must be waiting for an answer.
     const adState = await cdp.eval(`(function(){
       return JSON.stringify({
+        configured: CPP.ads.publisher() !== '',
         enabled: CPP.ads.enabled(),
         units: document.querySelectorAll('ins.adsbygoogle').length,
         script: !!document.querySelector('script[src*="googlesyndication"]'),
@@ -384,11 +387,14 @@ async function main() {
       });
     })()`);
     const ad = JSON.parse(adState || '{}');
-    ok('advertising is disabled with no publisher id configured', ad.enabled === false, adState);
-    ok('no ad unit is in the DOM', ad.units === 0, 'units=' + ad.units);
-    ok("Google's ad script is never loaded", ad.script === false);
-    ok('no advert request is ever made', ad.requested === false);
-    ok('no cookie banner is shown when nothing needs consent', ad.bannerVisible === false);
+    ok('no ad unit is in the DOM before consent', ad.units === 0, 'units=' + ad.units);
+    ok("Google's ad script is not loaded before consent", ad.script === false);
+    ok('no advert request is made before consent', ad.requested === false);
+    if (ad.configured) {
+      ok('a configured site asks for consent before anything loads', ad.bannerVisible === true, adState);
+    } else {
+      ok('an unconfigured site shows no consent banner', ad.bannerVisible === false);
+    }
     ok('the consent host exists for when ads are enabled', ad.consentHost === true);
 
     for (const [route, label, needles] of [
@@ -407,9 +413,11 @@ async function main() {
     }
 
     /* ---------------- 7c. The consent banner works when ads ARE configured ---------------- */
-    // Configure advertising in-page only (never in the repo), stub out the
-    // network loader so the test cannot phone home, and check the real banner.
+    // Override advertising in-page (never in the repo), stub out the network
+    // loader so the test cannot phone home, and check the real banner. The
+    // repository's own configuration is saved first and restored at the end.
     const banner = await cdp.eval(`(function(){
+      var realPublisher = CPP.ads.publisherId, realSlots = CPP.ads.slots, realConsent = CPP.consent.get();
       CPP.ads.publisherId = 'ca-pub-1234567890123456';
       CPP.ads.slots = { home: '1112223333' };
       var realActivate = CPP.ads.activate;
@@ -438,9 +446,11 @@ async function main() {
       var denyBtn = document.querySelector('#consentHost [data-consent="denied"]');
       if (denyBtn) denyBtn.click();
       var denied = { stored: CPP.consent.get(), adUnits: document.querySelectorAll('ins.adsbygoogle').length };
-      CPP.ads.publisherId = ''; CPP.ads.slots = {}; CPP.ads.activate = realActivate;
+      CPP.ads.publisherId = realPublisher; CPP.ads.slots = realSlots; CPP.ads.activate = realActivate;
       CPP.consent.clear(); CPP.nav.go('/'); CPP.render();
-      return JSON.stringify({ before: before, after: after, denied: denied, restored: { enabled: CPP.ads.enabled(), units: document.querySelectorAll('ins.adsbygoogle').length } });
+      var restored = { publisher: CPP.ads.publisher(), units: document.querySelectorAll('ins.adsbygoogle').length };
+      if (realConsent !== null) CPP.consent.set(realConsent);
+      return JSON.stringify({ before: before, after: after, denied: denied, realPublisher: realPublisher, restored: restored });
     })()`);
     const bc = JSON.parse(banner || '{}');
     ok('once configured, the consent banner is shown', bc.before && bc.before.visible === true, banner);
@@ -450,7 +460,7 @@ async function main() {
     ok('accepting produces a clearly labelled ad unit', bc.after && bc.after.adUnits >= 1 && bc.after.labelled === true, bc.after && JSON.stringify(bc.after));
     ok('the loader is called exactly once per activation', !!bc.after && bc.after.loaded >= 1);
     ok('"essential only" removes every ad unit again', bc.denied && bc.denied.stored === 'denied' && bc.denied.adUnits === 0, bc.denied && JSON.stringify(bc.denied));
-    ok('the test restored an unconfigured, ad-free site', bc.restored && bc.restored.enabled === false && bc.restored.units === 0);
+    ok('the test restored the repository configuration', !!bc.restored && bc.restored.publisher === bc.realPublisher && bc.restored.units === 0, bc.restored && JSON.stringify(bc.restored));
 
     /* ---------------- 8. Theme toggle ---------------- */
     await load('/', '!!document.querySelector("#themeToggle")');

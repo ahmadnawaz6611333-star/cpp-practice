@@ -96,10 +96,14 @@ function headBlock() {
 /* -------------------------------- ads.txt ------------------------------- */
 {
   const pub = String(ads.publisherId || '').trim();
+  // ads.txt carries the bare seller id (`pub-…`). The `ca-` prefix only belongs
+  // to the tag snippet / meta tag; Google's Ads.txt guide is explicit about the
+  // `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0` shape.
+  const sellerId = PUBLISHER_RE.test(pub) ? pub.replace(/^ca-/, '') : '';
   const existing = fs.existsSync(path.join(ROOT, 'ads.txt')) ? fs.readFileSync(path.join(ROOT, 'ads.txt'), 'utf8') : '';
   const NL = existing.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
-  const body = PUBLISHER_RE.test(pub)
-    ? 'google.com, ' + pub + ', DIRECT, f08c47fec0942fa0' + NL
+  const body = sellerId
+    ? 'google.com, ' + sellerId + ', DIRECT, f08c47fec0942fa0' + NL
     : '# Advertising is not configured yet.' + NL +
       '# 1. Set publisherId in js/ads.js' + NL +
       '# 2. Run `npm run brand:sync`' + NL +
@@ -174,7 +178,7 @@ stale.forEach((s) => {
 });
 if (!stale.length) console.log('nothing to do — already in sync');
 if (PUBLISHER_RE.test(String(ads.publisherId || '').trim())) {
-  console.log('\n  ads.txt  →  google.com, ' + String(ads.publisherId).trim() + ', DIRECT, f08c47fec0942fa0');
+  console.log('\n  ads.txt  →  google.com, ' + String(ads.publisherId).trim().replace(/^ca-/, '') + ', DIRECT, f08c47fec0942fa0');
 } else {
   console.log('\n  Advertising is OFF (no publisherId in js/ads.js) — ads.txt is a placeholder.');
 }

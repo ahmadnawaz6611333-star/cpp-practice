@@ -1,5 +1,1 @@
-# Advertising is not configured yet.
-# 1. Set publisherId in js/ads.js
-# 2. Run `npm run brand:sync`
-# NOTE: ads.txt is only honoured at the ROOT of your own domain
-#       (https://your-domain/ads.txt) — see README → AdSense checklist.
+google.com, pub-9340466123849292, DIRECT, f08c47fec0942fa0

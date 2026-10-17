@@ -140,8 +140,9 @@ else warn('requireConsent is false: visitors in the EU/UK could get ad cookies w
 console.log('\nads.txt');
 const adsTxt = read('ads.txt');
 if (!adsTxt) fail('ads.txt is missing from the repository root (npm run brand:sync creates it)');
-else if (adsOn && adsTxt.indexOf(pub) === -1) fail('ads.txt does not contain the configured publisher id — run npm run brand:sync');
-else if (adsOn) pass('ads.txt authorises ' + pub);
+else if (adsOn && adsTxt.indexOf(String(pub).replace(/^ca-/, '')) === -1) fail('ads.txt does not contain the configured seller id (pub-…) — run npm run brand:sync');
+else if (adsOn && adsTxt.indexOf('ca-pub-') !== -1) fail('ads.txt must use the seller form "pub-…", not "ca-pub-…" — see Google\'s Ads.txt guide');
+else if (adsOn) pass('ads.txt authorises ' + String(pub).replace(/^ca-/, '') + ' at the site root');
 else info('ads.txt is a placeholder (advertising is off)');
 
 if (/\.github\.io/.test(live)) {

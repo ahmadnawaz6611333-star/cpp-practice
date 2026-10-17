@@ -28,7 +28,7 @@
 
   return {
     // 'ca-pub-' + 16 digits, e.g. 'ca-pub-1234567890123456'. Empty = ads disabled.
-    publisherId: '',
+    publisherId: 'ca-pub-9340466123849292',
 
     // Ad unit slot ids (data-ad-slot). One per placement; empty = not shown.
     slots: {

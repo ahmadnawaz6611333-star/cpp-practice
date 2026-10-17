@@ -40,9 +40,10 @@ Code can run in one of two ways, and the active runtime is always displayed:
 - 🧾 **Privacy Policy + Terms of Use built in** — real pages that describe exactly what is
   stored (down to the `localStorage` keys) and where your code goes. Includes a GDPR-style
   advertising consent banner and a "reset my choice" control.
-- 💰 **AdSense-ready, but honest about it** — advertising is wired up but **completely inert**
-  until you put a publisher id in `js/ads.js`: no script, no cookie, no banner. See
-  [Monetising with Google AdSense](#monetising-with-google-adsense).
+- 💰 **AdSense-ready, but honest about it** — advertising is wired up and configured in
+  `js/ads.js`, yet it stays **invisible**: no ad markup, no Google script and no ad cookie until
+  a visitor accepts, and no unit at all until you fill in a slot id. A fork with no publisher id
+  stays completely ad-free. See [Monetising with Google AdSense](#monetising-with-google-adsense).
 
 ---
 
@@ -360,9 +361,9 @@ Steps, once you settle on an address of your own:
   actually does (a sample check, never a hidden-test verdict).
 - A **cookie consent banner** that only appears when advertising is actually configured, with
   "Accept" and "Essential only", plus a "change my choice" control in Settings.
-- Ad units that **cannot leak**: until `publisherId` is set *and* the visitor accepts, no ad
-  markup is rendered, no Google script is requested and no cookie is set. This is enforced in
-  `js/core.js` and covered by `npm run test:adsense`.
+- Ad units that **cannot leak**: until the visitor accepts *and* the placement has an ad unit id,
+  no ad markup is rendered, no Google script is requested and no cookie is set. This is enforced
+  in `js/core.js` and covered by `npm run test:adsense`.
 - `ads.txt`, `robots.txt`, `sitemap.xml`, canonical/Open Graph/Twitter tags, the AdSense
   account-verification meta, and a checker that tells you exactly what is still missing.
 
@@ -590,7 +591,7 @@ npm run check:adsense  # AdSense readiness report (what is missing, what is bloc
 - `tests/adsense.test.js` — loads `js/core.js` in a sandbox and proves the guarantees that
   matter for consent and for an AdSense review: advertising does nothing without a valid
   publisher id, a malformed id is rejected, neither markup nor Google's script appear before
-  an explicit Accept, `"Essential only"` and withdrawing consent keep ads off, every unit is
+  an explicit Accept, `ads.txt` uses the `pub-…` seller form rather than `ca-pub-…`, `"Essential only"` and withdrawing consent keep ads off, every unit is
   labelled, the catalogue is still exactly 2,040 intact problems, `index.html` carries the
   right title/description/canonical and no hard-coded ad script, `ads.txt`/`robots.txt`/
   `sitemap.xml` are valid, the legal pages contain the required disclosures, and the generated
@@ -611,9 +612,11 @@ npm run check:adsense  # AdSense readiness report (what is missing, what is bloc
   Local execution does not.
 - **The Cloud runtime is a third party.** Your program text leaves your browser when you run
   it that way. Local execution keeps everything on your machine.
-- **Advertising is off until configured.** With no publisher id in `js/ads.js` the site is
-  completely ad-free, loads no Google script and asks nobody about cookies. Once you enable
-  ads, the consent banner appears and ads load only after an explicit Accept.
+- **Advertising is configured but shows nothing yet.** `js/ads.js` carries your publisher id so
+  AdSense can verify the site, and `ads.txt` authorises the seller id, but every ad unit id is
+  still empty — so no unit renders anywhere (which is also what AdSense requires before
+  approval). Paste a unit id and the unit appears, gated behind an explicit Accept. A fork that
+  registers no publisher id stays completely ad-free: no script, no cookie, no banner.
 - **Search visibility is limited by design.** This is a client-rendered single-page app, so
   every route is served from the same `index.html`. On a static host the addressable form is
   `#/problems/1001`, and fragments are not separate pages to a search engine: effectively

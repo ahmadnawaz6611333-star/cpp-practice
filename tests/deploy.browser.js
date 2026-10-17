@@ -203,15 +203,19 @@ async function main() {
 
     const liveAds = await cdp.eval(`(function(){
       return JSON.stringify({
-        enabled: CPP.ads.enabled(),
+        configured: CPP.ads.publisher() !== '',
         units: document.querySelectorAll('ins.adsbygoogle').length,
         script: !!document.querySelector('script[src*="googlesyndication"]'),
-        requested: performance.getEntriesByType('resource').some(function(e){ return /googlesyndication|doubleclick/.test(e.name); })
+        requested: performance.getEntriesByType('resource').some(function(e){ return /googlesyndication|doubleclick/.test(e.name); }),
+        banner: !!(document.getElementById('consentHost') && !document.getElementById('consentHost').hidden && document.querySelector('.consent-card'))
       });
     })()`);
     const la = JSON.parse(liveAds || '{}');
-    ok('no advertising is active on the deployed site yet', la.enabled === false, liveAds);
-    ok('the deployed site loads no ad script and makes no advert request', la.script === false && la.requested === false);
+    ok('the deployed site loads no ad script and makes no advert request before consent', la.script === false && la.requested === false, liveAds);
+    ok('the deployed site renders no ad unit before consent', la.units === 0, liveAds);
+    if (la.configured) {
+      ok('the deployed site asks for consent before anything loads', la.banner === true, liveAds);
+    }
 
     await cdp.eval(`(function () { window.CPP.nav.go('/privacy'); return true; })()`);
     const legalOk = await cdp.waitFor('/Privacy Policy/i.test(document.getElementById("app").innerText)', 20000);
