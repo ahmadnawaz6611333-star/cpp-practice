@@ -68,10 +68,26 @@ function headBlock() {
     '  <meta property="og:title" content="' + title + '">',
     '  <meta property="og:description" content="' + desc + '">',
     '  <meta property="og:url" content="' + url + '">',
-    '  <meta name="twitter:card" content="summary">',
-    '  <meta name="twitter:title" content="' + title + '">',
-    '  <meta name="twitter:description" content="' + esc(brand.shortDescription || brand.description || '') + '">',
   ];
+  // The social card. Without it a shared link is a bare line of text, which is
+  // exactly what stops people clicking it — so it is generated from
+  // `npm run og:image` and referenced by its absolute address.
+  const image = String(brand.ogImage || '').trim();
+  const imageUrl = image ? new URL(image, canonical()).href : '';
+  if (imageUrl) {
+    lines.push('  <meta property="og:image" content="' + esc(imageUrl) + '">');
+    lines.push('  <meta property="og:image:width" content="1200">');
+    lines.push('  <meta property="og:image:height" content="630">');
+    if (brand.ogImageAlt) lines.push('  <meta property="og:image:alt" content="' + esc(brand.ogImageAlt) + '">');
+  }
+  // A large card is only honest when there actually is an image.
+  lines.push('  <meta name="twitter:card" content="' + (imageUrl ? 'summary_large_image' : 'summary') + '">');
+  lines.push('  <meta name="twitter:title" content="' + title + '">');
+  lines.push('  <meta name="twitter:description" content="' + esc(brand.shortDescription || brand.description || '') + '">');
+  if (imageUrl) {
+    lines.push('  <meta name="twitter:image" content="' + esc(imageUrl) + '">');
+    if (brand.ogImageAlt) lines.push('  <meta name="twitter:image:alt" content="' + esc(brand.ogImageAlt) + '">');
+  }
   // Only present once AdSense is configured — this is one of the ways Google
   // verifies that you own the site.
   if (PUBLISHER_RE.test(String(ads.publisherId || '').trim())) {

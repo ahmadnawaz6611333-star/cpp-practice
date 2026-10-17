@@ -33,6 +33,10 @@
     // index.html's <title> and <meta name="description"> are generated from these.
     title: 'CppPractice — Master C++ with 2,040 Problems',
     description: 'A premium C++ practice platform with 2,040 curated problems, an in-browser IDE and a real C++ (g++) compiler that runs locally or in the cloud.',
+    // The 1200×630 card shown when the site is shared — regenerate it with
+    // `npm run og:image` after changing the name, tagline or problem count.
+    ogImage: 'og-image.png',
+    ogImageAlt: 'CppPractice — 2,040 curated C++ problems with an in-browser editor and a real C++ compiler.',
     locale: 'en',
     themeColor: '#6366f1',
 

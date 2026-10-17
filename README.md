@@ -431,6 +431,26 @@ separately addressable page is the next real improvement — worth doing deliber
 thousands of near-identical auto-generated pages can be judged as spam, which would be worse than
 having one honest page.
 
+### The card people see when you share the link
+
+Posting the address in a group is the cheapest way to get the first visitors, and a bare text link
+is the fastest way to be ignored. `og-image.png` is the 1200×630 card WhatsApp, Facebook, LinkedIn,
+X and Discord display for it:
+
+```sh
+npm run og:image     # renders the card from js/brand.js (needs Chrome/Edge)
+npm run brand:sync   # wires og:image / twitter:image into index.html
+```
+
+The card is rendered — not hand-drawn — by the same engine that renders the site, so the name, the
+tagline and the problem count cannot drift from `js/brand.js`. Its real pixel size is read back out
+of the PNG header by `npm run check:adsense`, because a card that claims 1200×630 but is not gets
+cropped or blurred.
+
+**Sharing honestly.** Say what the site is (`2,040` C++ problems, code runs in the browser), post it
+where C++ is actually being discussed, read the group's self-promotion rules first, and never ask
+anyone to click an ad — that is what gets an AdSense account closed.
+
 ---
 
 ## Routes

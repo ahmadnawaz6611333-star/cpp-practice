@@ -177,6 +177,25 @@ if (html) {
   const canon = (html.match(/<link rel="canonical" href="([^"]*)"/) || [])[1];
   ok('canonical points at the live URL', canon === String(brand.liveUrl).replace(/\/?$/, '/'), String(canon));
   ok('Open Graph tags present', /property="og:title"/.test(html) && /property="og:url"/.test(html));
+  // The card people see before they click: the tag must point at a real
+  // 1200×630 PNG, read from the file's own header rather than assumed.
+  const ogImg = String(brand.ogImage || '').trim();
+  if (ogImg) {
+    const ogPath = path.join(ROOT, ogImg);
+    ok('the social preview image exists', fs.existsSync(ogPath), ogImg);
+    if (fs.existsSync(ogPath)) {
+      const png = fs.readFileSync(ogPath);
+      ok('the social preview image really is 1200×630',
+        png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630,
+        png.readUInt32BE(16) + '×' + png.readUInt32BE(20));
+    }
+    const absOg = new URL(ogImg, String(brand.liveUrl).replace(/\/?$/, '/')).href;
+    ok('index.html points at the social preview image',
+      html.indexOf('property="og:image" content="' + absOg + '"') !== -1, absOg);
+    ok('X/Twitter asks for a large card', /name="twitter:card" content="summary_large_image"/.test(html));
+  } else {
+    ok('no og:image is claimed while none is configured', !/property="og:image"/.test(html));
+  }
   ok('viewport + theme colour present', /name="viewport"/.test(html) && /name="theme-color"/.test(html));
   ok('config scripts load before the app', html.indexOf('js/brand.js') < html.indexOf('js/core.js') && html.indexOf('js/ads.js') < html.indexOf('js/core.js'));
   ok('the old brand name is gone', !/CPPractice/.test(html), 'CPPractice still appears in index.html');

@@ -91,6 +91,26 @@ else {
   if (desc === brand.description) pass('meta description matches js/brand.js'); else fail('meta description is out of date — run npm run brand:sync');
   if (canon) pass('canonical link present: ' + canon); else fail('no canonical link — run npm run brand:sync');
   if (/property="og:title"/.test(html)) pass('Open Graph tags present'); else warn('no Open Graph tags');
+  // The card people see before they click. Its real pixel size is read out of
+  // the PNG header, because a "1200×630" that is actually 600×315 renders
+  // cropped or blurry — the claim is checked, not trusted.
+  const ogImage = String(brand.ogImage || '').trim();
+  if (!ogImage) {
+    info('no social preview image — a shared link shows as plain text');
+  } else if (!fs.existsSync(path.join(ROOT, ogImage))) {
+    fail('js/brand.js → ogImage is "' + ogImage + '" but that file does not exist — run npm run og:image');
+  } else {
+    const png = fs.readFileSync(path.join(ROOT, ogImage));
+    const w = png.readUInt32BE(16);
+    const h = png.readUInt32BE(20);
+    if (w === 1200 && h === 630) pass('social preview card is 1200×630 (' + ogImage + ')');
+    else fail('social preview card is ' + w + '×' + h + ' — social cards want 1200×630, run npm run og:image');
+    const abs = new URL(ogImage, String(brand.liveUrl || '').replace(/\/?$/, '/')).href;
+    if (html.indexOf('property="og:image" content="' + abs + '"') !== -1) pass('index.html points at the social preview card');
+    else fail('index.html has no og:image tag — run npm run brand:sync');
+    if (/name="twitter:card" content="summary_large_image"/.test(html)) pass('X/Twitter uses a large card');
+    else warn('twitter:card is not summary_large_image, so the card will not be shown');
+  }
   if (/<script src="js\/brand\.js"><\/script>\s*<script src="js\/ads\.js"><\/script>/.test(html)) pass('brand.js + ads.js load before the app');
   else fail('index.html must load js/brand.js and js/ads.js before js/core.js');
   const brandIdx = html.indexOf('js/brand.js');

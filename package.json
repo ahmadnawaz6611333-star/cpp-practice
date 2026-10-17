@@ -13,6 +13,7 @@
     "test:adsense": "node tests/adsense.test.js",
     "test:all": "node tests/api.test.js && node tests/cloud.test.js && node tests/e2e.browser.js && node tests/adsense.test.js",
     "generate:data": "node scripts/generate-problems-json.js",
+    "og:image": "node scripts/gen-og-image.js",
     "brand:sync": "node scripts/sync-brand.js",
     "brand:check": "node scripts/sync-brand.js --check",
     "sitemap": "node scripts/gen-sitemap.js",
