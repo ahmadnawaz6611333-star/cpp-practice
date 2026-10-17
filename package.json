@@ -1,12 +1,15 @@
 {
-  "name": "cpp-practice-compiler",
-  "version": "1.0.0",
-  "description": "Local C++ compiler backend for CPPractice Lab",
+  "name": "cpp-practice-website",
+  "version": "2.0.0",
+  "description": "CPPractice Lab — a premium C++ practice platform with 2,040 problems, an in-browser IDE and a real local g++/clang++ compiler backend.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node test-compiler.js"
+    "test": "node tests/api.test.js",
+    "test:e2e": "node tests/e2e.browser.js",
+    "test:all": "node tests/api.test.js && node tests/e2e.browser.js",
+    "generate:data": "node scripts/generate-problems-json.js"
   },
   "dependencies": {
     "express": "^4.19.2"
@@ -14,6 +17,13 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["cpp", "compiler", "judge0-alternative", "local-execution"],
+  "keywords": [
+    "cpp",
+    "compiler",
+    "judge",
+    "practice",
+    "express",
+    "local-execution"
+  ],
   "license": "MIT"
 }

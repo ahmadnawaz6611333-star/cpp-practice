@@ -1,18 +1,31 @@
+# Dependencies
 node_modules/
+
+# Environment / secrets — never commit these
 .env
-.env.local
+.env.*
+*.pem
+*.key
+
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Build artefacts of the local compiler backend
 temp/
 tmp/
 *.exe
+*.o
+*.obj
+*.out
 solution.cpp
 stdout.txt
 stderr.txt
 input.txt
+
+# OS noise
 .DS_Store
 Thumbs.db
-test-compile.js
-test-*.js
+desktop.ini

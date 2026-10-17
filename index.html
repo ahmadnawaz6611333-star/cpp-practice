@@ -1,538 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CPPractice Lab | Master C++ Programming</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="description" content="CPPractice Lab — a premium C++ practice platform with 2,040 curated problems, an in-browser IDE and a real local C++ (g++) compiler backend.">
+  <base href="/">
+  <script>
+    // When opened directly from the filesystem (file://) there is no server
+    // root, so fall back to relative asset paths.
+    if (location.protocol === 'file:') {
+      document.querySelector('base').remove();
+    }
+  </script>
+  <title>CPPractice Lab — Master C++ with 2,040 Problems</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%236366f1'/%3E%3Ctext x='50' y='68' font-size='52' font-family='monospace' font-weight='bold' fill='white' text-anchor='middle'%3EC%2B%2B%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-
-  <!-- Animated 3D Background Orbs -->
+  <!-- Ambient 3D background -->
+  <div class="bg-field"></div>
+  <div class="bg-grid"></div>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="orb orb-5"></div>
-  <div class="orb orb-6"></div>
+
+  <!-- Skip link for accessibility -->
+  <a href="#app" class="btn btn-primary btn-small" style="position:absolute;left:-9999px;top:.5rem;z-index:300" onfocus="this.style.left='.5rem'" onblur="this.style.left='-9999px'">Skip to content</a>
 
   <!-- Navigation -->
-  <nav class="navbar">
+  <nav class="navbar" aria-label="Primary">
     <div class="nav-container">
-      <div class="nav-logo">
-        <div class="logo-badge">C++</div>
+      <a class="nav-logo" href="/" data-link aria-label="CPPractice Lab home">
+        <span class="logo-badge">C++</span>
         <span class="logo-text">CPPractice<span class="dot">Lab</span></span>
+      </a>
+
+      <button class="icon-btn nav-burger" id="navBurger" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+
+      <div class="nav-links" id="navLinks">
+        <a class="nav-link" href="/" data-link data-nav="home">Home</a>
+        <a class="nav-link" href="/problems" data-link data-nav="problems">Problems</a>
+        <a class="nav-link" href="/roadmap" data-link data-nav="roadmap">Roadmap</a>
+        <a class="nav-link" href="/progress" data-link data-nav="progress">Progress</a>
+        <a class="nav-link" href="/bookmarks" data-link data-nav="bookmarks">Bookmarks</a>
+        <a class="nav-link" href="/reference" data-link data-nav="reference">Reference</a>
       </div>
-      <div class="nav-links">
-        <a href="#home" class="nav-link active">Home</a>
-        <a href="#problems" class="nav-link">Problems</a>
-        <a href="#roadmap" class="nav-link">Roadmap</a>
-        <a href="#about" class="nav-link">About</a>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="themeToggle" title="Toggle light / dark theme" aria-label="Toggle theme">🌙</button>
+        <button class="icon-btn" id="navSearchBtn" title="Search problems (press /)" aria-label="Search problems">🔍</button>
       </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section id="home" class="hero">
-    <div class="hero-container">
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          <span>1200+ Practice Problems</span>
-        </div>
-        <h1 class="hero-title">
-          Master C++ <span class="highlight">One Problem at a Time</span>
-        </h1>
-        <p class="hero-subtitle">
-          From your first <code>cin</code> and <code>cout</code> to advanced algorithms.
-          Solve problems using hints — no code given, only logic &amp; formulas.
-        </p>
-        <div class="hero-buttons">
-          <a href="#problems" class="btn btn-large btn-primary">Start Practicing</a>
-          <a href="#roadmap" class="btn btn-large btn-outline">Learning Roadmap</a>
-        </div>
-      </div>
-      <div class="hero-visual">
-        <div class="card-3d-wrapper">
-          <div class="card-3d">
-            <div class="card-face front">
-              <div class="code-card">
-                <div class="code-header">
-                  <div class="code-dots">
-                    <span class="dot red"></span>
-                    <span class="dot yellow"></span>
-                    <span class="dot green"></span>
-                  </div>
-                  <span class="code-lang">main.cpp</span>
-                </div>
-                <div class="code-body">
-                  <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
-                  <div class="code-line"><span class="keyword">using namespace</span> std;</div>
-                  <div class="code-line"></div>
-                  <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
-                  <div class="code-line indent"><span class="keyword">cout</span> &lt;&lt; <span class="string">"Hello, C++!"</span> &lt;&lt; endl;</div>
-                  <div class="code-line indent"><span class="keyword">return</span> 0;</div>
-                  <div class="code-line">}</div>
-                </div>
-              </div>
-            </div>
-            <div class="card-face back">
-              <div class="back-content">
-                <h3>Write Your Code</h3>
-                <p>Solve in VS Code, Code::Blocks, or any IDE</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-card-3d">
-            <div class="stat-icon">💻</div>
-            <span class="stat-number">1200+</span>
-            <span class="stat-label">Problems</span>
-          </div>
-          <div class="stat-card-3d">
-            <div class="stat-icon">📚</div>
-            <span class="stat-number">12</span>
-            <span class="stat-label">Sections</span>
-          </div>
-          <div class="stat-card-3d">
-            <div class="stat-icon">🆓</div>
-            <span class="stat-number">100%</span>
-            <span class="stat-label">Free</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Progress Section -->
-  <section class="progress-section">
-    <div class="container">
-      <div class="progress-card-3d">
-        <div class="progress-header">
-          <h2>Your Progress</h2>
-          <span class="progress-percentage" id="overallProgress">0%</span>
-        </div>
-        <div class="progress-ring-container">
-          <svg class="progress-ring" width="140" height="140">
-            <circle class="progress-ring-bg" cx="70" cy="70" r="60"></circle>
-            <circle class="progress-ring-fill" id="progressFill" cx="70" cy="70" r="60"></circle>
-          </svg>
-          <div class="progress-center">
-            <span id="solvedCount">0</span><br>
-            <small>Solved</small>
-          </div>
-        </div>
-        <div class="progress-stats">
-          <div class="stat-item">
-            <span class="stat-value" id="easyCount">0</span>
-            <span class="stat-label">Easy</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value" id="mediumCount">0</span>
-            <span class="stat-label">Medium</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value" id="hardCount">0</span>
-            <span class="stat-label">Hard</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features">
-    <div class="container">
-      <h2 class="section-title">Why Practice Here?</h2>
-      <p class="section-subtitle">Built for students who want to master C++ through real practice</p>
-      <div class="features-grid">
-        <div class="feature-card-3d">
-          <div class="feature-icon">💡</div>
-          <h3>Logic &amp; Hints Only</h3>
-          <p>No code solutions — only formulas, algorithms, and step-by-step hints.</p>
-        </div>
-        <div class="feature-card-3d">
-          <div class="feature-icon">🔒</div>
-          <h3>Private &amp; Local</h3>
-          <p>Nothing is uploaded to GitHub or any server. Progress stays in your browser.</p>
-        </div>
-        <div class="feature-card-3d">
-          <div class="feature-icon">📚</div>
-          <h3>Structured Learning</h3>
-          <p>From basics to advanced DSA — follow a clear learning path.</p>
-        </div>
-        <div class="feature-card-3d">
-          <div class="feature-icon">🏆</div>
-          <h3>Track Your Progress</h3>
-          <p>Mark problems as solved and watch your progress grow.</p>
-        </div>
-        <div class="feature-card-3d">
-          <div class="feature-icon">📱</div>
-          <h3>Mobile Friendly</h3>
-          <p>Practice anywhere on your phone, tablet, or computer.</p>
-        </div>
-        <div class="feature-card-3d">
-          <div class="feature-icon">🚀</div>
-          <h3>No Installation</h3>
-          <p>Start coding immediately — no setup required.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Daily Challenge -->
-  <section class="daily-challenge">
-    <div class="container">
-      <div class="daily-card-3d">
-        <div class="daily-header">
-          <span class="daily-badge">Daily Challenge</span>
-          <span class="daily-date" id="dailyDate">October 16, 2026</span>
-        </div>
-        <h2 class="daily-title">Reverse a Number</h2>
-        <p class="daily-desc">Read an integer and print its digits in reverse order.</p>
-        <div class="daily-actions">
-          <button class="btn btn-primary btn-small" onclick="startDailyChallenge()">Start Challenge</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Problems Section -->
-  <section id="problems" class="problems">
-    <div class="container">
-      <div class="problems-header">
-        <div>
-          <h2 class="section-title">Practice Problems</h2>
-          <p class="section-subtitle">1200+ problems across 12 sections. Click any problem to view statement, example, and hint.</p>
-        </div>
-        <div class="search-filter">
-          <input type="text" id="problemSearch" placeholder="Search problems..." class="search-input">
-          <select id="difficultyFilter" class="filter-select">
-            <option value="all">All Difficulty</option>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="category-tabs">
-        <button class="tab-btn active" data-category="all">All Problems</button>
-        <button class="tab-btn" data-category="io">Input & Output</button>
-        <button class="tab-btn" data-category="variables">Variables & Data Types</button>
-        <button class="tab-btn" data-category="operators">Operators & Expressions</button>
-        <button class="tab-btn" data-category="conditionals">Conditions & Decision Making</button>
-        <button class="tab-btn" data-category="loops">Loops & Repetition</button>
-        <button class="tab-btn" data-category="functions">Functions</button>
-        <button class="tab-btn" data-category="arrays">Arrays</button>
-        <button class="tab-btn" data-category="strings">Strings</button>
-        <button class="tab-btn" data-category="pointers">Pointers & Memory</button>
-        <button class="tab-btn" data-category="oop">Object-Oriented Programming</button>
-        <button class="tab-btn" data-category="stl">Standard Template Library</button>
-        <button class="tab-btn" data-category="dsa">Data Structures & Algorithms</button>
-      </div>
-
-      <div class="problems-grid" id="problemsGrid"></div>
-      <div id="problemsCount" class="problems-count"></div>
-    </div>
-  </section>
-
-  <!-- Roadmap -->
-  <section id="roadmap" class="roadmap">
-    <div class="container">
-      <h2 class="section-title">Learning Roadmap</h2>
-      <p class="section-subtitle">Follow the path from beginner to advanced</p>
-      <div class="roadmap-list">
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">01</span>
-          <div class="roadmap-content">
-            <h3>Input & Output</h3>
-            <p>cout, cin, formatting, multiple inputs</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">02</span>
-          <div class="roadmap-content">
-            <h3>Variables & Data Types</h3>
-            <p>int, float, double, char, bool, string</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">03</span>
-          <div class="roadmap-content">
-            <h3>Operators & Expressions</h3>
-            <p>Arithmetic, logical, assignment, bitwise</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">04</span>
-          <div class="roadmap-content">
-            <h3>Conditions & Decision Making</h3>
-            <p>if/else, switch, ternary, nested conditions</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">05</span>
-          <div class="roadmap-content">
-            <h3>Loops & Repetition</h3>
-            <p>for, while, do-while, patterns, numbers</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">06</span>
-          <div class="roadmap-content">
-            <h3>Functions</h3>
-            <p>Declaration, parameters, return, overloading</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">07</span>
-          <div class="roadmap-content">
-            <h3>Arrays</h3>
-            <p>1D/2D arrays, searching, sorting, matrices</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">08</span>
-          <div class="roadmap-content">
-            <h3>Strings</h3>
-            <p>std::string, traversal, palindromes, parsing</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">09</span>
-          <div class="roadmap-content">
-            <h3>Pointers & Memory</h3>
-            <p>Addresses, dereferencing, dynamic allocation</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">10</span>
-          <div class="roadmap-content">
-            <h3>Object-Oriented Programming</h3>
-            <p>Classes, encapsulation, inheritance, polymorphism</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">11</span>
-          <div class="roadmap-content">
-            <h3>STL</h3>
-            <p>Vectors, stacks, queues, maps, sets, algorithms</p>
-          </div>
-        </div>
-        <div class="roadmap-item-3d">
-          <span class="roadmap-number">12</span>
-          <div class="roadmap-content">
-            <h3>Data Structures & Algorithms</h3>
-            <p>Big O, linked lists, trees, BST, hashing, DP</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- About -->
-  <section id="about" class="about">
-    <div class="container">
-      <h2 class="section-title">About CPPractice Lab</h2>
-      <div class="about-content">
-        <div class="about-text">
-          <p>CPPractice Lab is built for students who want to master C++ programming through practice. Solve problems in your own IDE using only hints — no code given.</p>
-          <p><strong>How to use:</strong></p>
-          <ol>
-            <li>Select a problem category</li>
-            <li>Click any problem to view full statement and example</li>
-            <li>Read the <strong>Hint</strong> section for logic &amp; formula</li>
-            <li>Write your C++ code in VS Code, Code::Blocks, or any IDE</li>
-            <li>Mark the problem as solved when complete</li>
-          </ol>
-          <div class="privacy-notice">
-            <strong>🔒 Privacy:</strong> This website does <strong>not</strong> upload your code to GitHub, GitLab, or any external server. All progress is saved only in your browser's local storage.
-          </div>
-        </div>
-        <div class="about-image">
-          <div class="code-card">
-            <div class="code-header">
-              <div class="code-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <span class="code-lang">solution.cpp</span>
-            </div>
-            <div class="code-body">
-              <div class="code-line"><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span></div>
-              <div class="code-line"><span class="keyword">using namespace</span> std;</div>
-              <div class="code-line"></div>
-              <div class="code-line"><span class="comment">// Write your solution here</span></div>
-              <div class="code-line"><span class="keyword">int</span> <span class="function">main</span>() {</div>
-              <div class="code-line indent">// Your code...</div>
-              <div class="code-line indent"><span class="keyword">return</span> 0;</div>
-              <div class="code-line">}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- Routed content -->
+  <main id="app" class="app-main" tabindex="-1"></main>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <div class="footer-content">
-        <div class="footer-logo">
-          <div class="logo-badge">C++</div>
-          <span class="logo-text">CPPractice<span class="dot">Lab</span></span>
+      <div class="footer-grid">
+        <div>
+          <a class="nav-logo" href="/" data-link style="margin-bottom:.6rem">
+            <span class="logo-badge">C++</span>
+            <span class="logo-text">CPPractice<span class="dot">Lab</span></span>
+          </a>
+          <p class="muted small mb-0" style="max-width:34ch">
+            A premium C++ practice platform — 2,040 curated problems, an in-browser editor,
+            and a real local compiler backend.
+          </p>
         </div>
-        <p class="footer-text">&copy; 2026 CPPractice Lab. Built for students learning C++.</p>
-        <div class="footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Contact</a>
+        <div>
+          <h4>Practice</h4>
+          <a href="/problems" data-link>All problems</a>
+          <a href="/problems?difficulty=Easy" data-link>Easy</a>
+          <a href="/problems?difficulty=Medium" data-link>Medium</a>
+          <a href="/problems?difficulty=Hard" data-link>Hard</a>
         </div>
+        <div>
+          <h4>Learn</h4>
+          <a href="/roadmap" data-link>Learning roadmap</a>
+          <a href="/reference" data-link>C++ reference</a>
+          <a href="/progress" data-link>Progress dashboard</a>
+          <a href="/bookmarks" data-link>Bookmarks</a>
+        </div>
+        <div>
+          <h4>System</h4>
+          <a href="/settings" data-link>Settings</a>
+          <a href="/about" data-link>About &amp; help</a>
+          <a href="/status" data-link>Compiler status</a>
+          <a href="https://github.com/ahmadnawaz6611333-star/cpp-practice" target="_blank" rel="noopener noreferrer">Source on GitHub ↗</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="year"></span> CPPractice Lab. Built for students learning C++.</span>
+        <span id="footerBackend" class="mono">backend: checking…</span>
       </div>
     </div>
   </footer>
 
-  <!-- Problem Detail Modal -->
-  <div class="modal-overlay" id="problemModal">
-    <div class="modal-container">
-      <button class="modal-close" id="modalClose">&times;</button>
+  <!-- Toast host -->
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
-      <div class="modal-header">
-        <div class="modal-id-badge">
-          <span class="modal-id" id="modalId">#001</span>
-          <span class="modal-badge" id="modalBadge">Easy</span>
-        </div>
-      </div>
-
-      <h2 class="modal-title" id="modalTitle">Problem Title</h2>
-
-      <div class="modal-meta">
-        <div class="meta-item">
-          <span class="meta-label">Category</span>
-          <span class="meta-value" id="modalCategory">Input & Output</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Difficulty</span>
-          <span class="meta-value" id="modalDifficulty">Easy</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">ID</span>
-          <span class="meta-value" id="modalProblemId">1</span>
-        </div>
-      </div>
-
-      <!-- Three-Panel IDE Layout -->
-      <div class="ide-layout">
-        <!-- PANEL 1: Examples (Left) -->
-        <div class="ide-panel examples-panel">
-          <div class="panel-header">
-            <span class="panel-title">📁 Examples</span>
-            <span class="panel-count" id="exampleCount">0</span>
-          </div>
-          <div class="examples-list" id="examplesList">
-            <!-- Examples loaded by JavaScript -->
-          </div>
-        </div>
-
-        <!-- PANEL 2: Input / Output / Execute (Middle) -->
-        <div class="ide-panel io-panel">
-          <div class="panel-header">
-            <span class="panel-title">⚡ Execute</span>
-          </div>
-
-          <!-- OUTPUT Section (FIRST) - Large dedicated output display box -->
-          <div class="output-section">
-            <div class="output-title">📤 OUTPUT</div>
-
-            <!-- Output Panel - Always Visible, With Scroll -->
-            <div class="output-panel-main">
-              <div class="output-header-main">
-                <span class="output-label-main">Output</span>
-                <div class="output-meta-main">
-                  <span id="outputStatusBadgeMain" class="status-badge status-waiting">Waiting...</span>
-                  <span id="outputExitCodeMain" class="exit-code">-</span>
-                  <span id="outputExecTimeMain" class="exec-time">-</span>
-                </div>
-              </div>
-
-              <!-- Simple output tabs -->
-              <div class="output-tabs-main">
-                <div class="output-tab-main active" id="tabStdoutMain">stdout</div>
-                <div class="output-tab-main" id="tabStderrMain">stderr</div>
-              </div>
-
-              <!-- Scrollable output text area -->
-              <div class="output-scroll-main" id="outputScrollMain">
-                <pre id="outputStdoutMain"></pre>
-                <pre id="outputStderrMain" style="display:none; color: #ff0055;"></pre>
-              </div>
-            </div>
-          </div>
-
-          <!-- Execute Button (SECOND) -->
-          <div class="execute-bar">
-            <button class="btn btn-primary btn-execute" id="btnExecute">
-              ▶ Run Code
-            </button>
-            <span class="execute-status" id="executeStatus" style="display:none;"></span>
-          </div>
-
-          <!-- Execution Status Badge -->
-          <div class="execution-status-container" style="margin-bottom: 1rem;">
-            <span id="executionStatusBadge" class="status-badge status-idle">Idle</span>
-          </div>
-
-          <!-- STDIN Input Section (THIRD) -->
-          <div class="stdin-panel">
-            <div class="stdin-header">
-              <span class="stdin-label">📥 stdin (Input)</span>
-              <span class="stdin-placeholder">Leave empty if no input needed</span>
-            </div>
-            <textarea id="stdinInput" spellcheck="false" wrap="off" placeholder="Type input here... e.g. 10 20"></textarea>
-          </div>
-        </div>
-
-        <!-- PANEL 3: Code Editor (Right) -->
-        <div class="ide-panel editor-panel">
-          <div class="editor-header">
-            <span class="editor-lang">C++ (G++)</span>
-            <div class="editor-actions-top">
-              <button class="btn btn-outline btn-small" id="btnCopyStatement">Copy Statement</button>
-              <button class="btn btn-outline btn-small" id="btnMarkSolvedRight">Mark as Solved</button>
-            </div>
-          </div>
-
-          <!-- Code Editor -->
-          <div class="code-editor-card">
-            <div class="code-header">
-              <div class="code-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <span class="code-lang">solution.cpp</span>
-            </div>
-            <div class="code-body">
-              <textarea id="codeEditor" spellcheck="false" wrap="off">#include <iostream>
-using namespace std;
-
-int main() {
-    // Write your C++ code here
-    return 0;
-}
-</textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+  <!-- Application scripts (classic scripts so the site also works from file://) -->
+  <script src="js/data.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/views.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

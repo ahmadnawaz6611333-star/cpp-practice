@@ -1,7 +1,14 @@
-// ========================================
-// BACKEND CONFIGURATION
-// ========================================
-const BACKEND_URL = 'http://localhost:3001';
+/* ==========================================================================
+ * CPPractice Lab — Problem Catalogue Data
+ * --------------------------------------------------------------------------
+ * IMPORTANT: This block is the ORIGINAL problem collection extracted verbatim
+ * from the previous script.js. It contains the full set of problems
+ * (12 sections x 170 = 2040 problems). IDs, titles, statements, input/output
+ * samples, difficulties and hints are preserved exactly as authored.
+ *
+ * Do not hand-edit the catalogue below. If you must add data, append a new
+ * generateProblems(...) call so previous IDs stay stable.
+ * ========================================================================== */
 
 // ========================================
 // EXAMPLE PROGRAMS DATA
@@ -444,512 +451,77 @@ generateProblems('dsa', 'Data Structures & Algorithms', 170, 1881, [
   { title: 'Logical Reasoning - Coin Change {n}', difficulty: 'Hard', statement: 'Minimum coins for amount.', input: '4\\n1 2 5\\n11', output: '3', hint: 'dp[amount] = min(dp[amount-coin]+1).' },
 ]);
 
-// ========================================
-// EXAMPLES INITIALIZATION
-// ========================================
-function initExamples() {
-  const list = document.getElementById('examplesList');
-  const countEl = document.getElementById('exampleCount');
-  if (!list || !countEl) return;
+/* ==========================================================================
+ * Derived catalogue metadata + indexes (computed at load, no data mutation)
+ * ========================================================================== */
 
-  // Clear any existing items (prevent duplicates)
-  list.innerHTML = '';
-  countEl.textContent = examples.length;
+const CATEGORIES = [
+  { key: 'io',           label: 'Input & Output' },
+  { key: 'variables',    label: 'Variables & Data Types' },
+  { key: 'operators',    label: 'Operators & Expressions' },
+  { key: 'conditionals', label: 'Conditions & Decision Making' },
+  { key: 'loops',        label: 'Loops & Repetition' },
+  { key: 'functions',    label: 'Functions' },
+  { key: 'arrays',       label: 'Arrays' },
+  { key: 'strings',      label: 'Strings' },
+  { key: 'pointers',     label: 'Pointers & Memory' },
+  { key: 'oop',          label: 'Object-Oriented Programming' },
+  { key: 'stl',          label: 'Standard Template Library' },
+  { key: 'dsa',          label: 'Data Structures & Algorithms' }
+];
 
-  examples.forEach((ex) => {
-    const item = document.createElement('div');
-    item.className = 'example-item';
-    item.innerHTML = `
-      <div class="example-item-title">${ex.title}</div>
-      <div class="example-item-desc">${ex.desc}</div>
-    `;
-    item.onclick = () => loadExample(ex);
-    list.appendChild(item);
-  });
-}
+const CATEGORY_LABELS = {};
+CATEGORIES.forEach((c) => { CATEGORY_LABELS[c.key] = c.label; });
 
-function loadExample(example) {
-  const editor = document.getElementById('codeEditor');
-  const stdinInput = document.getElementById('stdinInput');
-
-  if (editor) editor.value = example.code;
-  if (stdinInput) stdinInput.value = example.stdin;
-  // Output panel stays visible — do not clear previous output here.
-
-  // Highlight selected example
-  document.querySelectorAll('.example-item').forEach((item, idx) => {
-    if (examples[idx] && examples[idx].id === example.id) {
-      item.classList.add('selected');
-    } else {
-      item.classList.remove('selected');
-    }
-  });
-}
-
-const categoryLabels = {
-  all: "All Problems",
-  io: "Input & Output",
-  variables: "Variables & Data Types",
-  operators: "Operators & Expressions",
-  conditionals: "Conditions & Decision Making",
-  loops: "Loops & Repetition",
-  functions: "Functions",
-  arrays: "Arrays",
-  strings: "Strings",
-  pointers: "Pointers & Memory",
-  oop: "Object-Oriented Programming",
-  stl: "Standard Template Library",
-  dsa: "Data Structures & Algorithms"
+// Deterministic per-problem accent hue so each row has a stable identity.
+const CATEGORY_ACCENT = {
+  io: 'blue',
+  variables: 'violet',
+  operators: 'cyan',
+  conditionals: 'amber',
+  loops: 'indigo',
+  functions: 'emerald',
+  arrays: 'sky',
+  strings: 'pink',
+  pointers: 'orange',
+  oop: 'fuchsia',
+  stl: 'teal',
+  dsa: 'rose'
 };
 
-function getDifficultyBadge(difficulty) {
-  const map = { Easy: "badge-easy", Medium: "badge-medium", Hard: "badge-hard" };
-  return map[difficulty] || "badge-easy";
-}
-
-function getSolvedProblems() {
-  const saved = localStorage.getItem('cpp-solved-problems');
-  return saved ? JSON.parse(saved) : [];
-}
-
-function isProblemSolved(id) {
-  return getSolvedProblems().includes(id);
-}
-
-function toggleSolved(id) {
-  const solved = getSolvedProblems();
-  if (solved.includes(id)) solved.splice(solved.indexOf(id), 1);
-  else solved.push(id);
-  localStorage.setItem('cpp-solved-problems', JSON.stringify(solved));
-  updateProgress();
-  renderProblems(currentCategory);
-}
-
-let currentCategory = 'all';
-let currentSearch = '';
-let currentDifficulty = 'all';
-
-function renderProblems(category = 'all') {
-  currentCategory = category;
-  const grid = document.getElementById("problemsGrid");
-  const countEl = document.getElementById("problemsCount");
-  grid.innerHTML = "";
-
-  const solved = getSolvedProblems();
-  const filtered = problems.filter(p => {
-    const matchCat = category === 'all' || p.category === category;
-    const matchSearch = p.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                       p.statement.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                       p.id.toString().includes(currentSearch);
-    const matchDiff = currentDifficulty === 'all' || p.difficulty === currentDifficulty;
-    return matchCat && matchSearch && matchDiff;
-  });
-
-  filtered.forEach(problem => {
-    const card = document.createElement("div");
-    card.className = `problem-card ${isProblemSolved(problem.id) ? 'solved' : ''}`;
-    card.innerHTML = `
-      <div class="problem-id">#${problem.id}</div>
-      <h3>${problem.title}</h3>
-      <p>${problem.statement}</p>
-      <div class="problem-meta">
-        <span class="badge ${getDifficultyBadge(problem.difficulty)}">${problem.difficulty}</span>
-        <span>${categoryLabels[problem.category] || problem.category}</span>
-      </div>
-    `;
-    card.onclick = () => openProblemModal(problem);
-    grid.appendChild(card);
-  });
-
-  countEl.textContent = `Showing ${filtered.length} of ${problems.length} problems`;
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.dataset.category === category) btn.classList.add("active");
-  });
-  updateProgress();
-}
-
-function updateProgress() {
-  const solved = getSolvedProblems();
-  const total = problems.length;
-  const pct = total ? Math.round((solved.length / total) * 100) : 0;
-  const el = document.getElementById('overallProgress');
-  if (el) el.textContent = pct + '%';
-  const el2 = document.getElementById('solvedCount');
-  if (el2) el2.textContent = solved.length;
-  const easySolved = solved.filter(id => { const p = problems.find(x => x.id === id); return p && p.difficulty === 'Easy'; }).length;
-  const mediumSolved = solved.filter(id => { const p = problems.find(x => x.id === id); return p && p.difficulty === 'Medium'; }).length;
-  const hardSolved = solved.filter(id => { const p = problems.find(x => x.id === id); return p && p.difficulty === 'Hard'; }).length;
-  const el3 = document.getElementById('easyCount');
-  if (el3) el3.textContent = easySolved;
-  const el4 = document.getElementById('mediumCount');
-  if (el4) el4.textContent = mediumSolved;
-  const el5 = document.getElementById('hardCount');
-  if (el5) el5.textContent = hardSolved;
-  const fill = document.getElementById('progressFill');
-  if (fill) {
-    const circumference = 2 * Math.PI * 60;
-    const offset = circumference - (pct / 100) * circumference;
-    fill.style.strokeDasharray = circumference;
-    fill.style.strokeDashoffset = offset;
-  }
-}
-
-let currentProblemId = null;
-
-function openProblemModal(problem) {
-  try {
-    currentProblemId = problem.id;
-    document.getElementById("modalId").textContent = `#${problem.id}`;
-    document.getElementById("modalTitle").textContent = problem.title;
-    document.getElementById("modalCategory").textContent = categoryLabels[problem.category] || problem.category;
-    document.getElementById("modalDifficulty").textContent = problem.difficulty;
-    document.getElementById("modalProblemId").textContent = problem.id;
-    document.getElementById("modalStatement").textContent = problem.statement;
-    document.getElementById("modalExampleInput").textContent = problem.input || "None";
-    document.getElementById("modalExampleOutput").textContent = problem.output || "None";
-    document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
-
-    // Load first example into editor
-    if (examples && examples.length > 0) {
-      loadExample(examples[0]);
-    }
-
-    const badge = document.getElementById("modalBadge");
-    badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
-
-    const solvedBtn = document.getElementById("modalMarkSolved");
-    const solvedBtnRight = document.getElementById("btnMarkSolvedRight");
-    const alreadySolved = isProblemSolved(problem.id);
-    const text = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-    solvedBtn.textContent = text;
-    solvedBtnRight.textContent = text;
-    solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-    solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-
-    const modal = document.getElementById("problemModal");
-    modal.classList.add("open");
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-  } catch (err) {
-    console.error("Error opening modal:", err);
-    // Fallback: just show the modal
-    const modal = document.getElementById("problemModal");
-    if (modal) {
-      modal.classList.add("open");
-      modal.style.display = "flex";
-      document.body.style.overflow = "hidden";
-    }
-  }
-}
-
-function closeModal() {
-  document.getElementById("problemModal").classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-function closeAIReview() {
-  const m = document.getElementById("aiReviewModal");
-  if (m) m.classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-// ========================================
-// COMPILER INTEGRATION
-// ========================================
-let isCompiling = false;
-
-function showOutputPanel(show) {
-  // Output panel is always visible — no toggle needed.
-  // Kept for backward compatibility with any callers.
-}
-
-function switchOutputTab(tab) {
-  // Main output tabs (always visible panel)
-  const stdoutElMain = document.getElementById('outputStdoutMain');
-  const stderrElMain = document.getElementById('outputStderrMain');
-  const tabStdoutMain = document.getElementById('tabStdoutMain');
-  const tabStderrMain = document.getElementById('tabStderrMain');
-
-  if (tab === 'stderr') {
-    if (stdoutElMain) stdoutElMain.style.display = 'none';
-    if (stderrElMain) stderrElMain.style.display = 'block';
-    if (tabStdoutMain) tabStdoutMain.classList.remove('active');
-    if (tabStderrMain) tabStderrMain.classList.add('active');
-  } else {
-    if (stdoutElMain) stdoutElMain.style.display = 'block';
-    if (stderrElMain) stderrElMain.style.display = 'none';
-    if (tabStdoutMain) tabStdoutMain.classList.add('active');
-    if (tabStderrMain) tabStderrMain.classList.remove('active');
-  }
-}
-
-function setOutputStatus(status, message) {
-  const badgeMain = document.getElementById('outputStatusBadgeMain');
-  if (badgeMain) {
-    badgeMain.textContent = message;
-    badgeMain.className = 'status-badge ' + status;
-  }
-}
-
-function setOutputMeta(exitCode, execTime) {
-  const ecElMain = document.getElementById('outputExitCodeMain');
-  const etElMain = document.getElementById('outputExecTimeMain');
-  if (ecElMain) ecElMain.textContent = exitCode !== null ? exitCode : '-';
-  if (etElMain) etElMain.textContent = execTime !== null ? execTime + ' ms' : '-';
-}
-
-function setOutputText(stdout, stderr) {
-  const stdoutElMain = document.getElementById('outputStdoutMain');
-  const stderrElMain = document.getElementById('outputStderrMain');
-  // Leave the box empty when there is no output — no fake/placeholder results.
-  if (stdoutElMain) stdoutElMain.textContent = stdout || '';
-  if (stderrElMain) stderrElMain.textContent = stderr || '';
-}
-
-async function executeCode() {
-  if (isCompiling) return;
-
-  const editor = document.getElementById('codeEditor');
-  const stdinInput = document.getElementById('stdinInput');
-  const btnExecute = document.getElementById('btnExecute');
-  const executeStatus = document.getElementById('executeStatus');
-  const executionStatusBadge = document.getElementById('executionStatusBadge');
-
-  if (!editor) return;
-
-  const sourceCode = editor.value;
-  const stdinText = stdinInput ? stdinInput.value : '';
-
-  // --- Execution Lifecycle: Idle -> Compiling ---
-  isCompiling = true;
-  btnExecute.disabled = true;
-  btnExecute.textContent = '⏳ Compiling...';
-  executeStatus.style.display = 'inline';
-  executeStatus.textContent = 'Compiling source code...';
-  executeStatus.style.color = '#00f2ff';
-
-  if (executionStatusBadge) {
-    executionStatusBadge.textContent = 'Compiling';
-    executionStatusBadge.className = 'status-badge status-compiling';
-  }
-
-  // Output panel is always visible — no toggle needed.
-  switchOutputTab('stdout');
-  setOutputStatus('status-running', 'Compiling...');
-  setOutputMeta('-', '-');
-  setOutputText('', '');
-
-  try {
-    const response = await fetch(BACKEND_URL + '/compile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source_code: sourceCode,
-        stdin: stdinText,
-        timeout: 10000,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-
-    // --- Execution Lifecycle: Final State ---
-    btnExecute.disabled = false;
-    btnExecute.textContent = '▶ Run Code';
-    isCompiling = false;
-    executeStatus.style.display = 'none';
-
-    // Display results based on backend response
-    if (result.error === null || result.error === 'success' || !result.error) {
-      // SUCCESS
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Completed';
-        executionStatusBadge.className = 'status-badge status-accepted';
-      }
-      setOutputStatus('status-accepted', 'Run executed successfully');
-      setOutputMeta(result.exitCode !== null ? result.exitCode : 0, result.executionTimeMs);
-      setOutputText(result.stdout || '', result.stderr || '');
-      switchOutputTab('stdout');
-    } else if (result.error === 'compilation_error') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Compilation Error';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Compilation Failed');
-      setOutputMeta(result.exitCode, result.executionTimeMs);
-      setOutputText(result.stdout || '', result.stderr || 'Compiler error: check stderr tab.');
-      switchOutputTab('stderr');
-    } else if (result.error === 'time_limit_exceeded') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Time Limit Exceeded';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Time Limit Exceeded');
-      setOutputMeta(result.exitCode, result.executionTimeMs);
-      setOutputText(result.stdout || '', result.stderr || 'Program exceeded the time limit.');
-      switchOutputTab('stdout');
-    } else if (result.error === 'runtime_error') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Runtime Error';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Runtime Error');
-      setOutputMeta(result.exitCode, result.executionTimeMs);
-      setOutputText(result.stdout || '', result.stderr || 'Program exited with non-zero status.');
-      switchOutputTab('stdout');
-    } else if (result.error === 'compiler_unavailable') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Compiler Unavailable';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Compiler Unavailable');
-      setOutputMeta('-', '-');
-      setOutputText('', result.stderr || 'No C++ compiler installed on the server. Install g++ or clang++.');
-      switchOutputTab('stderr');
-    } else if (result.error === 'internal_error') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Internal Error';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Internal Error');
-      setOutputMeta('-', '-');
-      setOutputText('', result.stderr || 'An unexpected error occurred.');
-      switchOutputTab('stderr');
-    } else if (result.error === 'invalid_request' || result.error === 'source_too_large' || result.error === 'invalid_timeout') {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Invalid Request';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Invalid Request');
-      setOutputMeta('-', '-');
-      setOutputText('', result.message || 'Invalid submission.');
-      switchOutputTab('stderr');
-    } else {
-      if (executionStatusBadge) {
-        executionStatusBadge.textContent = 'Unknown Error';
-        executionStatusBadge.className = 'status-badge status-error';
-      }
-      setOutputStatus('status-error', 'Unknown Error');
-      setOutputMeta('-', '-');
-      setOutputText('', result.message || 'An unknown error occurred.');
-      switchOutputTab('stderr');
-    }
-
-  } catch (err) {
-    btnExecute.disabled = false;
-    btnExecute.textContent = '▶ Run Code';
-    isCompiling = false;
-    executeStatus.style.display = 'none';
-
-    if (executionStatusBadge) {
-      executionStatusBadge.textContent = 'Request Error';
-      executionStatusBadge.className = 'status-badge status-error';
-    }
-
-    setOutputStatus('status-error', 'Backend Unavailable');
-    setOutputMeta('-', '-');
-    setOutputText('', 'Cannot connect to the compiler backend at ' + BACKEND_URL + '\n\nMake sure the backend server is running:\n  cd cpp-practice-website\n  npm install\n  npm start\n\nThen check http://localhost:3001/health');
-    switchOutputTab('stderr');
-  }
-}
-
-// Initialize code editor with problem template when modal opens
-function initCodeEditorForProblem(problem) {
-  const editor = document.getElementById('codeEditor');
-  if (!editor) return;
-
-  // Provide a starter template based on the problem
-  const template = `#include <iostream>
-using namespace std;
-
-int main() {
-    // Problem #${problem.id}: ${problem.title}
-    // ${problem.statement}
-
-    // Write your solution here
-
-    return 0;
-}`;
-  editor.value = template;
-
-  // Clear stdin
-  const stdinInput = document.getElementById('stdinInput');
-  if (stdinInput) stdinInput.value = '';
-
-  // Output panel stays visible — do not hide it.
-}
-
-function startDailyChallenge() {
-  const dailyProblem = problems.find(p => p.title === 'Reverse a Number');
-  if (dailyProblem) openProblemModal(dailyProblem);
-}
-
-// Global so HTML onclick can find it
-window.startDailyChallenge = startDailyChallenge;
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderProblems("all");
-  initExamples();
-  updateProgress();
-
-  const mc = document.getElementById("modalClose");
-  if (mc) mc.addEventListener("click", closeModal);
-
-  const pm = document.getElementById("problemModal");
-  if (pm) pm.addEventListener("click", (e) => { if (e.target === pm) closeModal(); });
-
-  const bcs = document.getElementById("btnCopyStatement");
-  if (bcs) bcs.addEventListener("click", () => {
-    const statement = document.getElementById("modalStatement").textContent;
-    navigator.clipboard.writeText(statement).then(() => {
-      const btn = document.getElementById("btnCopyStatement");
-      const original = btn.textContent;
-      btn.textContent = "Copied!";
-      setTimeout(() => btn.textContent = original, 1500);
-    });
-  });
-
-  const bms = document.getElementById("modalMarkSolved");
-  if (bms) bms.addEventListener("click", () => {
-    toggleSolved(currentProblemId);
-    const solvedBtn = document.getElementById("modalMarkSolved");
-    const solvedBtnRight = document.getElementById("btnMarkSolvedRight");
-    const alreadySolved = isProblemSolved(currentProblemId);
-    const text = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-    solvedBtn.textContent = text;
-    solvedBtnRight.textContent = text;
-    solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-    solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-  });
-
-  const bmsr = document.getElementById("btnMarkSolvedRight");
-  if (bmsr) bmsr.addEventListener("click", () => {
-    toggleSolved(currentProblemId);
-    const solvedBtn = document.getElementById("modalMarkSolved");
-    const solvedBtnRight = document.getElementById("btnMarkSolvedRight");
-    const alreadySolved = isProblemSolved(currentProblemId);
-    const text = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-    solvedBtn.textContent = text;
-    solvedBtnRight.textContent = text;
-    solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-    solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-  });
-
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeAIReview(); } });
-
-  // Execute button
-  const btnExecute = document.getElementById("btnExecute");
-  if (btnExecute) {
-    btnExecute.addEventListener("click", executeCode);
-  }
-
-  // Output tab switching (main always-visible panel)
-  const tabStdoutMain = document.getElementById("tabStdoutMain");
-  const tabStderrMain = document.getElementById("tabStderrMain");
-  if (tabStdoutMain) tabStdoutMain.addEventListener("click", () => switchOutputTab('stdout'));
-  if (tabStderrMain) tabStderrMain.addEventListener("click", () => switchOutputTab('stderr'));
+CATEGORIES.forEach((c) => {
+  c.count = problems.filter((p) => p.category === c.key).length;
 });
+
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
+
+// Build a lookup map + normalized search blob once.
+const PROBLEM_BY_ID = new Map();
+problems.forEach((p) => {
+  p.searchBlob = (
+    p.id + ' ' + p.title + ' ' + (p.statement || '') + ' ' +
+    (CATEGORY_LABELS[p.category] || p.category) + ' ' + p.difficulty
+  ).toLowerCase();
+  p.accent = CATEGORY_ACCENT[p.category] || 'blue';
+  PROBLEM_BY_ID.set(p.id, p);
+});
+
+const CATALOGUE = {
+  problems,
+  examples,
+  categories: CATEGORIES,
+  categoryLabels: CATEGORY_LABELS,
+  difficulties: DIFFICULTIES,
+  byId: PROBLEM_BY_ID,
+  total: problems.length
+};
+
+if (typeof window !== 'undefined') {
+  window.PROBLEMS = problems;
+  window.EXAMPLES = examples;
+  window.CATALOGUE = CATALOGUE;
+  window.CATEGORIES = CATEGORIES;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CATALOGUE;
+}
