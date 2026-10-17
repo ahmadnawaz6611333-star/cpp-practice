@@ -32,6 +32,18 @@ function ok(name, cond, detail) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Put code into the editor that is actually mounted. Monaco can hold extra,
+// orphaned models, so picking models()[0] is unreliable; the app exposes the
+// live editor handle as CPP.activeEditor (see js/views.js).
+const setEditorCode = (code) => `(function () {
+  var code = ${JSON.stringify(code)};
+  if (window.CPP && CPP.activeEditor && CPP.activeEditor.setValue) { CPP.activeEditor.setValue(code); return 'activeEditor'; }
+  if (window.monaco && monaco.editor.getModels().length) { monaco.editor.getModels()[0].setValue(code); return 'monaco'; }
+  var ta = document.querySelector('#edHost textarea');
+  if (ta) { ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); return 'textarea'; }
+  return 'none';
+})()`;
+
 function findChrome() {
   if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
   const candidates = [
@@ -194,15 +206,9 @@ async function main() {
     ok('code editor initialised (Monaco or fallback)', hasMonaco === true || (await cdp.eval('!!document.querySelector("#edHost textarea")')) === true);
 
     // put a real solution into the editor
-    const setCode = `(function(){
-      const code = '#include <iostream>\\nint main(){ std::cout << "Hello, World!" << std::endl; return 0; }';
-      if (window.monaco && monaco.editor.getModels().length) { monaco.editor.getModels()[0].setValue(code); return 'monaco'; }
-      const ta = document.querySelector('#edHost textarea');
-      if (ta) { ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); return 'textarea'; }
-      return 'none';
-    })()`;
-    const editorKind = await cdp.eval(setCode);
+    const editorKind = await cdp.eval(setEditorCode('#include <iostream>\nint main(){ std::cout << "Hello, World!" << std::endl; return 0; }'));
     console.log('     editor mode:', editorKind);
+    ok('test can drive the mounted editor', editorKind !== 'none', editorKind);
 
     // ensure sample input mode and press Run
     await cdp.eval('document.querySelector(\'#wsMode [data-mode="sample"]\').click(); true');
@@ -226,12 +232,7 @@ async function main() {
     ok('correct submission marks the problem solved', solvedBadge === '✓ Solved', solvedBadge);
 
     /* ---------------- 5. Compilation error surfaces in the UI ---------------- */
-    await cdp.eval(`(function(){
-      const bad = '#include <iostream>\\nint main(){ std::cout << "oops" ; return 0 }';
-      if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(bad);
-      else { const ta = document.querySelector('#edHost textarea'); ta.value = bad; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-      return true;
-    })()`);
+    await cdp.eval(setEditorCode('#include <iostream>\nint main(){ std::cout << "oops" ; return 0 }'));
     await cdp.eval('document.querySelector("#wsRun").click(); true');
     const cerrDone = await cdp.waitFor('document.querySelector("#wsStatus").textContent.trim() === "Compilation error"', 40000);
     ok('compilation error is detected and labelled', cerrDone, await cdp.eval('document.querySelector("#wsStatus").textContent'));
@@ -242,10 +243,8 @@ async function main() {
     await cdp.send('Page.navigate', { url: BASE + '/problems/2' }); // Add Two Numbers
     await cdp.waitFor('!!document.querySelector("#wsRun")', 15000);
     await cdp.waitFor('!!(window.monaco && monaco.editor.getModels().length) || !!document.querySelector("#edHost textarea")', 15000);
+    await cdp.eval(setEditorCode('#include <iostream>\nint main(){ int a,b; std::cin >> a >> b; std::cout << a + b << std::endl; return 0; }'));
     await cdp.eval(`(function(){
-      const code = '#include <iostream>\\nint main(){ int a,b; std::cin >> a >> b; std::cout << a + b << std::endl; return 0; }';
-      if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(code);
-      else { const ta = document.querySelector('#edHost textarea'); ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); }
       document.querySelector('#wsMode [data-mode="custom"]').click();
       const s = document.querySelector('#wsStdin'); s.value = '7 35';
       return true;
@@ -266,12 +265,8 @@ async function main() {
     ok('Tests tab lists the sample result', /Sample test #1/.test(testsPane || ''), testsPane);
 
     // Submit a wrong solution -> Wrong answer (sample)
-    await cdp.eval(`(function(){
-      const bad = '#include <iostream>\\nint main(){ std::cout << 999 << std::endl; return 0; }';
-      if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(bad);
-      else { const ta = document.querySelector('#edHost textarea'); ta.value = bad; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-      document.querySelector("#wsSubmit").click(); return true;
-    })()`);
+    await cdp.eval(setEditorCode('#include <iostream>\nint main(){ std::cout << 999 << std::endl; return 0; }'));
+    await cdp.eval('document.querySelector("#wsSubmit").click(); true');
     const waDone = await cdp.waitFor('document.querySelector("#wsStatus").textContent.trim() === "Wrong answer (sample)"', 40000);
     ok('Submit reports wrong answer for an incorrect solution', waDone, await cdp.eval('document.querySelector("#wsStatus").textContent'));
 
@@ -301,10 +296,8 @@ async function main() {
       const runtimeLabel = await cdp.eval('document.querySelector("#wsRuntime").textContent');
       ok('workspace reports the cloud runtime before running', /Cloud/.test(runtimeLabel || ''), runtimeLabel);
 
+      await cdp.eval(setEditorCode('#include <iostream>\nint main(){ std::cout << "Hello, World!" << std::endl; return 0; }'));
       await cdp.eval(`(function(){
-        const code = '#include <iostream>\\nint main(){ std::cout << "Hello, World!" << std::endl; return 0; }';
-        if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(code);
-        else { const ta = document.querySelector('#edHost textarea'); ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); }
         document.querySelector('#wsMode [data-mode="sample"]').click();
         return true;
       })()`);

@@ -385,7 +385,7 @@ is active.
 npm start              # terminal 1 — backend must be running
 npm test               # terminal 2 — catalogue + API + real compilation (39 checks)
 npm run test:cloud     # cloud runtime contract test (13 checks, skips if offline)
-npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome
+npm run test:e2e       # headless-Chrome end-to-end (render, run, submit, cloud) — needs Chrome (44 checks)
 npm run test:deploy    # verifies a live deployment (12 checks, skips if unreachable)
 npm run test:all       # the local suites
 ```
@@ -402,7 +402,7 @@ npm run test:all       # the local suites
   asserts real output, **switches to the Cloud runtime and runs/submits real code there**
   (skipped with a notice if the cloud service is unreachable), checks the 404 page, theme
   toggle and that no page errors occur. Override the browser with `CHROME_PATH=/path/to/chrome`.
-  Current total: **43 checks**.
+  Current total: **44 checks**.
 - `tests/deploy.browser.js` — verifies a **real deployment** (default: the GitHub Pages URL)
   in real Chrome: the stylesheet truly applied, the router chose hash mode, static nav links
   were rewritten, in-app navigation stays inside the deployment, a shareable deep link opens

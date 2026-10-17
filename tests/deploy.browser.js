@@ -42,6 +42,17 @@ function ok(name, cond, detail) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Put code into the editor that is actually mounted (CPP.activeEditor is the live
+// editor handle exposed by js/views.js; models()[0] can be an orphaned model).
+const setEditorCode = (code) => `(function () {
+  var code = ${JSON.stringify(code)};
+  if (window.CPP && CPP.activeEditor && CPP.activeEditor.setValue) { CPP.activeEditor.setValue(code); return 'activeEditor'; }
+  if (window.monaco && monaco.editor.getModels().length) { monaco.editor.getModels()[0].setValue(code); return 'monaco'; }
+  var ta = document.querySelector('#edHost textarea');
+  if (ta) { ta.value = code; ta.dispatchEvent(new Event('input', { bubbles: true })); return 'textarea'; }
+  return 'none';
+})()`;
+
 function findChrome() {
   if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
   return [
@@ -194,12 +205,7 @@ async function main() {
       await cdp.send('Page.navigate', { url: URL_UNDER_TEST + '#/problems/1' });
       await cdp.waitFor('!!document.querySelector("#wsRun")', 25000);
       await cdp.waitFor('!!(window.monaco && monaco.editor.getModels().length) || !!document.querySelector("#edHost textarea")', 25000);
-      await cdp.eval(`(function () {
-        var code = '#include <iostream>\\nint main(){ std::cout << "deployed-ok" << std::endl; return 0; }';
-        if (window.monaco && monaco.editor.getModels().length) monaco.editor.getModels()[0].setValue(code);
-        else { var t = document.querySelector('#edHost textarea'); t.value = code; t.dispatchEvent(new Event('input', { bubbles: true })); }
-        return true;
-      })()`);
+      await cdp.eval(setEditorCode('#include <iostream>\nint main(){ std::cout << "deployed-ok" << std::endl; return 0; }'));
       await cdp.eval('document.querySelector("#wsRun").click(); true');
       const ran = await cdp.waitFor('document.querySelector("#wsStatus").textContent.trim() === "Completed"', 90000);
       ok('Run Code works on the deployed site (cloud runtime)', ran, await cdp.eval('document.querySelector("#wsStatus").textContent'));

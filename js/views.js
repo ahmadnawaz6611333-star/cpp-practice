@@ -654,6 +654,10 @@ int main() {
       value: starterFor(p),
       onChange: U.debounce((code) => Store.saveCode(p.id, code), 500),
     });
+    // Expose the editor that is actually mounted. Monaco can hold extra, orphaned
+    // models, so "models()[0]" is not reliably the visible one — tests (and the
+    // console) use this instead.
+    CPP.activeEditor = ws.editor;
 
     const s = Store.settings();
     const fontEl = $('#edFontVal');
