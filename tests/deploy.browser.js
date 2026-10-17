@@ -30,7 +30,7 @@ const os = require('os');
 const path = require('path');
 
 const URL_UNDER_TEST = (process.argv[2] || process.env.DEPLOY_URL ||
-  'https://ahmadnawaz6611333-star.github.io/cpp-practice/').replace(/\/?$/, '/');
+  'https://cpp-practice-37n.pages.dev/').replace(/\/?$/, '/');
 const PORT = 9366;
 const CHROME = findChrome();
 

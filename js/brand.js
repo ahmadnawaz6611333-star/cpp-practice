@@ -38,7 +38,7 @@
 
     /* -------------------------------- Links -------------------------------- */
     repository: 'https://github.com/ahmadnawaz6611333-star/cpp-practice',
-    liveUrl: 'https://ahmadnawaz6611333-star.github.io/cpp-practice/',
+    liveUrl: 'https://cpp-practice-37n.pages.dev/',
 
     /* --------------------------- Legal / contact --------------------------- */
     copyrightHolder: 'CppPractice',

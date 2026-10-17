@@ -220,11 +220,15 @@ Because the Cloud runtime needs no server of your own, the site can be published
 site — no configuration, no build step:
 
 1. Push the folder to a repository. The frontend is just `index.html`, `styles.css` and `js/`.
-2. Host it anywhere that serves static files:
-   - **GitHub Pages** — Settings → Pages → Deploy from branch → `main` / `root`. Your site
-     appears at `https://<user>.github.io/<repo>/`. This repository is live at
-     <https://ahmadnawaz6611333-star.github.io/cpp-practice/>.
-   - **Netlify / Cloudflare Pages / Vercel** — drag-and-drop the folder, or connect the repo.
+2. Host it anywhere that serves static files. This repository is published on two hosts:
+   - **Cloudflare Pages** — the address everything points at. Connect the repository, framework
+     preset *None*, empty build command, build output directory `/`. Live at
+     <https://cpp-practice-37n.pages.dev/>. It is served from a domain root, so `/ads.txt`,
+     `/robots.txt` and `/sitemap.xml` all resolve at the root — which is the one thing a GitHub
+     Pages *project* site cannot do.
+   - **GitHub Pages** — a mirror. Settings → Pages → Deploy from branch → `main` / `root`; a
+     project site appears at `https://<user>.github.io/<repo>/`, serving the same app from a
+     sub-path.
 3. Set **Settings → Runtime** to **Cloud** on each device (or leave it on `Auto`: with no local
    backend reachable it picks Cloud and tells you it did).
 
@@ -626,7 +630,10 @@ npm run check:adsense  # AdSense readiness report (what is missing, what is bloc
 
 Source: <https://github.com/ahmadnawaz6611333-star/cpp-practice>
 
-Live site (GitHub Pages, Cloud runtime): <https://ahmadnawaz6611333-star.github.io/cpp-practice/>
+Live site (Cloudflare Pages, Cloud runtime): <https://cpp-practice-37n.pages.dev/>
+
+Mirror: <https://ahmadnawaz6611333-star.github.io/cpp-practice/> — GitHub Pages serves the same
+app, but a project site cannot put `ads.txt` at the site root.
 
 The repository stores source code only. Choose how code runs:
 
