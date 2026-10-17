@@ -4,6 +4,156 @@
 const BACKEND_URL = 'http://localhost:3001';
 
 // ========================================
+// EXAMPLE PROGRAMS DATA
+// ========================================
+const examples = [
+  {
+    id: 'hello',
+    title: 'Hello World',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello World!" << endl;
+    return 0;
+}`,
+    stdin: '',
+    desc: 'Prints Hello World to console'
+  },
+  {
+    id: 'add',
+    title: 'Add Two Numbers',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}`,
+    stdin: '10 20',
+    desc: 'Reads two integers and prints their sum'
+  },
+  {
+    id: 'fibonacci',
+    title: 'Fibonacci Series',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n, t1 = 0, t2 = 1, next;
+    cin >> n;
+    for (int i = 1; i <= n; i++) {
+        cout << t1 << " ";
+        next = t1 + t2;
+        t1 = t2;
+        t2 = next;
+    }
+    cout << endl;
+    return 0;
+}`,
+    stdin: '10',
+    desc: 'Prints first N Fibonacci numbers'
+  },
+  {
+    id: 'factorial',
+    title: 'Factorial',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n, fact = 1;
+    cin >> n;
+    for (int i = 1; i <= n; i++) {
+        fact *= i;
+    }
+    cout << "Factorial: " << fact << endl;
+    return 0;
+}`,
+    stdin: '5',
+    desc: 'Calculates factorial of a number'
+  },
+  {
+    id: 'prime',
+    title: 'Prime Number Check',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n, i;
+    bool isPrime = true;
+    cin >> n;
+    if (n <= 1) isPrime = false;
+    for (i = 2; i * i <= n; i++) {
+        if (n % i == 0) {
+            isPrime = false;
+            break;
+        }
+    }
+    if (isPrime) cout << n << " is Prime" << endl;
+    else cout << n << " is not Prime" << endl;
+    return 0;
+}`,
+    stdin: '17',
+    desc: 'Checks if a number is prime'
+  },
+  {
+    id: 'pattern',
+    title: 'Star Pattern',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= i; j++) {
+            cout << "* ";
+        }
+        cout << endl;
+    }
+    return 0;
+}`,
+    stdin: '5',
+    desc: 'Prints a right triangle star pattern'
+  },
+  {
+    id: 'array-sum',
+    title: 'Array Sum',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n, sum = 0;
+    cin >> n;
+    int arr[n];
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+        sum += arr[i];
+    }
+    cout << "Sum: " << sum << endl;
+    return 0;
+}`,
+    stdin: '5\n1 2 3 4 5',
+    desc: 'Reads array and prints sum of elements'
+  },
+  {
+    id: 'syntax-error',
+    title: 'Syntax Error Example',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Missing semicolon
+    return 0;
+}`,
+    stdin: '',
+    desc: 'Intentional syntax error to test compiler diagnostics'
+  }
+];
+
+// ========================================
 // PROBLEMS DATA - 2000+ Problems (12 sections)
 // Logical reasoning + Hard 1D Array problems included
 // ========================================
@@ -294,6 +444,47 @@ generateProblems('dsa', 'Data Structures & Algorithms', 170, 1881, [
   { title: 'Logical Reasoning - Coin Change {n}', difficulty: 'Hard', statement: 'Minimum coins for amount.', input: '4\\n1 2 5\\n11', output: '3', hint: 'dp[amount] = min(dp[amount-coin]+1).' },
 ]);
 
+// ========================================
+// EXAMPLES INITIALIZATION
+// ========================================
+function initExamples() {
+  const list = document.getElementById('examplesList');
+  const countEl = document.getElementById('exampleCount');
+  if (!list || !countEl) return;
+
+  countEl.textContent = examples.length;
+
+  examples.forEach((ex, index) => {
+    const item = document.createElement('div');
+    item.className = 'example-item';
+    item.innerHTML = `
+      <div class="example-item-title">${ex.title}</div>
+      <div class="example-item-desc">${ex.desc}</div>
+    `;
+    item.onclick = () => loadExample(ex);
+    list.appendChild(item);
+  });
+}
+
+function loadExample(example) {
+  const editor = document.getElementById('codeEditor');
+  const stdinInput = document.getElementById('stdinInput');
+  const outputPanel = document.getElementById('outputPanel');
+
+  if (editor) editor.value = example.code;
+  if (stdinInput) stdinInput.value = example.stdin;
+  if (outputPanel) outputPanel.style.display = 'none';
+
+  // Highlight selected example
+  document.querySelectorAll('.example-item').forEach((item, idx) => {
+    if (examples[idx].id === example.id) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
 const categoryLabels = {
   all: "All Problems",
   io: "Input & Output",
@@ -417,8 +608,13 @@ function openProblemModal(problem) {
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
   document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
 
-  // Initialize code editor with problem template
-  initCodeEditorForProblem(problem);
+  // Initialize examples panel (only once)
+  initExamples();
+
+  // Load first example into editor
+  if (examples.length > 0) {
+    loadExample(examples[0]);
+  }
 
   const badge = document.getElementById("modalBadge");
   badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
@@ -506,23 +702,31 @@ async function executeCode() {
   const stdinInput = document.getElementById('stdinInput');
   const btnExecute = document.getElementById('btnExecute');
   const executeStatus = document.getElementById('executeStatus');
+  const executionStatusBadge = document.getElementById('executionStatusBadge');
+  const outputPanel = document.getElementById('outputPanel');
 
   if (!editor) return;
 
   const sourceCode = editor.value;
   const stdinText = stdinInput ? stdinInput.value : '';
 
-  // Show loading state
+  // --- Execution Lifecycle: Idle -> Compiling ---
   isCompiling = true;
   btnExecute.disabled = true;
-  btnExecute.textContent = 'Compiling...';
+  btnExecute.textContent = '⏳ Compiling...';
   executeStatus.style.display = 'inline';
-  executeStatus.textContent = '⏳ Compiling and executing...';
+  executeStatus.textContent = 'Compiling source code...';
   executeStatus.style.color = '#00f2ff';
 
+  if (executionStatusBadge) {
+    executionStatusBadge.textContent = 'Compiling';
+    executionStatusBadge.className = 'status-badge status-compiling';
+  }
+
+  // Show output panel immediately so user sees progress
   showOutputPanel(true);
   switchOutputTab('stdout');
-  setOutputStatus('status-running', 'Running...');
+  setOutputStatus('status-running', 'Compiling...');
   setOutputMeta('-', '-');
   setOutputText('', '');
 
@@ -537,63 +741,111 @@ async function executeCode() {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
 
-    // Hide loading
+    // --- Execution Lifecycle: Final State ---
     btnExecute.disabled = false;
-    btnExecute.textContent = '▶ Execute Code';
+    btnExecute.textContent = '▶ Run Code';
     isCompiling = false;
     executeStatus.style.display = 'none';
 
-    // Display results based on status
-    if (result.error === null || result.error === 'success') {
+    // Ensure output panel is visible
+    if (outputPanel) outputPanel.style.display = 'block';
+
+    // Display results based on backend response
+    if (result.error === null || result.error === 'success' || !result.error) {
+      // SUCCESS
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Completed';
+        executionStatusBadge.className = 'status-badge status-accepted';
+      }
       setOutputStatus('status-accepted', 'Run executed successfully');
-      setOutputMeta(result.exitCode, result.executionTimeMs);
-      setOutputText(result.stdout, result.stderr);
+      setOutputMeta(result.exitCode !== null ? result.exitCode : 0, result.executionTimeMs);
+      setOutputText(result.stdout || '(no output)', result.stderr || '');
       switchOutputTab('stdout');
     } else if (result.error === 'compilation_error') {
-      setOutputStatus('status-error', 'Compilation failed');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Compilation Error';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Compilation Failed');
       setOutputMeta(result.exitCode, result.executionTimeMs);
-      setOutputText(result.stdout || '', result.stderr || 'Compilation error details above.');
+      setOutputText(result.stdout || '', result.stderr || 'Compiler error: check stderr tab.');
       switchOutputTab('stderr');
     } else if (result.error === 'time_limit_exceeded') {
-      setOutputStatus('status-error', 'Time limit exceeded');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Time Limit Exceeded';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Time Limit Exceeded');
       setOutputMeta(result.exitCode, result.executionTimeMs);
       setOutputText(result.stdout || '', result.stderr || 'Program exceeded the time limit.');
       switchOutputTab('stdout');
     } else if (result.error === 'runtime_error') {
-      setOutputStatus('status-error', 'Runtime error');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Runtime Error';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Runtime Error');
       setOutputMeta(result.exitCode, result.executionTimeMs);
       setOutputText(result.stdout || '', result.stderr || 'Program exited with non-zero status.');
       switchOutputTab('stdout');
     } else if (result.error === 'compiler_unavailable') {
-      setOutputStatus('status-error', 'Compiler unavailable');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Compiler Unavailable';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Compiler Unavailable');
       setOutputMeta('-', '-');
       setOutputText('', result.stderr || 'No C++ compiler installed on the server. Install g++ or clang++.');
       switchOutputTab('stderr');
     } else if (result.error === 'internal_error') {
-      setOutputStatus('status-error', 'Internal error');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Internal Error';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Internal Error');
       setOutputMeta('-', '-');
       setOutputText('', result.stderr || 'An unexpected error occurred.');
       switchOutputTab('stderr');
     } else if (result.error === 'invalid_request' || result.error === 'source_too_large' || result.error === 'invalid_timeout') {
-      setOutputStatus('status-error', 'Invalid request');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Invalid Request';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Invalid Request');
       setOutputMeta('-', '-');
       setOutputText('', result.message || 'Invalid submission.');
       switchOutputTab('stderr');
     } else {
-      setOutputStatus('status-error', 'Unknown error');
+      if (executionStatusBadge) {
+        executionStatusBadge.textContent = 'Unknown Error';
+        executionStatusBadge.className = 'status-badge status-error';
+      }
+      setOutputStatus('status-error', 'Unknown Error');
       setOutputMeta('-', '-');
       setOutputText('', result.message || 'An unknown error occurred.');
       switchOutputTab('stderr');
     }
+
   } catch (err) {
     btnExecute.disabled = false;
-    btnExecute.textContent = '▶ Execute Code';
+    btnExecute.textContent = '▶ Run Code';
     isCompiling = false;
     executeStatus.style.display = 'none';
 
-    setOutputStatus('status-error', 'Backend unavailable');
+    if (executionStatusBadge) {
+      executionStatusBadge.textContent = 'Request Error';
+      executionStatusBadge.className = 'status-badge status-error';
+    }
+
+    if (outputPanel) outputPanel.style.display = 'block';
+
+    setOutputStatus('status-error', 'Backend Unavailable');
     setOutputMeta('-', '-');
     setOutputText('', 'Cannot connect to the compiler backend at ' + BACKEND_URL + '\n\nMake sure the backend server is running:\n  cd cpp-practice-website\n  npm install\n  npm start\n\nThen check http://localhost:3001/health');
     switchOutputTab('stderr');

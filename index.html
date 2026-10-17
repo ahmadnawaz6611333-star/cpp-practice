@@ -425,90 +425,39 @@
         </div>
       </div>
 
-      <!-- Split Layout -->
-      <div class="problem-layout">
-        <!-- LEFT: Problem Statement -->
-        <div class="problem-left">
-          <div class="problem-section">
-            <h3 class="section-title">Problem Statement</h3>
-            <div class="problem-statement" id="modalStatement"></div>
+      <!-- Three-Panel IDE Layout -->
+      <div class="ide-layout">
+        <!-- PANEL 1: Examples (Left) -->
+        <div class="ide-panel examples-panel">
+          <div class="panel-header">
+            <span class="panel-title">📁 Examples</span>
+            <span class="panel-count" id="exampleCount">0</span>
           </div>
-
-          <div class="problem-section">
-            <h3 class="section-title">Example</h3>
-            <div class="example-box">
-              <div class="example-row">
-                <span class="example-label">Input</span>
-                <pre class="example-code" id="modalExampleInput"></pre>
-              </div>
-              <div class="example-row">
-                <span class="example-label">Output</span>
-                <pre class="example-code" id="modalExampleOutput"></pre>
-              </div>
-            </div>
-          </div>
-
-          <div class="problem-section hint-section">
-            <h3 class="section-title">💡 Hint (Logic &amp; Formula)</h3>
-            <div class="hint-content" id="modalHint"></div>
-          </div>
-
-          <div class="problem-section instructions-section">
-            <h3 class="section-title">Instructions</h3>
-            <div class="modal-instructions">
-              <ol>
-                <li>Read the problem statement carefully above.</li>
-                <li>Check the Example input/output shown.</li>
-                <li>Read the Hint section for logic and formula — <strong>no code is given</strong>.</li>
-                <li>Write your C++ code in your own IDE (VS Code, Code::Blocks, etc.).</li>
-                <li>Test with the sample input/output.</li>
-                <li>Mark the problem as solved when complete.</li>
-              </ol>
-            </div>
+          <div class="examples-list" id="examplesList">
+            <!-- Examples loaded by JavaScript -->
           </div>
         </div>
 
-        <!-- RIGHT: Interactive Code Editor -->
-        <div class="problem-right">
-          <div class="editor-header">
-            <span class="editor-lang">C++ (G++)</span>
-            <div class="editor-actions-top">
-              <button class="btn btn-outline btn-small" id="btnCopyStatement">Copy Statement</button>
-              <button class="btn btn-outline btn-small" id="btnMarkSolvedRight">Mark as Solved</button>
-            </div>
+        <!-- PANEL 2: Input / Output / Execute (Middle) -->
+        <div class="ide-panel io-panel">
+          <div class="panel-header">
+            <span class="panel-title">⚡ Execute</span>
           </div>
 
-          <!-- Execute Button (prominently placed above editor) -->
+          <!-- Execute Button -->
           <div class="execute-bar">
             <button class="btn btn-primary btn-execute" id="btnExecute">
-              ▶ Execute Code
+              ▶ Run Code
             </button>
             <span class="execute-status" id="executeStatus" style="display:none;"></span>
           </div>
 
-          <!-- Code Editor -->
-          <div class="code-editor-card">
-            <div class="code-header">
-              <div class="code-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <span class="code-lang">solution.cpp</span>
-            </div>
-            <div class="code-body">
-              <textarea id="codeEditor" spellcheck="false" wrap="off">#include <iostream>
-using namespace std;
-
-int main() {
-    // Write your C++ code here
-    return 0;
-}
-</textarea>
-            </div>
+          <!-- Execution Status Badge -->
+          <div class="execution-status-container" style="margin-bottom: 1rem;">
+            <span id="executionStatusBadge" class="status-badge status-idle">Idle</span>
           </div>
 
-          <!-- Stdin Input Panel -->
+          <!-- STDIN Panel -->
           <div class="stdin-panel">
             <div class="stdin-header">
               <span class="stdin-label">📥 stdin (Input)</span>
@@ -536,9 +485,38 @@ int main() {
               <pre id="outputStderr" style="display:none;"></pre>
             </div>
           </div>
+        </div>
 
-          <div class="editor-actions-bottom">
-            <button class="btn btn-primary" id="modalMarkSolved">Mark as Solved ✓</button>
+        <!-- PANEL 3: Code Editor (Right) -->
+        <div class="ide-panel editor-panel">
+          <div class="editor-header">
+            <span class="editor-lang">C++ (G++)</span>
+            <div class="editor-actions-top">
+              <button class="btn btn-outline btn-small" id="btnCopyStatement">Copy Statement</button>
+              <button class="btn btn-outline btn-small" id="btnMarkSolvedRight">Mark as Solved</button>
+            </div>
+          </div>
+
+          <!-- Code Editor -->
+          <div class="code-editor-card">
+            <div class="code-header">
+              <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <span class="code-lang">solution.cpp</span>
+            </div>
+            <div class="code-body">
+              <textarea id="codeEditor" spellcheck="false" wrap="off">#include <iostream>
+using namespace std;
+
+int main() {
+    // Write your C++ code here
+    return 0;
+}
+</textarea>
+            </div>
           </div>
         </div>
       </div>
