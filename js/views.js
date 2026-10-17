@@ -107,8 +107,8 @@
             <div class="hero-badge"><span class="pulse-dot"></span> ${total.toLocaleString()} curated C++ problems · 12 sections</div>
             <h1>Master C++ <span class="gradient-text">one real problem</span> at a time.</h1>
             <p class="lead">
-              Read the statement, open the built-in editor, and run your code against a genuine local
-              <code>g++</code> compiler. Learn with logic and hints — not copy-paste answers.
+              Read the statement, open the built-in editor, and run your code against a genuine
+              <code>g++</code> compiler — on your own machine or in the cloud. Learn with logic and hints — not copy-paste answers.
             </p>
             <div class="hero-buttons">
               <a class="btn btn-large btn-primary" href="${href('/problems')}" data-link>Start practicing →</a>
@@ -232,10 +232,10 @@
           </div>
           <div class="grid-3">
             ${[
-              ['⚙️', 'Real compiler, not a simulator', 'Your C++17 code is compiled by g++ and actually executed. Empty output is shown as empty — never faked.'],
+              ['⚙️', 'Real compiler, not a simulator', 'Your C++17 code is compiled by g++ (on your machine) or by GCC inside the cloud service — then actually executed. Empty output is shown as empty — never faked.'],
               ['🧠', 'Hints, not spoilers', 'Every problem ships with logic and formula hints instead of copy-paste code.'],
               ['📈', 'Track everything', 'Solved, attempted and bookmarked problems, per-section progress, activity heatmap and streaks.'],
-              ['💾', 'Private by default', 'Progress, code and preferences live in your browser. Nothing is uploaded.'],
+              ['💾', 'Private by default', 'Progress, code and preferences live in your browser. With the Local runtime your code never leaves your machine.'],
               ['🧩', '2,040 problems', 'Input/output, variables, operators, conditions, loops, functions, arrays, strings, pointers, OOP, STL and DSA.'],
               ['⚡', 'Fast & responsive', 'Virtualised pagination, keyboard-friendly controls, light and dark themes, mobile layout.'],
             ].map(([i, t, d]) => `
