@@ -1,5 +1,5 @@
 /* ==========================================================================
- * CPPractice Lab — Router & bootstrap
+ * CppPractice — Router & bootstrap
  * Hash-based fallback (file://) plus clean history routing when served over
  * HTTP by the Node backend.
  * ========================================================================== */

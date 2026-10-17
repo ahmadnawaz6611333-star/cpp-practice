@@ -1,5 +1,5 @@
 /**
- * CPPractice Lab — Local C++ Compiler Backend
+ * CppPractice — Local C++ Compiler Backend
  * ---------------------------------------------------------------------------
  * Node.js + Express service that:
  *   1. Serves the static frontend (so deep links like /problems/1001 work).

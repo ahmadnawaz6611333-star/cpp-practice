@@ -56,10 +56,27 @@ const live = String(brand.liveUrl || '');
 if (/^https:\/\//.test(live)) pass('liveUrl is https: ' + live);
 else fail('js/brand.js → liveUrl must be an https URL');
 if (/\.github\.io\//.test(live) || /\.github\.io\/?$/.test(live)) {
-  warn('liveUrl is a *.github.io address — AdSense needs a domain you own, because ads.txt must sit at the domain root');
-  warn('  fix: buy a domain, point it at the host, then set liveUrl in js/brand.js and run npm run brand:sync');
+  warn('liveUrl is a *.github.io address: a GitHub Pages project site is served from /<repo>/, so its');
+  warn('  ads.txt cannot sit at the site root. ads.txt is optional (Google: "not mandatory, but highly');
+  warn('  recommended"), so applying is still possible. An address of your own is recommended — free');
+  warn('  options: cpppractice.eu.org (nic.eu.org) or cpppractice.is-a.dev; see README → Free options.');
 } else {
-  pass('site is on an owned domain (not github.io) — ads.txt can live at the root');
+  pass('the site is on an address of its own, so ads.txt can be served at the site root');
+}
+
+/* ---------------------------------- docs --------------------------------- */
+// The README's links are hand-maintained (see scripts/sync-brand.js), so verify
+// them here rather than rewriting them.
+console.log('\nDocumentation');
+{
+  const readme = read('README.md') || '';
+  const liveNoSlash = String(brand.liveUrl || '').replace(/\/$/, '');
+  if (liveNoSlash && readme.indexOf(liveNoSlash) !== -1) pass('README.md links to the live site');
+  else fail('README.md does not mention liveUrl (' + brand.liveUrl + ') — update it by hand');
+  if (brand.repository && readme.indexOf(brand.repository) !== -1) pass('README.md links to the repository');
+  else fail('README.md does not mention the repository URL');
+  if (/CPPractice/.test(readme)) fail('the old name "CPPractice" still appears in README.md');
+  else pass('no stale brand name in README.md');
 }
 
 /* ---------------------------------- SEO ---------------------------------- */
@@ -128,7 +145,8 @@ else if (adsOn) pass('ads.txt authorises ' + pub);
 else info('ads.txt is a placeholder (advertising is off)');
 
 if (/\.github\.io/.test(live)) {
-  warn('on a *.github.io project site ads.txt is not served from the domain root, so Google cannot verify it');
+  warn('on a *.github.io project site ads.txt is served at /<repo>/ads.txt, which is not the site root, so');
+  warn('  AdSense will report its ads.txt status as "Not found" (this does not block the review)');
 }
 
 /* ---------------------------- sitemap / robots ---------------------------- */

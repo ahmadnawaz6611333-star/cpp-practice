@@ -54,7 +54,7 @@ cpp-practice-website/
 ├── styles.css                  # Design system (tokens, components, themes, responsive)
 ├── _redirects                  # SPA fallback for static hosts (Netlify/Cloudflare Pages)
 ├── .nojekyll                   # Keeps GitHub Pages from running Jekyll
-├── ads.txt                     # AdSense authorisation (must sit at a domain root)
+├── ads.txt                     # AdSense authorisation (belongs at the site root; optional)
 ├── robots.txt                  # Written by `npm run sitemap`
 ├── sitemap.xml                 # Written by `npm run sitemap`
 ├── js/
@@ -273,34 +273,68 @@ CMD ["node", "server.js"]
 
 ### Does it cost money?
 
-Only one thing, and it is genuinely unavoidable:
-
-| Item | Cost | Required? |
-| ---- | ---- | --------- |
+| Item | Cost | Needed? |
+| ---- | ---- | ------- |
 | AdSense account | **free** | yes, to run ads |
 | The code in this repository | **free** (already done) | — |
-| A **domain you own** (e.g. `cpppractice.com`) | **≈ $10–12 / year** | **yes** — see below |
+| A **free address** (see the table below) | **free** | optional |
+| A **domain you own** (e.g. `cpppractice.com`) | **≈ $10–12 / year** | recommended, not required |
 | Paid hosting | not needed | — |
 | A paid email address | not needed | — |
 
-So: **no money is required to prepare the site** (that work is already in this repo), but
-**AdSense itself needs a domain you own**, and that is the one real cost — roughly the price
-of a coffee per year. You also need to be 18+ and have a bank account/address for payouts.
+**What Google's own documentation actually says** (checked, not assumed):
 
-**Why the domain is mandatory.** Google will not approve `https://<user>.github.io/<repo>/`:
+- **`ads.txt` is not mandatory.** Google's [Ads.txt guide](https://support.google.com/adsense/answer/12171612)
+  states: *"Use of ads.txt is not mandatory, but it's highly recommended."* If you do publish one, it
+  belongs in the **root directory of the site** — the folder immediately after the domain name, e.g.
+  `https://your-site/ads.txt`.
+- **No published rule requires a domain you bought.** Blogger users run AdSense on
+  `*.blogspot.com` subdomains, so a subdomain is not automatically disqualified. What matters is
+  that the site is yours, is verifiable, and has real content.
+- **All three ownership-verification methods work on a free address**, because they live at the
+  root of *your* host: the AdSense code snippet, the `google-adsense-account` meta tag (already
+  generated here) and ads.txt.
 
-- `ads.txt` must be served from the **root of the domain** (`https://your-domain/ads.txt`).
-  A GitHub Pages *project* site is served from `/<repo>/`, so it can never satisfy this.
-- Google wants the site to belong to you. A shared subdomain does not.
+So: **you can apply for free today with the current URL — it costs nothing to find out.** If the
+review comes back citing ownership, that is the signal to get an address of your own.
 
-Buy a domain (`.com` is ~$10–12/year; `cpppractice.com` is currently unregistered), point it
-at whatever host serves the folder, and HTTPS stays free — GitHub Pages, Netlify and
-Cloudflare Pages all issue a certificate for a custom domain automatically.
+**When you can afford it, buy a domain anyway.** It is the only address you actually control, a
+free subdomain can be withdrawn or policed by its operator, and GitHub Pages serves a *project*
+site from `/<repo>/`, so `/ads.txt` cannot sit at the site root without a custom domain. A `.com`
+is roughly the price of a coffee per year, and HTTPS stays free on GitHub Pages, Netlify and
+Cloudflare Pages.
+
+### Free options (no money at all)
+
+| Option | Result | Time | Root-serving |
+| ------ | ------ | ---- | ------------ |
+| **`cpppractice.eu.org`** | Free domain-style name; `eu.org` is in the Public Suffix List, so search engines treat it as its own site | request at [nic.eu.org](https://nic.eu.org/) — approval is manual, often weeks | ✅ |
+| **`cpppractice.is-a.dev`** | Developer-flavoured subdomain from [is-a.dev](https://github.com/is-a-dev/register) (also PSL-listed); fork + pull request, merged in days | days | ✅ |
+| **`<project>.pages.dev`** / `<project>.netlify.app` | Instant free hosting, but the address openly says "hosting platform" | minutes | ✅ |
+| **Keep `github.io/<repo>`** | Works right now, nothing to do | — | ❌ (`/ads.txt` would only be at `/<repo>/ads.txt`) |
+
+**The pick here is `cpppractice.eu.org`** — it was unregistered when checked, it reads like a real
+domain rather than a hosting subdomain, and because `eu.org` is a public suffix it is not treated
+as "part of somebody else's site". Take `is-a.dev` instead if you want it live in days rather than
+weeks.
+
+Steps for either free name:
+
+1. Request the name (`nic.eu.org` form, or the `is-a.dev` fork + PR). Follow *their* instructions —
+   the is-a.dev README explicitly warns that AI-generated requests are rejected.
+2. Point its DNS at GitHub Pages: a `CNAME` record for the name →
+   `ahmadnawaz6611333-star.github.io`.
+3. In this repository add a `CNAME` file containing the name, and set it as the custom domain in
+   **Settings → Pages**. GitHub then serves the site at the *root* of that name and issues the TLS
+   certificate automatically.
+4. Update `liveUrl` in `js/brand.js`, then run `npm run brand:sync && npm run sitemap`.
+5. Verify it for real: `node tests/deploy.browser.js https://cpppractice.eu.org/` — the same
+   19-check suite that proves the GitHub Pages deployment works, run against the new address.
 
 ### What is already done in this repository
 
-- `js/brand.js` — your contact email and jurisdiction are the only fields you must fill in
-  (the AdSense check refuses to pass while they are placeholders).
+- `js/brand.js` — the single config file. The contact email is already set (and shown on the
+  Privacy Policy page); `npm run check:adsense` fails if it is ever blank or a placeholder.
 - `/privacy` — a real Privacy Policy: every `localStorage` key listed, what leaves your device
   in Local vs Cloud mode, the advertising cookies, opt-out links, GDPR legal bases and your
   users' rights (access/export, erasure, withdrawal of consent).
@@ -316,13 +350,16 @@ Cloudflare Pages all issue a certificate for a custom domain automatically.
 
 ### Checklist
 
-1. **Buy a domain** and point it at your host (GitHub Pages / Netlify / Cloudflare Pages).
-2. Edit `js/brand.js`: set `liveUrl` to the domain and `contactEmail` to a real address you
-   read. Set `jurisdiction` if you are not in Pakistan.
-3. `npm run brand:sync && npm run sitemap` — writes the new canonical/OG tags, the
+1. **Get an address — or skip this step.** Buy a domain, or take a free name from the table
+   above, or simply apply with the current URL. If you use an address of your own, set it as the
+   custom domain in **Settings → Pages** and update `liveUrl` in `js/brand.js` first.
+2. Edit `js/brand.js` if needed: `contactEmail` is already set to a real address (the Privacy
+   Policy page shows it — it is deliberately kept out of the repository docs), and
+   `jurisdiction` is `Pakistan` — change it if you are elsewhere.
+3. `npm run brand:sync && npm run sitemap` — writes the canonical/OG tags, the
    verification meta once a publisher id exists, `ads.txt` and `robots.txt`.
 4. **Apply at <https://adsense.google.com>**, add the site, and verify ownership (the meta tag
-   or ads.txt is already in place and is regenerated from `js/ads.js`).
+   or ads.txt is already in place and is regenerated from `js/ads.js`). Applying costs nothing.
 5. Once approved, paste your `ca-pub-…` id into `js/ads.js`, create an ad unit per placement
    and paste each unit id into `slots` (`home`, `problems`, `problem`, `reference`).
 6. Run `npm run check:adsense` — it must say *ready to apply* (or list exactly what is left) —
@@ -341,6 +378,9 @@ Cloudflare Pages all issue a certificate for a custom domain automatically.
   *useful*, but without visitors ads earn close to nothing. See the note below.
 - **Ads and a coding workspace are an awkward mix** — that is why every placement here is
   below the content, clearly labelled `Advertisement`, and never inside the editor.
+- **A free address can be taken away.** `eu.org`, `is-a.dev` and the free hosting platforms are
+  run by volunteers or companies whose terms can change; and none of them is a substitute for a
+  domain you own once you can afford one.
 
 ---
 

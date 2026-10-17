@@ -226,6 +226,15 @@ console.log('\nGenerated files match js/brand.js');
   ok('package.json exposes the brand tooling',
     pkg.scripts['brand:sync'] && pkg.scripts['check:adsense'] && pkg.scripts['sitemap'] && pkg.scripts['test:adsense']);
 }
+{
+  const readme = read('README.md') || '';
+  ok('README links to the live site', readme.indexOf(String(brand.liveUrl).replace(/\/$/, '')) !== -1);
+  ok('README links to the repository', readme.indexOf(brand.repository) !== -1);
+  ok('README keeps the contact email in js/brand.js, not in the docs', readme.indexOf(brand.contactEmail) === -1);
+  // Regression guard: sync-brand once rewrote every GitHub URL, which clobbered
+  // unrelated links such as the is-a.dev registration repo.
+  ok('README keeps unrelated third-party links intact', readme.indexOf('https://github.com/is-a-dev/register') !== -1);
+}
 ok('server.js takes the service name from js/brand.js', /BRAND\.name/.test(read('server.js') || ''));
 ok('the server serves ads.txt, robots.txt and sitemap.xml', /app\.get\('\/ads\.txt'/.test(read('server.js') || '') && /app\.get\('\/sitemap\.xml'/.test(read('server.js') || ''));
 

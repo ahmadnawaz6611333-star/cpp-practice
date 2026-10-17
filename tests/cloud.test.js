@@ -1,5 +1,5 @@
 /**
- * CPPractice Lab — cloud runtime contract test
+ * CppPractice — cloud runtime contract test
  * ---------------------------------------------------------------------------
  * The browser's Cloud runtime (CPP.api.cloud in js/core.js) depends on a few
  * concrete facts about the hosted Judge0 CE API. This test asserts those facts
@@ -32,7 +32,7 @@ async function getJson(pathname, ms) {
 
 async function main() {
   console.log('================================================');
-  console.log('CPPractice Lab · cloud runtime contract test');
+  console.log('CppPractice · cloud runtime contract test');
   console.log('target:', BASE);
   console.log('================================================');
 

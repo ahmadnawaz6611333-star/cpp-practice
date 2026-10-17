@@ -42,9 +42,8 @@
 
     /* --------------------------- Legal / contact --------------------------- */
     copyrightHolder: 'CppPractice',
-    // AdSense + privacy law require a reachable contact address. Replace this
-    // before applying — `npm run check:adsense` fails loudly while it is unset.
-    contactEmail: 'YOUR-EMAIL@example.com',
+    // AdSense + privacy law require a reachable contact address.
+    contactEmail: 'ahmadnawaz6611333@gmail.com',
     // Used by the Terms of Service. Change if you are not in Pakistan.
     jurisdiction: 'Pakistan',
     // Shown on the Privacy Policy and Terms pages.

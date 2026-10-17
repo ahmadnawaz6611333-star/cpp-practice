@@ -1,5 +1,5 @@
 /* ==========================================================================
- * CPPractice Lab — Problem Catalogue Data
+ * CppPractice — Problem Catalogue Data
  * --------------------------------------------------------------------------
  * IMPORTANT: This block is the ORIGINAL problem collection extracted verbatim
  * from the previous script.js. It contains the full set of problems

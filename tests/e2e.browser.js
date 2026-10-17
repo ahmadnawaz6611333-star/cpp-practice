@@ -1,5 +1,5 @@
 /**
- * CPPractice Lab — end-to-end browser test
+ * CppPractice — end-to-end browser test
  * ---------------------------------------------------------------------------
  * Drives a real headless Chrome instance through the Chrome DevTools Protocol
  * (no third-party dependencies — Node's built-in fetch + WebSocket are used)
@@ -117,7 +117,7 @@ async function pageTargets() {
 /* ----------------------------- main suite ------------------------------ */
 async function main() {
   console.log('================================================');
-  console.log('CPPractice Lab · end-to-end browser test');
+  console.log('CppPractice · end-to-end browser test');
   console.log('================================================');
   if (!CHROME) {
     console.log('⚠️  No Chrome/Edge found — skipping browser test (set CHROME_PATH).');
@@ -151,9 +151,23 @@ async function main() {
     await cdp.send('Page.enable');
     await cdp.send('Log.enable');
 
+    // Navigate in a way that cannot be fooled by the *previous* document. The
+    // unique query token can only be observed once the new page has committed,
+    // so a click that lands on a stale document — which used to make the theme
+    // test flake — is impossible.
+    let navSeq = 0;
+    async function load(route, readyExpr, timeoutMs) {
+      const token = 'e2e' + (++navSeq) + 'x' + Date.now();
+      const url = BASE + route + (route.indexOf('?') === -1 ? '?' : '&') + token + '=1';
+      await cdp.send('Page.navigate', { url });
+      return cdp.waitFor(
+        `location.search.indexOf(${JSON.stringify(token)}) !== -1 && !!window.CPP && (${readyExpr || 'true'})`,
+        timeoutMs || 20000
+      );
+    }
+
     /* ---------------- 1. Home page ---------------- */
-    await cdp.send('Page.navigate', { url: BASE + '/' });
-    let loaded = await cdp.waitFor('!!document.querySelector(".hero h1")', 15000);
+    let loaded = await load('/', '!!document.querySelector(".hero h1")');
     ok('home page renders hero', loaded);
     const heroText = await cdp.eval('document.querySelector(".hero h1").textContent');
     ok('hero mentions mastering C++', /Master C\+\+/.test(heroText || ''), heroText);
@@ -439,8 +453,10 @@ async function main() {
     ok('the test restored an unconfigured, ad-free site', bc.restored && bc.restored.enabled === false && bc.restored.units === 0);
 
     /* ---------------- 8. Theme toggle ---------------- */
-    await cdp.send('Page.navigate', { url: BASE + '/' });
-    await cdp.waitFor('!!document.querySelector("#themeToggle")', 15000);
+    await load('/', '!!document.querySelector("#themeToggle")');
+    // Start from a known theme so the assertions do not depend on anything a
+    // previous section left in storage.
+    await cdp.eval('window.CPP.theme.apply("dark"); true');
     await cdp.eval('document.querySelector("#themeToggle").click(); true');
     const theme = await cdp.eval('document.documentElement.getAttribute("data-theme")');
     ok('theme toggle switches to light', theme === 'light', theme);

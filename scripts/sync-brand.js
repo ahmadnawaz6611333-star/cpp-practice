@@ -129,17 +129,15 @@ const slug = String(brand.name).toLowerCase().replace(/[^a-z0-9-]+/g, '-').repla
 }
 
 /* -------------------------------- README.md ------------------------------ */
+// Only the top heading is rewritten. The repository / live-site URLs inside the
+// README are maintained by hand and *verified* by `npm run check:adsense` and
+// tests/adsense.test.js — a blanket URL rewrite here previously clobbered
+// unrelated links (e.g. https://github.com/is-a-dev/register).
 {
   const readmePath = path.join(ROOT, 'README.md');
   if (fs.existsSync(readmePath)) {
     let next = fs.readFileSync(readmePath, 'utf8');
     next = next.replace(/^#\s+.*$/m, '# ' + brand.name);
-    if (brand.repository) {
-      next = next.replace(/https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/g, brand.repository);
-    }
-    if (brand.liveUrl) {
-      next = next.replace(/https:\/\/[A-Za-z0-9_.-]+\.github\.io\/[A-Za-z0-9_.-]+\/?/g, canonical());
-    }
     stage('README.md', next);
   }
 }

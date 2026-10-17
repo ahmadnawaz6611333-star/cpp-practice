@@ -1,5 +1,5 @@
 /* ==========================================================================
- * CPPractice Lab — Editor layer
+ * CppPractice — Editor layer
  * Monaco Editor loaded from CDN with an automatic, fully-functional fallback
  * to a plain <textarea> when Monaco cannot be loaded (e.g. offline).
  * ========================================================================== */

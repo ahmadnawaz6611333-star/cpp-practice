@@ -1,5 +1,5 @@
 /* ==========================================================================
- * CPPractice Lab — Core layer
+ * CppPractice — Core layer
  * Storage (preferences / progress / bookmarks), theming, toasts, utilities
  * and the compiler-backend API client.
  * ========================================================================== */
