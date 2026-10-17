@@ -578,6 +578,11 @@ int main() {
               <span>Memory: <b id="wsMem">n/a</b></span>
             </div>
 
+            <div class="io-field">
+              <div class="head"><span class="t">Program input (stdin)</span><span class="spacer"></span><span class="small muted" id="wsStdinNote">${sampleIn ? 'Sample input loaded' : 'This problem has no sample input — type yours here'}</span></div>
+              <textarea id="wsStdin" spellcheck="false" placeholder="Type what your program should read, e.g. 10 20" aria-label="Program input (stdin)"></textarea>
+            </div>
+
             <div class="console-tabs" role="tablist">
               <button class="console-tab active" data-ctab="out" role="tab">Output</button>
               <button class="console-tab" data-ctab="err" role="tab">Errors <span class="dotmark hidden" id="wsErrDot"></span></button>
@@ -585,11 +590,6 @@ int main() {
             </div>
             <pre class="console empty" id="wsConsole" tabindex="0" aria-live="polite">Run your code to see the program's real output here.</pre>
             <div class="test-results hidden" id="wsTests"></div>
-
-            <div class="io-field">
-              <div class="head"><span class="t">Custom input (stdin)</span><span class="spacer"></span><span class="small muted" id="wsStdinNote">Sample input loaded</span></div>
-              <textarea id="wsStdin" spellcheck="false" placeholder="Type the input your program should read…" aria-label="Custom program input"></textarea>
-            </div>
           </section>
 
           <!-- RIGHT: editor -->
@@ -731,9 +731,9 @@ int main() {
       ws.mode = b.dataset.mode;
       if (ws.mode === 'sample') {
         stdinEl.value = sampleIn;
-        $('#wsStdinNote').textContent = 'Sample input loaded';
+        $('#wsStdinNote').textContent = sampleIn ? 'Sample input loaded' : 'This problem has no sample input — type yours here';
       } else {
-        $('#wsStdinNote').textContent = 'Your custom input';
+        $('#wsStdinNote').textContent = 'Your custom input — the program reads this';
       }
     }));
 
@@ -748,16 +748,30 @@ int main() {
       if (showTests) renderTests();
       else paintConsole();
     }
+    // The console shows the input above the program's output, the way a terminal
+    // shows what you type. The echo is dimmed and prefixed so it can never be
+    // mistaken for something the program printed — and a program that was given
+    // no input says so, instead of silently doing nothing.
     function paintConsole() {
       if (ws.activeTab === 'err') {
         consoleEl.textContent = ws.stderr || 'No compiler or runtime errors. ✅';
         consoleEl.classList.toggle('err', !!ws.stderr);
         consoleEl.classList.toggle('empty', !ws.stderr);
-      } else {
-        consoleEl.textContent = ws.stdout !== '' ? ws.stdout : 'Program produced no output.';
-        consoleEl.classList.toggle('err', false);
-        consoleEl.classList.toggle('empty', ws.stdout === '');
+        return;
       }
+      const dim = 'style="opacity:.6"';
+      const fed = (ws.stdinUsed == null ? '' : String(ws.stdinUsed)).replace(/\n+$/, '');
+      const nLines = fed ? fed.split('\n').length : 0;
+      const head = fed
+        ? '<span ' + dim + '>▸ input — ' + esc(ws.stdinLabel || 'stdin') + ' · ' + nLines + ' line' + (nLines === 1 ? '' : 's') + '</span>\n' +
+          esc(fed) + '\n'
+        : '<span ' + dim + '>▸ input — none: nothing was fed to the program, so it read nothing</span>\n';
+      const body = ws.stdout !== ''
+        ? esc(ws.stdout)
+        : '<span ' + dim + '>(the program printed nothing — if it reads input, type it in the box above, then press Run Code again)</span>';
+      consoleEl.innerHTML = head + '<span ' + dim + '>▸ output</span>\n' + body;
+      consoleEl.classList.toggle('err', false);
+      consoleEl.classList.toggle('empty', ws.stdout === '');
     }
     function renderTests() {
       if (!ws.tests.length) {
@@ -848,6 +862,10 @@ int main() {
       consoleEl.className = 'console empty';
       $('#wsErrDot').classList.add('hidden');
       setMetrics(null, null, null);
+      // The exact text that will be fed to the program, so the console can show
+      // it next to the output it produced.
+      ws.stdinUsed = stdinEl.value;
+      ws.stdinLabel = ws.mode === 'custom' ? 'your input' : 'the problem sample';
       Store.markAttempted(p.id);
       Store.recordActivity('run');
       try {
@@ -882,6 +900,9 @@ int main() {
       consoleEl.className = 'console empty';
       $('#wsErrDot').classList.add('hidden');
       setMetrics(null, null, null);
+      // Submit always runs against the problem's own sample, never the box.
+      ws.stdinUsed = sampleIn;
+      ws.stdinLabel = 'the problem sample';
       Store.markAttempted(p.id);
       Store.recordActivity('run');
       try {

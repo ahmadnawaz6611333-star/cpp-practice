@@ -268,6 +268,14 @@ async function main() {
     await cdp.waitFor('!/Compiling/.test(document.querySelector("#wsStatus").textContent)', 40000);
     const customOut = await cdp.eval('document.querySelector("#wsConsole").textContent');
     ok('custom stdin (7 + 35 = 42) works', /42/.test(customOut || ''), JSON.stringify(customOut));
+    ok('the console shows the input that was actually fed to the program',
+      /▸ input/.test(customOut || '') && /7 35/.test(customOut || ''), JSON.stringify((customOut || '').slice(0, 90)));
+    ok('the output is labelled, so the echo cannot be mistaken for program output',
+      /▸ output/.test(customOut || ''));
+    const boxBeforeConsole = await cdp.eval(
+      '(document.querySelector("#wsStdin").compareDocumentPosition(document.querySelector("#wsConsole")) & Node.DOCUMENT_POSITION_FOLLOWING) ? "before" : "after"'
+    );
+    ok('the input box sits above the console so it cannot be missed', boxBeforeConsole === 'before', boxBeforeConsole);
 
     // Submit the correct solution against the problem's sample (5 3 -> 8)
     await cdp.eval('document.querySelector("#wsSubmit").click(); true');
