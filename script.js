@@ -1,7 +1,6 @@
 // ========================================
 // BACKEND CONFIGURATION
 // ========================================
-// In production, set this via environment variable or use relative URL
 const BACKEND_URL = 'http://localhost:3001';
 
 // ========================================
@@ -29,7 +28,7 @@ function generateProblems(category, categoryLabel, count, baseId, templates) {
 
 // 1. INPUT & OUTPUT (170 problems)
 generateProblems('io', 'Input & Output', 170, 1, [
-  { title: 'Hello World', difficulty: 'Easy', statement: 'Write a C++ program that prints "Hello, World!" to the console.', input: 'None', output: 'Hello, World!', hint: 'Use #include <iostream> and std::cout to print text. Remember to add endl or \n for a new line.' },
+  { title: 'Hello World', difficulty: 'Easy', statement: 'Write a C++ program that prints "Hello, World!" to the console.', input: 'None', output: 'Hello, World!', hint: 'Use #include <iostream> and std::cout to print text. Remember to add endl or \\n for a new line.' },
   { title: 'Add Two Numbers', difficulty: 'Easy', statement: 'Read two integers and print their sum.', input: '5 3', output: '8', hint: 'Declare two int variables, read them using cin, add them with +, and print the result using cout.' },
   { title: 'Area of a Circle {n}', difficulty: 'Easy', statement: 'Read radius and print area (PI = 3.14159).', input: '5', output: '78.53975', hint: 'Formula: Area = π × r². Use double for radius and area.' },
   { title: 'Simple Interest {n}', difficulty: 'Easy', statement: 'Read P, R, T. Print simple interest.', input: '1000 5 2', output: '100', hint: 'Formula: Simple Interest = (P × R × T) / 100.' },
@@ -38,7 +37,7 @@ generateProblems('io', 'Input & Output', 170, 1, [
   { title: 'Celsius to Fahrenheit {n}', difficulty: 'Easy', statement: 'Convert Celsius to Fahrenheit.', input: '0', output: '32', hint: 'Formula: F = (C × 9/5) + 32.' },
   { title: 'Even or Odd {n}', difficulty: 'Easy', statement: 'Read integer and print Even or Odd.', input: '7', output: 'Odd', hint: 'Use modulus operator %. If number % 2 == 0, it is Even; otherwise Odd.' },
   { title: 'Calculate Percentage {n}', difficulty: 'Easy', statement: 'Read marks out of 100 and print percentage.', input: '85', output: '85', hint: 'Percentage = (marks / total) × 100.' },
-  { title: 'Size of Data Types {n}', difficulty: 'Easy', statement: 'Print sizes of int, char, float, double.', input: 'None', output: 'int: 4\nchar: 1\nfloat: 4\ndouble: 8', hint: 'Use sizeof() operator on each data type.' },
+  { title: 'Size of Data Types {n}', difficulty: 'Easy', statement: 'Print sizes of int, char, float, double.', input: 'None', output: 'int: 4\\nchar: 1\\nfloat: 4\\ndouble: 8', hint: 'Use sizeof() operator on each data type.' },
   { title: 'Multiply Two Numbers {n}', difficulty: 'Easy', statement: 'Read two integers and print product.', input: '6 7', output: '42', hint: 'Use * operator to multiply two integers.' },
   { title: 'Divide Two Numbers {n}', difficulty: 'Easy', statement: 'Read two integers and print quotient/remainder.', input: '17 5', output: '3 2', hint: 'Use / for quotient and % for remainder.' },
   { title: 'Average of Three Numbers {n}', difficulty: 'Easy', statement: 'Read three numbers and print average.', input: '10 20 30', output: '20', hint: 'Average = (a + b + c) / 3.' },
@@ -48,8 +47,8 @@ generateProblems('io', 'Input & Output', 170, 1, [
   { title: 'Formatted Output {n}', difficulty: 'Easy', statement: 'Print float with 2 decimal places.', input: '3.14159', output: '3.14', hint: 'Use #include <iomanip> and std::fixed with std::setprecision(2).' },
   { title: 'Multiple Inputs {n}', difficulty: 'Easy', statement: 'Read int, float, char in one line.', input: '5 3.14 A', output: '5 3.14 A', hint: 'Use cin >> intVar >> floatVar >> charVar.' },
   { title: 'Boolean Input Output {n}', difficulty: 'Easy', statement: 'Read boolean and print true/false.', input: '1', output: 'true', hint: 'Use bool variable. cin reads 0 as false and 1 as true.' },
-  { title: 'Input Validation {n}', difficulty: 'Medium', statement: 'Read integer until positive entered.', input: '-5\n10', output: '10', hint: 'Use while loop that continues as long as number <= 0.' },
-  { title: 'Logical Reasoning - Number Pattern I/O {n}', difficulty: 'Medium', statement: 'Read N and print first N natural numbers with their squares.', input: '3', output: '1 1\n2 4\n3 9', hint: 'Loop from 1 to N. For each i, print i and i*i.' },
+  { title: 'Input Validation {n}', difficulty: 'Medium', statement: 'Read integer until positive entered.', input: '-5\\n10', output: '10', hint: 'Use while loop that continues as long as number <= 0.' },
+  { title: 'Logical Reasoning - Number Pattern I/O {n}', difficulty: 'Medium', statement: 'Read N and print first N natural numbers with their squares.', input: '3', output: '1 1\\n2 4\\n3 9', hint: 'Loop from 1 to N. For each i, print i and i*i.' },
   { title: 'Logical Reasoning - Digit Sum {n}', difficulty: 'Medium', statement: 'Read a number and print sum of its digits.', input: '123', output: '6', hint: 'Use while loop: sum += n % 10; n /= 10;.' },
   { title: 'Logical Reasoning - Reverse Digits {n}', difficulty: 'Medium', statement: 'Read a number and print its digits in reverse.', input: '1234', output: '4321', hint: 'In loop: rev = rev * 10 + (n % 10); n /= 10;.' },
   { title: 'Logical Reasoning - Palindrome Check {n}', difficulty: 'Medium', statement: 'Check if number is palindrome.', input: '121', output: 'Palindrome', hint: 'Reverse the number and compare with original.' },
@@ -87,7 +86,7 @@ generateProblems('operators', 'Operators & Expressions', 170, 351, [
   { title: 'Ternary Operator {n}', difficulty: 'Easy', statement: 'Find larger of two numbers.', input: '7 12', output: '12', hint: 'Use condition ? val1 : val2 to pick larger.' },
   { title: 'Operator Precedence {n}', difficulty: 'Medium', statement: 'Show precedence rules.', input: 'None', output: 'Based on precedence', hint: 'Parentheses first, then */%, then +-, then relational, then logical.' },
   { title: 'Comma Operator {n}', difficulty: 'Medium', statement: 'Demonstrate comma in loop.', input: 'None', output: 'Final value', hint: 'Comma evaluates left to right, returns rightmost value.' },
-  { title: 'sizeof Operator {n}', difficulty: 'Easy', statement: 'Print sizes using sizeof.', input: 'None', output: 'int: 4\nchar: 1', hint: 'Use sizeof(variable) or sizeof(type) for bytes.' },
+  { title: 'sizeof Operator {n}', difficulty: 'Easy', statement: 'Print sizes using sizeof.', input: 'None', output: 'int: 4\\nchar: 1', hint: 'Use sizeof(variable) or sizeof(type) for bytes.' },
   { title: 'Logical Reasoning - Operator Mix {n}', difficulty: 'Medium', statement: 'Evaluate: a + b * c - d / e with given values.', input: '2 3 4 8 2', output: '12', hint: 'Follow precedence: multiplication/division before addition/subtraction.' },
   { title: 'Logical Reasoning - Bitwise Check {n}', difficulty: 'Medium', statement: 'Check if a number is power of 2 using bitwise.', input: '8', output: 'Yes', hint: 'Number n is power of 2 if (n & (n-1)) == 0 and n > 0.' },
 ]);
@@ -102,7 +101,7 @@ generateProblems('conditionals', 'Conditions & Decision Making', 170, 521, [
   { title: 'Switch Default {n}', difficulty: 'Easy', statement: 'Switch with default case.', input: '9', output: 'Invalid day', hint: 'Include default case for invalid inputs.' },
   { title: 'Leap Year {n}', difficulty: 'Medium', statement: 'Check leap year.', input: '2024', output: 'Leap Year', hint: 'Divisible by 4 AND (not by 100 OR by 400).' },
   { title: 'Range Check {n}', difficulty: 'Easy', statement: 'Check between 10 and 100.', input: '50', output: 'In range', hint: 'if (n >= 10 && n <= 100).' },
-  { title: 'Menu Driven {n}', difficulty: 'Medium', statement: 'Menu-driven calculator.', input: '1\n5 3', output: '8', hint: 'switch on user choice inside loop.' },
+  { title: 'Menu Driven {n}', difficulty: 'Medium', statement: 'Menu-driven calculator.', input: '1\\n5 3', output: '8', hint: 'switch on user choice inside loop.' },
   { title: 'Vowel or Consonant {n}', difficulty: 'Easy', statement: 'Check vowel or consonant.', input: 'a', output: 'Vowel', hint: 'Check if char is a,e,i,o,u (case insensitive).' },
   { title: 'Logical Reasoning - Max of Three {n}', difficulty: 'Medium', statement: 'Find maximum of three numbers.', input: '5 12 8', output: '12', hint: 'Use nested if or if-else-if to compare three values.' },
   { title: 'Logical Reasoning - Triangle Type {n}', difficulty: 'Medium', statement: 'Classify triangle: equilateral, isosceles, scalene.', input: '3 3 3', output: 'Equilateral', hint: 'Compare all three sides for equality.' },
@@ -114,7 +113,7 @@ generateProblems('loops', 'Loops & Repetition', 170, 691, [
   { title: 'For Loop 1 to N {n}', difficulty: 'Easy', statement: 'Print 1 to N.', input: '5', output: '1 2 3 4 5', hint: 'for (int i = 1; i <= n; i++) print i.' },
   { title: 'While Loop {n}', difficulty: 'Easy', statement: 'Print N to 1.', input: '5', output: '5 4 3 2 1', hint: 'while (n > 0) { print n; n--; }.' },
   { title: 'Do While Loop {n}', difficulty: 'Easy', statement: 'Menu until exit.', input: 'None', output: 'Menu printed', hint: 'do { ... } while (choice != exit).' },
-  { title: 'Nested Loops {n}', difficulty: 'Medium', statement: 'Multiplication table.', input: '5', output: '5x1=5\n5x2=10...', hint: 'Outer loop for table, inner for multiplier 1 to 10.' },
+  { title: 'Nested Loops {n}', difficulty: 'Medium', statement: 'Multiplication table.', input: '5', output: '5x1=5\\n5x2=10...', hint: 'Outer loop for table, inner for multiplier 1 to 10.' },
   { title: 'Break Statement {n}', difficulty: 'Easy', statement: 'Exit loop on condition.', input: 'None', output: 'Loop exited', hint: 'Use break inside loop when condition met.' },
   { title: 'Continue Statement {n}', difficulty: 'Easy', statement: 'Skip even numbers.', input: 'None', output: 'Odd numbers only', hint: 'Use continue when number is even.' },
   { title: 'Sum of Digits {n}', difficulty: 'Easy', statement: 'Sum digits using loop.', input: '123', output: '6', hint: 'while (n > 0): sum += n % 10; n /= 10;.' },
@@ -124,30 +123,30 @@ generateProblems('loops', 'Loops & Repetition', 170, 691, [
   { title: 'Factorial {n}', difficulty: 'Easy', statement: 'Calculate factorial.', input: '5', output: '120', hint: 'n! = 1 × 2 × ... × n. Loop from 1 to n.' },
   { title: 'Armstrong Number {n}', difficulty: 'Medium', statement: 'Check Armstrong.', input: '153', output: 'Armstrong', hint: 'Sum of digits^count equals number.' },
   { title: 'Palindrome Number {n}', difficulty: 'Medium', statement: 'Check palindrome.', input: '121', output: 'Palindrome', hint: 'Reverse and compare with original.' },
-  { title: 'Right Triangle Star {n}', difficulty: 'Medium', statement: 'Right triangle stars.', input: '4', output: '*\n**\n***\n****', hint: 'Outer loop rows 1 to n, inner prints i stars.' },
-  { title: 'Pyramid Star {n}', difficulty: 'Medium', statement: 'Pyramid stars.', input: '3', output: '  *\n ***\n*****', hint: 'Spaces = n-i, stars = 2*i-1 for row i.' },
-  { title: 'Diamond Star {n}', difficulty: 'Medium', statement: 'Diamond stars.', input: '3', output: '  *\n ***\n*****\n ***\n  *', hint: 'Upper pyramid + lower inverted pyramid.' },
-  { title: 'Number Pattern {n}', difficulty: 'Medium', statement: 'Number pattern.', input: '4', output: '1\n12\n123\n1234', hint: 'Outer loop rows, inner prints 1 to i.' },
-  { title: 'Hollow Square {n}', difficulty: 'Medium', statement: 'Hollow square.', input: '4', output: '****\n*  *\n*  *\n****', hint: 'Print * for border, space for inside.' },
+  { title: 'Right Triangle Star {n}', difficulty: 'Medium', statement: 'Right triangle stars.', input: '4', output: '*\\n**\\n***\\n****', hint: 'Outer loop rows 1 to n, inner prints i stars.' },
+  { title: 'Pyramid Star {n}', difficulty: 'Medium', statement: 'Pyramid stars.', input: '3', output: '  *\\n ***\\n*****', hint: 'Spaces = n-i, stars = 2*i-1 for row i.' },
+  { title: 'Diamond Star {n}', difficulty: 'Medium', statement: 'Diamond stars.', input: '3', output: '  *\\n ***\\n*****\\n ***\\n  *', hint: 'Upper pyramid + lower inverted pyramid.' },
+  { title: 'Number Pattern {n}', difficulty: 'Medium', statement: 'Number pattern.', input: '4', output: '1\\n12\\n123\\n1234', hint: 'Outer loop rows, inner prints 1 to i.' },
+  { title: 'Hollow Square {n}', difficulty: 'Medium', statement: 'Hollow square.', input: '4', output: '****\\n*  *\\n*  *\\n****', hint: 'Print * for border, space for inside.' },
   { title: 'GCD {n}', difficulty: 'Medium', statement: 'GCD using loop.', input: '12 18', output: '6', hint: 'Euclidean: while(b!=0){temp=b;b=a%b;a=temp;}' },
   { title: 'LCM {n}', difficulty: 'Medium', statement: 'LCM using loop.', input: '4 6', output: '12', hint: 'LCM = (a×b)/GCD(a,b).' },
   // HARD 1D ARRAY PROBLEMS IN LOOPS SECTION
-  { title: 'Hard 1D Array - Max Subarray Sum {n}', difficulty: 'Hard', statement: 'Find maximum sum of contiguous subarray (Kadane).', input: '5\n-2 1 -3 4 -1', output: '4', hint: 'Kadane: current = max(arr[i], current+arr[i]); best = max(best, current).' },
-  { title: 'Hard 1D Array - Move Zeros {n}', difficulty: 'Hard', statement: 'Move all zeros to end maintaining order.', input: '5\n0 1 0 3 12', output: '1 3 12 0 0', hint: 'Two pointers: place non-zero at index, fill rest with zeros.' },
-  { title: 'Hard 1D Array - Product Except Self {n}', difficulty: 'Hard', statement: 'Product of array except self without division.', input: '4\n1 2 3 4', output: '24 12 8 6', hint: 'Left product array and right product array, multiply them.' },
-  { title: 'Hard 1D Array - Container With Water {n}', difficulty: 'Hard', statement: 'Max water container between lines.', input: '6\n1 8 6 2 5 4', output: '49', hint: 'Two pointers: area = min(h[l],h[r]) × (r-l). Move smaller height.' },
-  { title: 'Hard 1D Array - Trapping Rain Water {n}', difficulty: 'Hard', statement: 'Calculate trapped rain water.', input: '12\n0 1 0 2 1 0 1 3 2 1 2 1', output: '6', hint: 'Precompute left max and right max, water += min(left,right)-height[i].' },
-  { title: 'Hard 1D Array - Merge Intervals {n}', difficulty: 'Hard', statement: 'Merge overlapping intervals.', input: '4\n1 3\n2 6\n8 10\n15 18', output: '1 6\n8 10\n15 18', hint: 'Sort by start, merge if current.start <= last.end.' },
-  { title: 'Hard 1D Array - Find Duplicate {n}', difficulty: 'Hard', statement: 'Find duplicate in array 1 to N.', input: '5\n1 3 4 2 2', output: '2', hint: 'Floyd cycle detection or sum - expected sum.' },
-  { title: 'Hard 1D Array - Missing Number {n}', difficulty: 'Hard', statement: 'Find missing number 0 to N.', input: '4\n3 0 1', output: '2', hint: 'Expected sum - actual sum, or XOR all indices and values.' },
-  { title: 'Hard 1D Array - Majority Element {n}', difficulty: 'Hard', statement: 'Element appearing > N/2 times.', input: '7\n2 2 1 1 1 2 2', output: '2', hint: 'Boyer-Moore Voting Algorithm.' },
-  { title: 'Hard 1D Array - Rotate Array {n}', difficulty: 'Hard', statement: 'Rotate array by K positions in-place.', input: '7\n1 2 3 4 5 6 7\n3', output: '5 6 7 1 2 3 4', hint: 'Reverse whole, reverse first K, reverse rest.' },
-  { title: 'Hard 1D Array - Subarray Sum Equals K {n}', difficulty: 'Hard', statement: 'Count subarrays with sum K.', input: '5\n1 1 1\n2', output: '2', hint: 'Prefix sum with hash map counting occurrences.' },
-  { title: 'Hard 1D Array - Longest Substring Without Repeat {n}', difficulty: 'Hard', statement: 'Longest substring without repeating chars.', input: 'None\nabcabcbb', output: '3', hint: 'Sliding window with last seen index map.' },
-  { title: 'Hard 1D Array - Two Sum {n}', difficulty: 'Hard', statement: 'Indices of two numbers adding to target.', input: '4\n2 7 11 15\n9', output: '0 1', hint: 'Hash map: store value->index, check complement.' },
-  { title: 'Hard 1D Array - Three Sum {n}', difficulty: 'Hard', statement: 'Find all triplets summing to zero.', input: '6\n-1 0 1 2 -1 -4', output: '-1 -1 2\n-1 0 1', hint: 'Sort array, fix one element, two-pointer for rest.' },
-  { title: 'Hard 1D Array - Next Permutation {n}', difficulty: 'Hard', statement: 'Next lexicographic permutation.', input: '4\n1 2 3\n', output: '1 3 2', hint: 'Find pivot, swap with next greater, reverse suffix.' },
-  { title: 'Hard 1D Array - Candy Distribution {n}', difficulty: 'Hard', statement: 'Distribute candies by rating rules.', input: '5\n1 0 2', output: '5', hint: 'Left-to-right then right-to-left pass, take max.' },
+  { title: 'Hard 1D Array - Max Subarray Sum {n}', difficulty: 'Hard', statement: 'Find maximum sum of contiguous subarray (Kadane).', input: '5\\n-2 1 -3 4 -1', output: '4', hint: 'Kadane: current = max(arr[i], current+arr[i]); best = max(best, current).' },
+  { title: 'Hard 1D Array - Move Zeros {n}', difficulty: 'Hard', statement: 'Move all zeros to end maintaining order.', input: '5\\n0 1 0 3 12', output: '1 3 12 0 0', hint: 'Two pointers: place non-zero at index, fill rest with zeros.' },
+  { title: 'Hard 1D Array - Product Except Self {n}', difficulty: 'Hard', statement: 'Product of array except self without division.', input: '4\\n1 2 3 4', output: '24 12 8 6', hint: 'Left product array and right product array, multiply them.' },
+  { title: 'Hard 1D Array - Container With Water {n}', difficulty: 'Hard', statement: 'Max water container between lines.', input: '6\\n1 8 6 2 5 4', output: '49', hint: 'Two pointers: area = min(h[l],h[r]) × (r-l). Move smaller height.' },
+  { title: 'Hard 1D Array - Trapping Rain Water {n}', difficulty: 'Hard', statement: 'Calculate trapped rain water.', input: '12\\n0 1 0 2 1 0 1 3 2 1 2 1', output: '6', hint: 'Precompute left max and right max, water += min(left,right)-height[i].' },
+  { title: 'Hard 1D Array - Merge Intervals {n}', difficulty: 'Hard', statement: 'Merge overlapping intervals.', input: '4\\n1 3\\n2 6\\n8 10\\n15 18', output: '1 6\\n8 10\\n15 18', hint: 'Sort by start, merge if current.start <= last.end.' },
+  { title: 'Hard 1D Array - Find Duplicate {n}', difficulty: 'Hard', statement: 'Find duplicate in array 1 to N.', input: '5\\n1 3 4 2 2', output: '2', hint: 'Floyd cycle detection or sum - expected sum.' },
+  { title: 'Hard 1D Array - Missing Number {n}', difficulty: 'Hard', statement: 'Find missing number 0 to N.', input: '4\\n3 0 1', output: '2', hint: 'Expected sum - actual sum, or XOR all indices and values.' },
+  { title: 'Hard 1D Array - Majority Element {n}', difficulty: 'Hard', statement: 'Element appearing > N/2 times.', input: '7\\n2 2 1 1 1 2 2', output: '2', hint: 'Boyer-Moore Voting Algorithm.' },
+  { title: 'Hard 1D Array - Rotate Array {n}', difficulty: 'Hard', statement: 'Rotate array by K positions in-place.', input: '7\\n1 2 3 4 5 6 7\\n3', output: '5 6 7 1 2 3 4', hint: 'Reverse whole, reverse first K, reverse rest.' },
+  { title: 'Hard 1D Array - Subarray Sum Equals K {n}', difficulty: 'Hard', statement: 'Count subarrays with sum K.', input: '5\\n1 1 1\\n2', output: '2', hint: 'Prefix sum with hash map counting occurrences.' },
+  { title: 'Hard 1D Array - Longest Substring Without Repeat {n}', difficulty: 'Hard', statement: 'Longest substring without repeating chars.', input: 'None\\nabcabcbb', output: '3', hint: 'Sliding window with last seen index map.' },
+  { title: 'Hard 1D Array - Two Sum {n}', difficulty: 'Hard', statement: 'Indices of two numbers adding to target.', input: '4\\n2 7 11 15\\n9', output: '0 1', hint: 'Hash map: store value->index, check complement.' },
+  { title: 'Hard 1D Array - Three Sum {n}', difficulty: 'Hard', statement: 'Find all triplets summing to zero.', input: '6\\n-1 0 1 2 -1 -4', output: '-1 -1 2\\n-1 0 1', hint: 'Sort array, fix one element, two-pointer for rest.' },
+  { title: 'Hard 1D Array - Next Permutation {n}', difficulty: 'Hard', statement: 'Next lexicographic permutation.', input: '4\\n1 2 3\\n', output: '1 3 2', hint: 'Find pivot, swap with next greater, reverse suffix.' },
+  { title: 'Hard 1D Array - Candy Distribution {n}', difficulty: 'Hard', statement: 'Distribute candies by rating rules.', input: '5\\n1 0 2', output: '5', hint: 'Left-to-right then right-to-left pass, take max.' },
 ]);
 
 // 6. FUNCTIONS (170 problems)
@@ -172,28 +171,28 @@ generateProblems('functions', 'Functions', 170, 861, [
 // 7. ARRAYS (170 problems)
 generateProblems('arrays', 'Arrays', 170, 1031, [
   { title: 'Array Declaration {n}', difficulty: 'Easy', statement: 'Declare array of 5 integers.', input: 'None', output: 'Array declared', hint: 'int arr[5];' },
-  { title: 'Array Input Output {n}', difficulty: 'Easy', statement: 'Read N integers and print.', input: '3\n1 2 3', output: '1 2 3', hint: 'Loop to read, loop to print.' },
+  { title: 'Array Input Output {n}', difficulty: 'Easy', statement: 'Read N integers and print.', input: '3\\n1 2 3', output: '1 2 3', hint: 'Loop to read, loop to print.' },
   { title: 'Array Traversal {n}', difficulty: 'Easy', statement: 'Traverse and print.', input: 'None', output: 'Elements printed', hint: 'for (int i=0; i<n; i++) access arr[i].' },
-  { title: 'Find Maximum {n}', difficulty: 'Easy', statement: 'Find max value.', input: '5\n3 7 2 9 1', output: '9', hint: 'max = arr[0], update if arr[i] > max.' },
-  { title: 'Find Minimum {n}', difficulty: 'Easy', statement: 'Find min value.', input: '5\n3 7 2 9 1', output: '1', hint: 'min = arr[0], update if arr[i] < min.' },
-  { title: 'Array Sum {n}', difficulty: 'Easy', statement: 'Sum array elements.', input: '3\n1 2 3', output: '6', hint: 'sum = 0, add arr[i] in loop.' },
-  { title: 'Array Average {n}', difficulty: 'Easy', statement: 'Array average.', input: '3\n1 2 3', output: '2', hint: 'Sum / n. Use float for result.' },
-  { title: 'Linear Search {n}', difficulty: 'Easy', statement: 'Search element index.', input: '5\n10 20 30 40 50\n30', output: '2', hint: 'Loop, if arr[i]==target return i.' },
-  { title: 'Reverse Array {n}', difficulty: 'Easy', statement: 'Reverse array.', input: '4\n1 2 3 4', output: '4 3 2 1', hint: 'Swap arr[i] with arr[n-1-i].' },
-  { title: 'Count Even Odd {n}', difficulty: 'Easy', statement: 'Count even/odd.', input: '5\n1 2 3 4 5', output: 'Even: 2, Odd: 3', hint: 'Check arr[i] % 2 == 0.' },
-  { title: 'Remove Duplicates {n}', difficulty: 'Medium', statement: 'Remove duplicates.', input: '5\n1 2 2 3 3', output: '1 2 3', hint: 'Nested loop or second array.' },
-  { title: 'Rotate Array {n}', difficulty: 'Medium', statement: 'Rotate by K positions.', input: '5\n1 2 3 4 5\n2', output: '3 4 5 1 2', hint: 'Store first k, shift left, append.' },
-  { title: 'Second Largest {n}', difficulty: 'Medium', statement: 'Second largest element.', input: '5\n10 20 30 40 50', output: '40', hint: 'Track largest and second largest.' },
-  { title: 'Pair Sum {n}', difficulty: 'Medium', statement: 'Pairs summing to target.', input: '5\n1 2 3 4 5\n5', output: '(1,4) (2,3)', hint: 'Nested loops for pairs i<j.' },
-  { title: 'Bubble Sort {n}', difficulty: 'Medium', statement: 'Bubble sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Swap adjacent if wrong order.' },
-  { title: 'Selection Sort {n}', difficulty: 'Medium', statement: 'Selection sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Find min, swap with first unsorted.' },
-  { title: 'Insertion Sort {n}', difficulty: 'Medium', statement: 'Insertion sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Insert each element in sorted left part.' },
-  { title: '2D Array Input Output {n}', difficulty: 'Medium', statement: 'Read/print 2D array.', input: '2 2\n1 2\n3 4', output: '1 2\n3 4', hint: 'Nested loops rows and columns.' },
-  { title: 'Matrix Addition {n}', difficulty: 'Medium', statement: 'Matrix addition.', input: '2 2\n1 2\n3 4\n5 6\n7 8', output: '6 8\n10 12', hint: 'result[i][j] = mat1[i][j] + mat2[i][j].' },
-  { title: 'Matrix Multiplication {n}', difficulty: 'Hard', statement: 'Matrix multiplication.', input: '2 2\n1 2\n3 4\n5 6\n7 8', output: '19 22\n43 50', hint: 'Three nested loops for multiplication.' },
-  { title: 'Matrix Transpose {n}', difficulty: 'Medium', statement: 'Matrix transpose.', input: '2 2\n1 2\n3 4', output: '1 3\n2 4', hint: 'transpose[j][i] = mat[i][j].' },
-  { title: 'Logical Reasoning - Array Leader {n}', difficulty: 'Medium', statement: 'Print leaders (greater than all right).', input: '6\n16 17 4 3 5 2', output: '17 5 2', hint: 'Traverse from right, track max from right.' },
-  { title: 'Logical Reasoning - Equilibrium Index {n}', difficulty: 'Medium', statement: 'Index where left sum equals right sum.', input: '7\n-7 1 5 2 -4 3 0', output: '3', hint: 'Total sum - left sum = right sum at index.' },
+  { title: 'Find Maximum {n}', difficulty: 'Easy', statement: 'Find max value.', input: '5\\n3 7 2 9 1', output: '9', hint: 'max = arr[0], update if arr[i] > max.' },
+  { title: 'Find Minimum {n}', difficulty: 'Easy', statement: 'Find min value.', input: '5\\n3 7 2 9 1', output: '1', hint: 'min = arr[0], update if arr[i] < min.' },
+  { title: 'Array Sum {n}', difficulty: 'Easy', statement: 'Sum array elements.', input: '3\\n1 2 3', output: '6', hint: 'sum = 0, add arr[i] in loop.' },
+  { title: 'Array Average {n}', difficulty: 'Easy', statement: 'Array average.', input: '3\\n1 2 3', output: '2', hint: 'Sum / n. Use float for result.' },
+  { title: 'Linear Search {n}', difficulty: 'Easy', statement: 'Search element index.', input: '5\\n10 20 30 40 50\\n30', output: '2', hint: 'Loop, if arr[i]==target return i.' },
+  { title: 'Reverse Array {n}', difficulty: 'Easy', statement: 'Reverse array.', input: '4\\n1 2 3 4', output: '4 3 2 1', hint: 'Swap arr[i] with arr[n-1-i].' },
+  { title: 'Count Even Odd {n}', difficulty: 'Easy', statement: 'Count even/odd.', input: '5\\n1 2 3 4 5', output: 'Even: 2, Odd: 3', hint: 'Check arr[i] % 2 == 0.' },
+  { title: 'Remove Duplicates {n}', difficulty: 'Medium', statement: 'Remove duplicates.', input: '5\\n1 2 2 3 3', output: '1 2 3', hint: 'Nested loop or second array.' },
+  { title: 'Rotate Array {n}', difficulty: 'Medium', statement: 'Rotate by K positions.', input: '5\\n1 2 3 4 5\\n2', output: '3 4 5 1 2', hint: 'Store first k, shift left, append.' },
+  { title: 'Second Largest {n}', difficulty: 'Medium', statement: 'Second largest element.', input: '5\\n10 20 30 40 50', output: '40', hint: 'Track largest and second largest.' },
+  { title: 'Pair Sum {n}', difficulty: 'Medium', statement: 'Pairs summing to target.', input: '5\\n1 2 3 4 5\\n5', output: '(1,4) (2,3)', hint: 'Nested loops for pairs i<j.' },
+  { title: 'Bubble Sort {n}', difficulty: 'Medium', statement: 'Bubble sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Swap adjacent if wrong order.' },
+  { title: 'Selection Sort {n}', difficulty: 'Medium', statement: 'Selection sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Find min, swap with first unsorted.' },
+  { title: 'Insertion Sort {n}', difficulty: 'Medium', statement: 'Insertion sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Insert each element in sorted left part.' },
+  { title: '2D Array Input Output {n}', difficulty: 'Medium', statement: 'Read/print 2D array.', input: '2 2\\n1 2\\n3 4', output: '1 2\\n3 4', hint: 'Nested loops rows and columns.' },
+  { title: 'Matrix Addition {n}', difficulty: 'Medium', statement: 'Matrix addition.', input: '2 2\\n1 2\\n3 4\\n5 6\\n7 8', output: '6 8\\n10 12', hint: 'result[i][j] = mat1[i][j] + mat2[i][j].' },
+  { title: 'Matrix Multiplication {n}', difficulty: 'Hard', statement: 'Matrix multiplication.', input: '2 2\\n1 2\\n3 4\\n5 6\\n7 8', output: '19 22\\n43 50', hint: 'Three nested loops for multiplication.' },
+  { title: 'Matrix Transpose {n}', difficulty: 'Medium', statement: 'Matrix transpose.', input: '2 2\\n1 2\\n3 4', output: '1 3\\n2 4', hint: 'transpose[j][i] = mat[i][j].' },
+  { title: 'Logical Reasoning - Array Leader {n}', difficulty: 'Medium', statement: 'Print leaders (greater than all right).', input: '6\\n16 17 4 3 5 2', output: '17 5 2', hint: 'Traverse from right, track max from right.' },
+  { title: 'Logical Reasoning - Equilibrium Index {n}', difficulty: 'Medium', statement: 'Index where left sum equals right sum.', input: '7\\n-7 1 5 2 -4 3 0', output: '3', hint: 'Total sum - left sum = right sum at index.' },
 ]);
 
 // 8. STRINGS (170 problems)
@@ -213,8 +212,8 @@ generateProblems('strings', 'Strings', 170, 1201, [
   { title: 'Anagram Check {n}', difficulty: 'Medium', statement: 'Check anagrams.', input: 'listen silent', output: 'Anagram', hint: 'Sort both strings or count frequency.' },
   { title: 'Remove Spaces {n}', difficulty: 'Medium', statement: 'Remove spaces.', input: 'Hello World', output: 'HelloWorld', hint: 'Copy non-space characters.' },
   { title: 'Frequency of Characters {n}', difficulty: 'Medium', statement: 'Character frequency.', input: 'hello', output: 'h:1 e:1 l:2 o:1', hint: 'Array of size 256 for ASCII count.' },
-  { title: 'Logical Reasoning - Longest Palindrome {n}', difficulty: 'Medium', statement: 'Longest palindromic substring.', input: 'None\nbabad', output: 'bab', hint: 'Expand around center for each character.' },
-  { title: 'Logical Reasoning - String Compression {n}', difficulty: 'Medium', statement: 'Compress string with counts.', input: 'None\naabcccccaaa', output: 'a2b1c5a3', hint: 'Count consecutive chars, append char+count.' },
+  { title: 'Logical Reasoning - Longest Palindrome {n}', difficulty: 'Medium', statement: 'Longest palindromic substring.', input: 'None\\nbabad', output: 'bab', hint: 'Expand around center for each character.' },
+  { title: 'Logical Reasoning - String Compression {n}', difficulty: 'Medium', statement: 'Compress string with counts.', input: 'None\\naabcccccaaa', output: 'a2b1c5a3', hint: 'Count consecutive chars, append char+count.' },
 ]);
 
 // 9. POINTERS & MEMORY (170 problems)
@@ -275,15 +274,15 @@ generateProblems('stl', 'Standard Template Library', 170, 1711, [
 // 12. DATA STRUCTURES & ALGORITHMS (170 problems)
 generateProblems('dsa', 'Data Structures & Algorithms', 170, 1881, [
   { title: 'Big O Notation {n}', difficulty: 'Easy', statement: 'Analyze time complexity.', input: 'None', output: 'O(n)', hint: 'Count operations growing with n.' },
-  { title: 'Linear Search {n}', difficulty: 'Easy', statement: 'Linear search.', input: '5\n1 2 3 4 5\n3', output: 'Found at index 2', hint: 'Check each element one by one.' },
-  { title: 'Binary Search {n}', difficulty: 'Medium', statement: 'Binary search.', input: '5\n1 2 3 4 5\n3', output: 'Found at index 2', hint: 'Sorted array, discard half each step.' },
+  { title: 'Linear Search {n}', difficulty: 'Easy', statement: 'Linear search.', input: '5\\n1 2 3 4 5\\n3', output: 'Found at index 2', hint: 'Check each element one by one.' },
+  { title: 'Binary Search {n}', difficulty: 'Medium', statement: 'Binary search.', input: '5\\n1 2 3 4 5\\n3', output: 'Found at index 2', hint: 'Sorted array, discard half each step.' },
   { title: 'Linked List {n}', difficulty: 'Medium', statement: 'Singly linked list.', input: 'None', output: 'List created', hint: 'Node has data and next pointer.' },
   { title: 'Doubly Linked List {n}', difficulty: 'Medium', statement: 'Doubly linked list.', input: 'None', output: 'Doubly list created', hint: 'Node has next and prev.' },
   { title: 'Stack Using Array {n}', difficulty: 'Easy', statement: 'Stack using array.', input: 'None', output: 'Stack operations', hint: 'Array with top index.' },
   { title: 'Queue Using Array {n}', difficulty: 'Easy', statement: 'Queue using array.', input: 'None', output: 'Queue operations', hint: 'Front and rear indices.' },
-  { title: 'Bubble Sort {n}', difficulty: 'Medium', statement: 'Bubble sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Swap adjacent if wrong order.' },
-  { title: 'Merge Sort {n}', difficulty: 'Hard', statement: 'Merge sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Divide, sort recursively, merge.' },
-  { title: 'Quick Sort {n}', difficulty: 'Hard', statement: 'Quick sort.', input: '4\n4 3 2 1', output: '1 2 3 4', hint: 'Pivot, partition, recurse.' },
+  { title: 'Bubble Sort {n}', difficulty: 'Medium', statement: 'Bubble sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Swap adjacent if wrong order.' },
+  { title: 'Merge Sort {n}', difficulty: 'Hard', statement: 'Merge sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Divide, sort recursively, merge.' },
+  { title: 'Quick Sort {n}', difficulty: 'Hard', statement: 'Quick sort.', input: '4\\n4 3 2 1', output: '1 2 3 4', hint: 'Pivot, partition, recurse.' },
   { title: 'Recursion Basics {n}', difficulty: 'Easy', statement: 'Recursive N to 1.', input: '5', output: '5 4 3 2 1', hint: 'Print n, call with n-1 until 0.' },
   { title: 'Tower of Hanoi {n}', difficulty: 'Hard', statement: 'Tower of Hanoi.', input: '3', output: 'Moves printed', hint: 'Move n-1 to aux, move largest, move n-1 to target.' },
   { title: 'BFS Graph {n}', difficulty: 'Hard', statement: 'BFS on graph.', input: 'None', output: 'BFS traversal', hint: 'Queue, visit node, enqueue neighbors.' },
@@ -291,8 +290,8 @@ generateProblems('dsa', 'Data Structures & Algorithms', 170, 1881, [
   { title: 'Dijkstra Algorithm {n}', difficulty: 'Hard', statement: 'Dijkstra shortest path.', input: 'None', output: 'Shortest path', hint: 'Priority queue, expand closest node.' },
   { title: 'Dynamic Programming {n}', difficulty: 'Hard', statement: 'DP memoization.', input: 'None', output: 'DP result', hint: 'Store subproblem results.' },
   { title: 'Knapsack Problem {n}', difficulty: 'Hard', statement: '0/1 knapsack DP.', input: 'None', output: 'Max value', hint: 'dp[i][w] = max value.' },
-  { title: 'Logical Reasoning - Longest Increasing Subsequence {n}', difficulty: 'Hard', statement: 'Length of LIS.', input: '8\n10 9 2 5 3 7 101 18', output: '4', hint: 'dp[i] = max length ending at i.' },
-  { title: 'Logical Reasoning - Coin Change {n}', difficulty: 'Hard', statement: 'Minimum coins for amount.', input: '4\n1 2 5\n11', output: '3', hint: 'dp[amount] = min(dp[amount-coin]+1).' },
+  { title: 'Logical Reasoning - Longest Increasing Subsequence {n}', difficulty: 'Hard', statement: 'Length of LIS.', input: '8\\n10 9 2 5 3 7 101 18', output: '4', hint: 'dp[i] = max length ending at i.' },
+  { title: 'Logical Reasoning - Coin Change {n}', difficulty: 'Hard', statement: 'Minimum coins for amount.', input: '4\\n1 2 5\\n11', output: '3', hint: 'dp[amount] = min(dp[amount-coin]+1).' },
 ]);
 
 const categoryLabels = {
@@ -449,34 +448,6 @@ function closeAIReview() {
   document.body.style.overflow = "";
 }
 
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => renderProblems(btn.dataset.category));
-});
-
-document.getElementById("problemSearch").addEventListener("input", (e) => {
-  currentSearch = e.target.value;
-  renderProblems(currentCategory);
-});
-
-document.getElementById("difficultyFilter").addEventListener("change", (e) => {
-  currentDifficulty = e.target.value;
-  renderProblems(currentCategory);
-});
-
-const dailyDate = document.getElementById("dailyDate");
-if (dailyDate) {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  dailyDate.textContent = new Date().toLocaleDateString('en-US', options);
-}
-
-function startDailyChallenge() {
-  const dailyProblem = problems.find(p => p.title === 'Reverse a Number');
-  if (dailyProblem) openProblemModal(dailyProblem);
-}
-
-// Global so HTML onclick can find it
-window.startDailyChallenge = startDailyChallenge;
-
 // ========================================
 // COMPILER INTEGRATION
 // ========================================
@@ -508,9 +479,6 @@ function switchOutputTab(tab) {
 
 function setOutputStatus(status, message) {
   const badge = document.getElementById('outputStatusBadge');
-  const stdoutEl = document.getElementById('outputStdout');
-  const stderrEl = document.getElementById('outputStderr');
-
   if (badge) {
     badge.textContent = message;
     badge.className = 'status-badge ' + status;
@@ -644,9 +612,9 @@ using namespace std;
 int main() {
     // Problem #${problem.id}: ${problem.title}
     // ${problem.statement}
-    
+
     // Write your solution here
-    
+
     return 0;
 }`;
   editor.value = template;
@@ -659,12 +627,24 @@ int main() {
   showOutputPanel(false);
 }
 
+function startDailyChallenge() {
+  const dailyProblem = problems.find(p => p.title === 'Reverse a Number');
+  if (dailyProblem) openProblemModal(dailyProblem);
+}
+
+// Global so HTML onclick can find it
+window.startDailyChallenge = startDailyChallenge;
+
+document.addEventListener("DOMContentLoaded", () => {
   renderProblems("all");
   updateProgress();
+
   const mc = document.getElementById("modalClose");
   if (mc) mc.addEventListener("click", closeModal);
+
   const pm = document.getElementById("problemModal");
   if (pm) pm.addEventListener("click", (e) => { if (e.target === pm) closeModal(); });
+
   const bcs = document.getElementById("btnCopyStatement");
   if (bcs) bcs.addEventListener("click", () => {
     const statement = document.getElementById("modalStatement").textContent;
@@ -675,6 +655,7 @@ int main() {
       setTimeout(() => btn.textContent = original, 1500);
     });
   });
+
   const bms = document.getElementById("modalMarkSolved");
   if (bms) bms.addEventListener("click", () => {
     toggleSolved(currentProblemId);
@@ -687,6 +668,7 @@ int main() {
     solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
     solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
+
   const bmsr = document.getElementById("btnMarkSolvedRight");
   if (bmsr) bmsr.addEventListener("click", () => {
     toggleSolved(currentProblemId);
@@ -699,6 +681,7 @@ int main() {
     solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
     solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
   });
+
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeAIReview(); } });
 
   // Execute button
