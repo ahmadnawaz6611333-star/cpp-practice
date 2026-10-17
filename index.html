@@ -444,7 +444,36 @@
             <span class="panel-title">⚡ Execute</span>
           </div>
 
-          <!-- Execute Button -->
+          <!-- OUTPUT Section (FIRST) - Large dedicated output display box -->
+          <div class="output-section">
+            <div class="output-title">📤 OUTPUT</div>
+
+            <!-- Output Panel - Always Visible, With Scroll -->
+            <div class="output-panel-main">
+              <div class="output-header-main">
+                <span class="output-label-main">Output</span>
+                <div class="output-meta-main">
+                  <span id="outputStatusBadgeMain" class="status-badge status-waiting">Waiting...</span>
+                  <span id="outputExitCodeMain" class="exit-code">-</span>
+                  <span id="outputExecTimeMain" class="exec-time">-</span>
+                </div>
+              </div>
+
+              <!-- Simple output tabs -->
+              <div class="output-tabs-main">
+                <div class="output-tab-main active" id="tabStdoutMain">stdout</div>
+                <div class="output-tab-main" id="tabStderrMain">stderr</div>
+              </div>
+
+              <!-- Scrollable output text area -->
+              <div class="output-scroll-main" id="outputScrollMain">
+                <pre id="outputStdoutMain"></pre>
+                <pre id="outputStderrMain" style="display:none; color: #ff0055;"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execute Button (SECOND) -->
           <div class="execute-bar">
             <button class="btn btn-primary btn-execute" id="btnExecute">
               ▶ Run Code
@@ -457,37 +486,13 @@
             <span id="executionStatusBadge" class="status-badge status-idle">Idle</span>
           </div>
 
-          <!-- STDIN Panel -->
+          <!-- STDIN Input Section (THIRD) -->
           <div class="stdin-panel">
             <div class="stdin-header">
               <span class="stdin-label">📥 stdin (Input)</span>
               <span class="stdin-placeholder">Leave empty if no input needed</span>
             </div>
             <textarea id="stdinInput" spellcheck="false" wrap="off" placeholder="Type input here... e.g. 10 20"></textarea>
-          </div>
-
-          <!-- Output Panel - Always Visible, Below Run Button, With Scroll -->
-          <div class="output-panel-main">
-            <div class="output-header-main">
-              <span class="output-label-main">📤 Output</span>
-              <div class="output-meta-main">
-                <span id="outputStatusBadgeMain" class="status-badge status-waiting">Waiting...</span>
-                <span id="outputExitCodeMain" class="exit-code">-</span>
-                <span id="outputExecTimeMain" class="exec-time">-</span>
-              </div>
-            </div>
-
-            <!-- Simple output tabs -->
-            <div class="output-tabs-main">
-              <div class="output-tab-main active" id="tabStdoutMain">stdout</div>
-              <div class="output-tab-main" id="tabStderrMain">stderr</div>
-            </div>
-
-            <!-- Scrollable output text area -->
-            <div class="output-scroll-main" id="outputScrollMain">
-              <pre id="outputStdoutMain"></pre>
-              <pre id="outputStderrMain" style="display:none; color: #ff0055;"></pre>
-            </div>
           </div>
         </div>
 

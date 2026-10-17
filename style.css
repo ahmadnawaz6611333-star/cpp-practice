@@ -1227,6 +1227,26 @@ code {
   background: var(--bg-tertiary);
 }
 
+/* OUTPUT Section heading (top of middle panel) */
+.output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 200px;
+  margin: 1rem;
+  flex-shrink: 0;
+}
+
+.output-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
 .execute-bar {
   display: flex;
   align-items: center;
@@ -1604,6 +1624,25 @@ code {
 .output-tab-simple.active {
   color: var(--accent-primary);
   border-bottom-color: var(--accent-primary);
+}
+
+/* Output Section Header (OUTPUT title at top of middle panel) */
+.output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.output-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0 1rem 0.25rem 1rem;
+  flex-shrink: 0;
 }
 
 /* ========================================

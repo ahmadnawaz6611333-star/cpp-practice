@@ -471,11 +471,10 @@ function initExamples() {
 function loadExample(example) {
   const editor = document.getElementById('codeEditor');
   const stdinInput = document.getElementById('stdinInput');
-  const outputPanel = document.getElementById('outputPanel');
 
   if (editor) editor.value = example.code;
   if (stdinInput) stdinInput.value = example.stdin;
-  if (outputPanel) outputPanel.style.display = 'none';
+  // Output panel stays visible — do not clear previous output here.
 
   // Highlight selected example
   document.querySelectorAll('.example-item').forEach((item, idx) => {
@@ -661,10 +660,8 @@ function closeAIReview() {
 let isCompiling = false;
 
 function showOutputPanel(show) {
-  const panel = document.getElementById('outputPanel');
-  const area = document.getElementById('outputArea');
-  if (panel) panel.style.display = show ? 'block' : 'none';
-  if (area) area.style.display = show ? 'block' : 'none';
+  // Output panel is always visible — no toggle needed.
+  // Kept for backward compatibility with any callers.
 }
 
 function switchOutputTab(tab) {
@@ -674,93 +671,40 @@ function switchOutputTab(tab) {
   const tabStdoutMain = document.getElementById('tabStdoutMain');
   const tabStderrMain = document.getElementById('tabStderrMain');
 
-  // Old modal output tabs
-  const stdoutEl1 = document.getElementById('outputStdout');
-  const stderrEl1 = document.getElementById('outputStderr');
-  const tabStdout1 = document.getElementById('tabStdout');
-  const tabStderr1 = document.getElementById('tabStderr');
-
-  // New simple output tabs (outside box)
-  const stdoutEl2 = document.getElementById('outputStdoutSimple');
-  const stderrEl2 = document.getElementById('outputStderrSimple');
-  const tabStdout2 = document.getElementById('tabStdoutSimple');
-  const tabStderr2 = document.getElementById('tabStderrSimple');
-
   if (tab === 'stderr') {
     if (stdoutElMain) stdoutElMain.style.display = 'none';
     if (stderrElMain) stderrElMain.style.display = 'block';
     if (tabStdoutMain) tabStdoutMain.classList.remove('active');
     if (tabStderrMain) tabStderrMain.classList.add('active');
-    if (stdoutEl1) stdoutEl1.style.display = 'none';
-    if (stderrEl1) stderrEl1.style.display = 'block';
-    if (tabStdout1) tabStdout1.classList.remove('active');
-    if (tabStderr1) tabStderr1.classList.add('active');
-    if (stdoutEl2) stdoutEl2.style.display = 'none';
-    if (stderrEl2) stderrEl2.style.display = 'block';
-    if (tabStdout2) tabStdout2.classList.remove('active');
-    if (tabStderr2) tabStderr2.classList.add('active');
   } else {
     if (stdoutElMain) stdoutElMain.style.display = 'block';
     if (stderrElMain) stderrElMain.style.display = 'none';
     if (tabStdoutMain) tabStdoutMain.classList.add('active');
     if (tabStderrMain) tabStderrMain.classList.remove('active');
-    if (stdoutEl1) stdoutEl1.style.display = 'block';
-    if (stderrEl1) stderrEl1.style.display = 'none';
-    if (tabStdout1) tabStdout1.classList.add('active');
-    if (tabStderr1) tabStderr1.classList.remove('active');
-    if (stdoutEl2) stdoutEl2.style.display = 'block';
-    if (stderrEl2) stderrEl2.style.display = 'none';
-    if (tabStdout2) tabStdout2.classList.add('active');
-    if (tabStderr2) tabStderr2.classList.remove('active');
   }
 }
 
 function setOutputStatus(status, message) {
   const badgeMain = document.getElementById('outputStatusBadgeMain');
-  const badge1 = document.getElementById('outputStatusBadge');
-  const badge2 = document.getElementById('outputStatusBadgeSimple');
   if (badgeMain) {
     badgeMain.textContent = message;
     badgeMain.className = 'status-badge ' + status;
-  }
-  if (badge1) {
-    badge1.textContent = message;
-    badge1.className = 'status-badge ' + status;
-  }
-  if (badge2) {
-    badge2.textContent = message;
-    badge2.className = 'status-badge ' + status;
   }
 }
 
 function setOutputMeta(exitCode, execTime) {
   const ecElMain = document.getElementById('outputExitCodeMain');
   const etElMain = document.getElementById('outputExecTimeMain');
-  const ecEl1 = document.getElementById('outputExitCode');
-  const etEl1 = document.getElementById('outputExecTime');
-  const ecEl2 = document.getElementById('outputExitCodeSimple');
-  const etEl2 = document.getElementById('outputExecTimeSimple');
   if (ecElMain) ecElMain.textContent = exitCode !== null ? exitCode : '-';
   if (etElMain) etElMain.textContent = execTime !== null ? execTime + ' ms' : '-';
-  if (ecEl1) ecEl1.textContent = exitCode !== null ? exitCode : '-';
-  if (etEl1) etEl1.textContent = execTime !== null ? execTime + ' ms' : '-';
-  if (ecEl2) ecEl2.textContent = exitCode !== null ? exitCode : '-';
-  if (etEl2) etEl2.textContent = execTime !== null ? execTime + ' ms' : '-';
 }
 
 function setOutputText(stdout, stderr) {
   const stdoutElMain = document.getElementById('outputStdoutMain');
   const stderrElMain = document.getElementById('outputStderrMain');
-  const stdoutEl1 = document.getElementById('outputStdout');
-  const stderrEl1 = document.getElementById('outputStderr');
-  const stdoutEl2 = document.getElementById('outputStdoutSimple');
-  const stderrEl2 = document.getElementById('outputStderrSimple');
-  if (stdoutElMain) stdoutElMain.textContent = stdout || '(no output)';
-  if (stderrElMain) stderrElMain.textContent = stderr || '(no stderr)';
-  if (stdoutEl1) stdoutEl1.textContent = stdout || '(no output)';
-  if (stderrEl1) stderrEl1.textContent = stderr || '(no stderr)';
-  if (stdoutEl2) stdoutEl2.textContent = stdout || '(no output)';
-  if (stderrEl2) stderrEl2.textContent = stderr || '(no stderr)';
+  // Leave the box empty when there is no output — no fake/placeholder results.
+  if (stdoutElMain) stdoutElMain.textContent = stdout || '';
+  if (stderrElMain) stderrElMain.textContent = stderr || '';
 }
 
 async function executeCode() {
@@ -771,7 +715,6 @@ async function executeCode() {
   const btnExecute = document.getElementById('btnExecute');
   const executeStatus = document.getElementById('executeStatus');
   const executionStatusBadge = document.getElementById('executionStatusBadge');
-  const outputPanel = document.getElementById('outputPanel');
 
   if (!editor) return;
 
@@ -791,8 +734,7 @@ async function executeCode() {
     executionStatusBadge.className = 'status-badge status-compiling';
   }
 
-  // Show output panel immediately so user sees progress
-  showOutputPanel(true);
+  // Output panel is always visible — no toggle needed.
   switchOutputTab('stdout');
   setOutputStatus('status-running', 'Compiling...');
   setOutputMeta('-', '-');
@@ -821,9 +763,6 @@ async function executeCode() {
     isCompiling = false;
     executeStatus.style.display = 'none';
 
-    // Ensure output panel is visible
-    if (outputPanel) outputPanel.style.display = 'block';
-
     // Display results based on backend response
     if (result.error === null || result.error === 'success' || !result.error) {
       // SUCCESS
@@ -833,7 +772,7 @@ async function executeCode() {
       }
       setOutputStatus('status-accepted', 'Run executed successfully');
       setOutputMeta(result.exitCode !== null ? result.exitCode : 0, result.executionTimeMs);
-      setOutputText(result.stdout || '(no output)', result.stderr || '');
+      setOutputText(result.stdout || '', result.stderr || '');
       switchOutputTab('stdout');
     } else if (result.error === 'compilation_error') {
       if (executionStatusBadge) {
@@ -911,8 +850,6 @@ async function executeCode() {
       executionStatusBadge.className = 'status-badge status-error';
     }
 
-    if (outputPanel) outputPanel.style.display = 'block';
-
     setOutputStatus('status-error', 'Backend Unavailable');
     setOutputMeta('-', '-');
     setOutputText('', 'Cannot connect to the compiler backend at ' + BACKEND_URL + '\n\nMake sure the backend server is running:\n  cd cpp-practice-website\n  npm install\n  npm start\n\nThen check http://localhost:3001/health');
@@ -943,8 +880,7 @@ int main() {
   const stdinInput = document.getElementById('stdinInput');
   if (stdinInput) stdinInput.value = '';
 
-  // Hide output panel
-  showOutputPanel(false);
+  // Output panel stays visible — do not hide it.
 }
 
 function startDailyChallenge() {
@@ -1010,18 +946,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnExecute) {
     btnExecute.addEventListener("click", executeCode);
   }
-
-  // Output tab switching (old modal tabs)
-  const tabStdout = document.getElementById("tabStdout");
-  const tabStderr = document.getElementById("tabStderr");
-  if (tabStdout) tabStdout.addEventListener("click", () => switchOutputTab('stdout'));
-  if (tabStderr) tabStderr.addEventListener("click", () => switchOutputTab('stderr'));
-
-  // Output tab switching (new simple tabs outside box)
-  const tabStdoutSimple = document.getElementById("tabStdoutSimple");
-  const tabStderrSimple = document.getElementById("tabStderrSimple");
-  if (tabStdoutSimple) tabStdoutSimple.addEventListener("click", () => switchOutputTab('stdout'));
-  if (tabStderrSimple) tabStderrSimple.addEventListener("click", () => switchOutputTab('stderr'));
 
   // Output tab switching (main always-visible panel)
   const tabStdoutMain = document.getElementById("tabStdoutMain");
