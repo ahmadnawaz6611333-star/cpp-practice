@@ -14,3 +14,5 @@ stderr.txt
 input.txt
 .DS_Store
 Thumbs.db
+test-compile.js
+test-*.js
