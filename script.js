@@ -2,7 +2,7 @@
 // BACKEND CONFIGURATION
 // ========================================
 // In production, set this via environment variable or use relative URL
-const BACKEND_URL = process.env.BACKEND_URL || window.location.origin + ':3001';
+const BACKEND_URL = 'http://localhost:3001';
 
 // ========================================
 // PROBLEMS DATA - 2000+ Problems (12 sections)
