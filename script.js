@@ -599,37 +599,49 @@ function updateProgress() {
 let currentProblemId = null;
 
 function openProblemModal(problem) {
-  currentProblemId = problem.id;
-  document.getElementById("modalId").textContent = `#${problem.id}`;
-  document.getElementById("modalTitle").textContent = problem.title;
-  document.getElementById("modalCategory").textContent = categoryLabels[problem.category] || problem.category;
-  document.getElementById("modalDifficulty").textContent = problem.difficulty;
-  document.getElementById("modalProblemId").textContent = problem.id;
-  document.getElementById("modalStatement").textContent = problem.statement;
-  document.getElementById("modalExampleInput").textContent = problem.input || "None";
-  document.getElementById("modalExampleOutput").textContent = problem.output || "None";
-  document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
+  try {
+    currentProblemId = problem.id;
+    document.getElementById("modalId").textContent = `#${problem.id}`;
+    document.getElementById("modalTitle").textContent = problem.title;
+    document.getElementById("modalCategory").textContent = categoryLabels[problem.category] || problem.category;
+    document.getElementById("modalDifficulty").textContent = problem.difficulty;
+    document.getElementById("modalProblemId").textContent = problem.id;
+    document.getElementById("modalStatement").textContent = problem.statement;
+    document.getElementById("modalExampleInput").textContent = problem.input || "None";
+    document.getElementById("modalExampleOutput").textContent = problem.output || "None";
+    document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
 
-  // Load first example into editor
-  if (examples.length > 0) {
-    loadExample(examples[0]);
+    // Load first example into editor
+    if (examples && examples.length > 0) {
+      loadExample(examples[0]);
+    }
+
+    const badge = document.getElementById("modalBadge");
+    badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
+
+    const solvedBtn = document.getElementById("modalMarkSolved");
+    const solvedBtnRight = document.getElementById("btnMarkSolvedRight");
+    const alreadySolved = isProblemSolved(problem.id);
+    const text = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
+    solvedBtn.textContent = text;
+    solvedBtnRight.textContent = text;
+    solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
+    solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
+
+    const modal = document.getElementById("problemModal");
+    modal.classList.add("open");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  } catch (err) {
+    console.error("Error opening modal:", err);
+    // Fallback: just show the modal
+    const modal = document.getElementById("problemModal");
+    if (modal) {
+      modal.classList.add("open");
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
   }
-
-  const badge = document.getElementById("modalBadge");
-  badge.className = "modal-badge " + getDifficultyBadge(problem.difficulty);
-
-  const solvedBtn = document.getElementById("modalMarkSolved");
-  const solvedBtnRight = document.getElementById("btnMarkSolvedRight");
-  const alreadySolved = isProblemSolved(problem.id);
-  const text = alreadySolved ? "Mark as Unsolved ↻" : "Mark as Solved ✓";
-  solvedBtn.textContent = text;
-  solvedBtnRight.textContent = text;
-  solvedBtn.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-  solvedBtnRight.className = alreadySolved ? "btn btn-outline" : "btn btn-primary";
-
-  const modal = document.getElementById("problemModal");
-  modal.classList.add("open");
-  document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
