@@ -452,9 +452,11 @@ function initExamples() {
   const countEl = document.getElementById('exampleCount');
   if (!list || !countEl) return;
 
+  // Clear any existing items (prevent duplicates)
+  list.innerHTML = '';
   countEl.textContent = examples.length;
 
-  examples.forEach((ex, index) => {
+  examples.forEach((ex) => {
     const item = document.createElement('div');
     item.className = 'example-item';
     item.innerHTML = `
@@ -477,7 +479,7 @@ function loadExample(example) {
 
   // Highlight selected example
   document.querySelectorAll('.example-item').forEach((item, idx) => {
-    if (examples[idx].id === example.id) {
+    if (examples[idx] && examples[idx].id === example.id) {
       item.classList.add('selected');
     } else {
       item.classList.remove('selected');
@@ -607,9 +609,6 @@ function openProblemModal(problem) {
   document.getElementById("modalExampleInput").textContent = problem.input || "None";
   document.getElementById("modalExampleOutput").textContent = problem.output || "None";
   document.getElementById("modalHint").textContent = problem.hint || "Think step by step.";
-
-  // Initialize examples panel (only once)
-  initExamples();
 
   // Load first example into editor
   if (examples.length > 0) {
@@ -889,6 +888,7 @@ window.startDailyChallenge = startDailyChallenge;
 
 document.addEventListener("DOMContentLoaded", () => {
   renderProblems("all");
+  initExamples();
   updateProgress();
 
   const mc = document.getElementById("modalClose");
