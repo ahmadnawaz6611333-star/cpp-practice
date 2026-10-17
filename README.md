@@ -306,30 +306,44 @@ Cloudflare Pages.
 
 ### Free options (no money at all)
 
-| Option | Result | Time | Root-serving |
-| ------ | ------ | ---- | ------------ |
-| **`cpppractice.eu.org`** | Free domain-style name; `eu.org` is in the Public Suffix List, so search engines treat it as its own site | request at [nic.eu.org](https://nic.eu.org/) — approval is manual, often weeks | ✅ |
-| **`cpppractice.is-a.dev`** | Developer-flavoured subdomain from [is-a.dev](https://github.com/is-a-dev/register) (also PSL-listed); fork + pull request, merged in days | days | ✅ |
-| **`<project>.pages.dev`** / `<project>.netlify.app` | Instant free hosting, but the address openly says "hosting platform" | minutes | ✅ |
-| **Keep `github.io/<repo>`** | Works right now, nothing to do | — | ❌ (`/ads.txt` would only be at `/<repo>/ads.txt`) |
+Every free option was checked against the provider's own rules, not assumed. The result matters,
+because a site that intends to show ads is *monetised*, and some free services forbid exactly that.
 
-**The pick here is `cpppractice.eu.org`** — it was unregistered when checked, it reads like a real
-domain rather than a hosting subdomain, and because `eu.org` is a public suffix it is not treated
-as "part of somebody else's site". Take `is-a.dev` instead if you want it live in days rather than
-weeks.
+| Option | Result | Time | Root-serving | Ads allowed? |
+| ------ | ------ | ---- | ------------ | ------------ |
+| **Keep `github.io/<repo>`** | Works right now, nothing to do | — | ❌ (`/ads.txt` would only be at `/<repo>/ads.txt`) | grey area — Pages may not be used to run a business |
+| **`<project>.pages.dev`** / `<project>.netlify.app` | Free static hosting; the address openly says "hosting platform" | minutes | ✅ | yes (usual static-site terms) |
+| **`cpppractice.edu.eu.org`** | Free, real-domain-shaped name from [nic.eu.org](https://nic.eu.org/); `EDU.eu.org` is their open domain for *educational sites* | request + manual approval, days–weeks | ✅ | discouraged — eu.org asks commercial sites to buy a domain |
+| **`cpppractice.is-a.dev`** ([is-a.dev](https://github.com/is-a-dev/register)) | **Not usable here.** Their terms forbid commercial/for-profit use (§4.8), forbid monetising a subdomain "directly or indirectly" (§5) and forbid "any website that is orientated to courses" (§4.16) — this site is both, once ads run | — | ✅ | ❌ **no** |
 
-Steps for either free name:
+**What this means in practice.**
 
-1. Request the name (`nic.eu.org` form, or the `is-a.dev` fork + PR). Follow *their* instructions —
-   the is-a.dev README explicitly warns that AI-generated requests are rejected.
+- **Applying costs nothing and needs no domain.** Do that first: AdSense → add the site → verify
+  with the meta tag or `ads.txt` that this repository already generates.
+- **`eu.org` is not a drop-in.** Direct registration in `eu.org` gets *only* an NS delegation, so
+  you must already have DNS hosting for the name (a free Cloudflare zone works), and EU.org advises
+  registering inside one of its open subdomains instead — for a C++ learning site that is
+  `EDU.eu.org`, giving `cpppractice.edu.eu.org`. Their policy also asks commercial sites to buy a
+  domain instead, "unless they support EU.org goals", so approval is not guaranteed.
+- **If you want a nicer free address only for sharing links**, a `*.pages.dev` site is the honest
+  choice: instant, allowed, and it serves `/ads.txt` from the root. Keeping the same files in a
+  repository means the deployment itself does not change.
+- **When you can afford ~$10/year, buy the domain anyway.** It is the only address that is really
+  yours, it is what AdSense looks best on, and no free provider can withdraw it.
+
+Steps, once you settle on an address of your own:
+
+1. Get the name (buy it, or request it from EU.org — read *their* instructions and follow their
+   format exactly; is-a.dev explicitly rejects AI-generated requests, EU.org rejects requests that
+   ignore their open-domain list).
 2. Point its DNS at GitHub Pages: a `CNAME` record for the name →
    `ahmadnawaz6611333-star.github.io`.
 3. In this repository add a `CNAME` file containing the name, and set it as the custom domain in
    **Settings → Pages**. GitHub then serves the site at the *root* of that name and issues the TLS
    certificate automatically.
 4. Update `liveUrl` in `js/brand.js`, then run `npm run brand:sync && npm run sitemap`.
-5. Verify it for real: `node tests/deploy.browser.js https://cpppractice.eu.org/` — the same
-   19-check suite that proves the GitHub Pages deployment works, run against the new address.
+5. Verify it for real: `node tests/deploy.browser.js https://your-name/` — the same 19-check suite
+   that proves the GitHub Pages deployment works, run against the new address.
 
 ### What is already done in this repository
 
@@ -378,9 +392,10 @@ Steps for either free name:
   *useful*, but without visitors ads earn close to nothing. See the note below.
 - **Ads and a coding workspace are an awkward mix** — that is why every placement here is
   below the content, clearly labelled `Advertisement`, and never inside the editor.
-- **A free address can be taken away.** `eu.org`, `is-a.dev` and the free hosting platforms are
-  run by volunteers or companies whose terms can change; and none of them is a substitute for a
-  domain you own once you can afford one.
+- **A free address can be taken away, and some forbid ads outright.** `is-a.dev` prohibits
+  commercial use and any monetisation of its subdomains, and EU.org asks commercial sites to buy a
+  domain instead. All of them are run by volunteers or companies whose terms can change. None is a
+  substitute for a domain you own once you can afford one.
 
 ---
 

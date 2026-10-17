@@ -59,7 +59,7 @@ if (/\.github\.io\//.test(live) || /\.github\.io\/?$/.test(live)) {
   warn('liveUrl is a *.github.io address: a GitHub Pages project site is served from /<repo>/, so its');
   warn('  ads.txt cannot sit at the site root. ads.txt is optional (Google: "not mandatory, but highly');
   warn('  recommended"), so applying is still possible. An address of your own is recommended — free');
-  warn('  options: cpppractice.eu.org (nic.eu.org) or cpppractice.is-a.dev; see README → Free options.');
+  warn('  options: cpppractice.edu.eu.org (nic.eu.org) or a *.pages.dev site, or a ~$10/yr domain.');
 } else {
   pass('the site is on an address of its own, so ads.txt can be served at the site root');
 }
