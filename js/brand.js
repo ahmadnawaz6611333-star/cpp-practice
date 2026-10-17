@@ -40,6 +40,13 @@
     repository: 'https://github.com/ahmadnawaz6611333-star/cpp-practice',
     liveUrl: 'https://cpp-practice-37n.pages.dev/',
 
+    /* --------------------------- Search Console ---------------------------- */
+    // Optional, but this is how the site gets found on Google. Paste the
+    // `content` value of the HTML tag that Search Console shows you
+    // (Search Console → Add property → URL prefix → HTML tag), then run
+    // `npm run brand:sync`. Empty = no verification tag is emitted at all.
+    searchConsole: '',
+
     /* --------------------------- Legal / contact --------------------------- */
     copyrightHolder: 'CppPractice',
     // AdSense + privacy law require a reachable contact address.

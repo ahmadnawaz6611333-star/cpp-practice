@@ -191,6 +191,12 @@ if (html) {
   } else {
     ok('the AdSense verification meta is absent while advertising is off', !/google-adsense-account/.test(html));
   }
+  const scToken = String(brand.searchConsole || '').trim();
+  if (scToken) {
+    ok('the Search Console tag is generated from js/brand.js', html.indexOf('content="' + scToken + '"') !== -1);
+  } else {
+    ok('no Search Console tag is emitted while it is unset', !/google-site-verification/.test(html));
+  }
 }
 
 console.log('\nads.txt, robots.txt, sitemap.xml');

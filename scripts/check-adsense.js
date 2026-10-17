@@ -99,6 +99,21 @@ else {
   else fail('js/brand.js and js/ads.js must be included before js/core.js');
 }
 
+/* ------------------------- being found on Google ------------------------- */
+console.log('\nFinding the site (traffic, not advertising)');
+{
+  const sc = String(brand.searchConsole || '').trim();
+  if (!sc) {
+    info('no Search Console tag — optional, but nothing will tell you how Google sees the site');
+  } else if (!/^[A-Za-z0-9_-]{10,}$/.test(sc)) {
+    fail('brand.searchConsole does not look like a Search Console token — check the value');
+  } else if (html.indexOf('content="' + sc + '"') === -1) {
+    fail('the Search Console verification tag is missing from index.html — run npm run brand:sync');
+  } else {
+    pass('Search Console verification tag present');
+  }
+}
+
 /* --------------------------------- pages --------------------------------- */
 console.log('\nRequired pages');
 const appJs = read('js/app.js') || '';

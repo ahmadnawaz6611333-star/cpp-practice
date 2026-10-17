@@ -77,6 +77,9 @@ function headBlock() {
   if (PUBLISHER_RE.test(String(ads.publisherId || '').trim())) {
     lines.push('  <meta name="google-adsense-account" content="' + esc(String(ads.publisherId).trim()) + '">');
   }
+  // Google Search Console ownership tag (traffic / indexing, not advertising).
+  const sc = String(brand.searchConsole || '').trim();
+  if (sc) lines.push('  <meta name="google-site-verification" content="' + esc(sc) + '">');
   lines.push('  <!-- /brand:head -->');
   return lines.join(HEAD_NL);
 }

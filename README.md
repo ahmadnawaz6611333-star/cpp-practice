@@ -404,6 +404,35 @@ Steps, once you settle on an address of your own:
 
 ---
 
+## Getting found on Google (Search Console)
+
+Approval puts ads on the site; it does not bring anybody to it. Nothing here earns a rupee without
+visitors, and the honest first step towards visitors is to tell Google the site exists.
+
+1. Go to <https://search.google.com/search-console> and sign in with the same Google account.
+2. **Add property → URL prefix** and enter the live address, `https://cpp-practice-37n.pages.dev/`.
+3. Pick the **HTML tag** verification method and copy the `content` value — a long token such as
+   `AbCdEfGh_1234567890`.
+4. Paste that token into `searchConsole` in `js/brand.js`, then:
+
+   ```sh
+   npm run brand:sync      # writes <meta name="google-site-verification" content="…"> into index.html
+   npm run check:adsense   # confirms the tag is present and well formed
+   ```
+
+5. Push, wait for the deployment, then press **Verify** in Search Console.
+6. In Search Console, open **Sitemaps** and submit `sitemap.xml`. Use **URL Inspection** on the
+   home page and press *Request indexing*.
+
+**Set expectations honestly.** Every route of this app is served from one `index.html`, so a
+search engine sees **one** page: `sitemap.xml` lists exactly one URL on purpose. `2,040` problems
+that are invisible to search are `2,040` missing entry points. Turning each problem into a real,
+separately addressable page is the next real improvement — worth doing deliberately, because
+thousands of near-identical auto-generated pages can be judged as spam, which would be worse than
+having one honest page.
+
+---
+
 ## Routes
 
 | Route                | Page                                   |
