@@ -45,7 +45,7 @@
     // `content` value of the HTML tag that Search Console shows you
     // (Search Console → Add property → URL prefix → HTML tag), then run
     // `npm run brand:sync`. Empty = no verification tag is emitted at all.
-    searchConsole: '',
+    searchConsole: 'DKT_2hapVungoznHbcoikzz787z_t1-Zyk4hYC544-s',
 
     /* --------------------------- Legal / contact --------------------------- */
     copyrightHolder: 'CppPractice',
