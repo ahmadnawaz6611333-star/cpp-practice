@@ -116,9 +116,20 @@ async function readFileCapped(filePath, maxBytes) {
 // Middleware
 // ---------------------------------------------------------------------------
 app.use(express.json({ limit: CONFIG.MAX_SOURCE_SIZE }));
+
+// CORS middleware - allows frontend (even file://) to call backend
 app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   next();
 });
 
