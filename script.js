@@ -662,48 +662,78 @@ let isCompiling = false;
 
 function showOutputPanel(show) {
   const panel = document.getElementById('outputPanel');
+  const area = document.getElementById('outputArea');
   if (panel) panel.style.display = show ? 'block' : 'none';
+  if (area) area.style.display = show ? 'block' : 'none';
 }
 
 function switchOutputTab(tab) {
-  const stdoutEl = document.getElementById('outputStdout');
-  const stderrEl = document.getElementById('outputStderr');
-  const tabStdout = document.getElementById('tabStdout');
-  const tabStderr = document.getElementById('tabStderr');
+  // Old modal output tabs
+  const stdoutEl1 = document.getElementById('outputStdout');
+  const stderrEl1 = document.getElementById('outputStderr');
+  const tabStdout1 = document.getElementById('tabStdout');
+  const tabStderr1 = document.getElementById('tabStderr');
+
+  // New simple output tabs (outside box)
+  const stdoutEl2 = document.getElementById('outputStdoutSimple');
+  const stderrEl2 = document.getElementById('outputStderrSimple');
+  const tabStdout2 = document.getElementById('tabStdoutSimple');
+  const tabStderr2 = document.getElementById('tabStderrSimple');
 
   if (tab === 'stderr') {
-    stdoutEl.style.display = 'none';
-    stderrEl.style.display = 'block';
-    tabStdout.classList.remove('active');
-    tabStderr.classList.add('active');
+    if (stdoutEl1) stdoutEl1.style.display = 'none';
+    if (stderrEl1) stderrEl1.style.display = 'block';
+    if (tabStdout1) tabStdout1.classList.remove('active');
+    if (tabStderr1) tabStderr1.classList.add('active');
+    if (stdoutEl2) stdoutEl2.style.display = 'none';
+    if (stderrEl2) stderrEl2.style.display = 'block';
+    if (tabStdout2) tabStdout2.classList.remove('active');
+    if (tabStderr2) tabStderr2.classList.add('active');
   } else {
-    stdoutEl.style.display = 'block';
-    stderrEl.style.display = 'none';
-    tabStdout.classList.add('active');
-    tabStderr.classList.remove('active');
+    if (stdoutEl1) stdoutEl1.style.display = 'block';
+    if (stderrEl1) stderrEl1.style.display = 'none';
+    if (tabStdout1) tabStdout1.classList.add('active');
+    if (tabStderr1) tabStderr1.classList.remove('active');
+    if (stdoutEl2) stdoutEl2.style.display = 'block';
+    if (stderrEl2) stderrEl2.style.display = 'none';
+    if (tabStdout2) tabStdout2.classList.add('active');
+    if (tabStderr2) tabStderr2.classList.remove('active');
   }
 }
 
 function setOutputStatus(status, message) {
-  const badge = document.getElementById('outputStatusBadge');
-  if (badge) {
-    badge.textContent = message;
-    badge.className = 'status-badge ' + status;
+  const badge1 = document.getElementById('outputStatusBadge');
+  const badge2 = document.getElementById('outputStatusBadgeSimple');
+  if (badge1) {
+    badge1.textContent = message;
+    badge1.className = 'status-badge ' + status;
+  }
+  if (badge2) {
+    badge2.textContent = message;
+    badge2.className = 'status-badge ' + status;
   }
 }
 
 function setOutputMeta(exitCode, execTime) {
-  const ecEl = document.getElementById('outputExitCode');
-  const etEl = document.getElementById('outputExecTime');
-  if (ecEl) ecEl.textContent = exitCode !== null ? exitCode : '-';
-  if (etEl) etEl.textContent = execTime !== null ? execTime + ' ms' : '-';
+  const ecEl1 = document.getElementById('outputExitCode');
+  const etEl1 = document.getElementById('outputExecTime');
+  const ecEl2 = document.getElementById('outputExitCodeSimple');
+  const etEl2 = document.getElementById('outputExecTimeSimple');
+  if (ecEl1) ecEl1.textContent = exitCode !== null ? exitCode : '-';
+  if (etEl1) etEl1.textContent = execTime !== null ? execTime + ' ms' : '-';
+  if (ecEl2) ecEl2.textContent = exitCode !== null ? exitCode : '-';
+  if (etEl2) etEl2.textContent = execTime !== null ? execTime + ' ms' : '-';
 }
 
 function setOutputText(stdout, stderr) {
-  const stdoutEl = document.getElementById('outputStdout');
-  const stderrEl = document.getElementById('outputStderr');
-  if (stdoutEl) stdoutEl.textContent = stdout || '(no output)';
-  if (stderrEl) stderrEl.textContent = stderr || '(no stderr)';
+  const stdoutEl1 = document.getElementById('outputStdout');
+  const stderrEl1 = document.getElementById('outputStderr');
+  const stdoutEl2 = document.getElementById('outputStdoutSimple');
+  const stderrEl2 = document.getElementById('outputStderrSimple');
+  if (stdoutEl1) stdoutEl1.textContent = stdout || '(no output)';
+  if (stderrEl1) stderrEl1.textContent = stderr || '(no stderr)';
+  if (stdoutEl2) stdoutEl2.textContent = stdout || '(no output)';
+  if (stderrEl2) stderrEl2.textContent = stderr || '(no stderr)';
 }
 
 async function executeCode() {
@@ -954,9 +984,15 @@ document.addEventListener("DOMContentLoaded", () => {
     btnExecute.addEventListener("click", executeCode);
   }
 
-  // Output tab switching
+  // Output tab switching (old modal tabs)
   const tabStdout = document.getElementById("tabStdout");
   const tabStderr = document.getElementById("tabStderr");
   if (tabStdout) tabStdout.addEventListener("click", () => switchOutputTab('stdout'));
   if (tabStderr) tabStderr.addEventListener("click", () => switchOutputTab('stderr'));
+
+  // Output tab switching (new simple tabs outside box)
+  const tabStdoutSimple = document.getElementById("tabStdoutSimple");
+  const tabStderrSimple = document.getElementById("tabStderrSimple");
+  if (tabStdoutSimple) tabStdoutSimple.addEventListener("click", () => switchOutputTab('stdout'));
+  if (tabStderrSimple) tabStderrSimple.addEventListener("click", () => switchOutputTab('stderr'));
 });

@@ -466,23 +466,26 @@
             <textarea id="stdinInput" spellcheck="false" wrap="off" placeholder="Type input here... e.g. 10 20"></textarea>
           </div>
 
-          <!-- Output Panel -->
-          <div class="output-panel" id="outputPanel" style="display:none;">
-            <div class="output-header">
-              <span class="output-label">📤 Output</span>
-              <div class="output-meta">
-                <span id="outputStatusBadge" class="status-badge status-waiting">Waiting...</span>
-                <span id="outputExitCode" class="exit-code">-</span>
-                <span id="outputExecTime" class="exec-time">-</span>
+          <!-- Output Area (Below Run button, outside box, with scroll) -->
+          <div class="output-area" id="outputArea" style="display:none;">
+            <div class="output-header-simple">
+              <span class="output-label-simple">📤 Output</span>
+              <div class="output-meta-simple">
+                <span id="outputStatusBadgeSimple" class="status-badge status-waiting">Waiting...</span>
+                <span id="outputExitCodeSimple" class="exit-code">-</span>
+                <span id="outputExecTimeSimple" class="exec-time">-</span>
               </div>
             </div>
-            <div class="output-tabs">
-              <div class="output-tab active" id="tabStdout">stdout</div>
-              <div class="output-tab" id="tabStderr">stderr</div>
+            <!-- Simple output tabs -->
+            <div class="output-tabs-simple">
+              <div class="output-tab-simple active" id="tabStdoutSimple">stdout</div>
+              <div class="output-tab-simple" id="tabStderrSimple">stderr</div>
             </div>
-            <div class="output-content">
-              <pre id="outputStdout"></pre>
-              <pre id="outputStderr" style="display:none;"></pre>
+
+            <!-- Scrollable output text area (outside box) -->
+            <div class="output-scroll" id="outputScroll">
+              <pre id="outputStdoutSimple"></pre>
+              <pre id="outputStderrSimple" style="display:none; color: #ff0055;"></pre>
             </div>
           </div>
         </div>
