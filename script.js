@@ -668,6 +668,12 @@ function showOutputPanel(show) {
 }
 
 function switchOutputTab(tab) {
+  // Main output tabs (always visible panel)
+  const stdoutElMain = document.getElementById('outputStdoutMain');
+  const stderrElMain = document.getElementById('outputStderrMain');
+  const tabStdoutMain = document.getElementById('tabStdoutMain');
+  const tabStderrMain = document.getElementById('tabStderrMain');
+
   // Old modal output tabs
   const stdoutEl1 = document.getElementById('outputStdout');
   const stderrEl1 = document.getElementById('outputStderr');
@@ -681,6 +687,10 @@ function switchOutputTab(tab) {
   const tabStderr2 = document.getElementById('tabStderrSimple');
 
   if (tab === 'stderr') {
+    if (stdoutElMain) stdoutElMain.style.display = 'none';
+    if (stderrElMain) stderrElMain.style.display = 'block';
+    if (tabStdoutMain) tabStdoutMain.classList.remove('active');
+    if (tabStderrMain) tabStderrMain.classList.add('active');
     if (stdoutEl1) stdoutEl1.style.display = 'none';
     if (stderrEl1) stderrEl1.style.display = 'block';
     if (tabStdout1) tabStdout1.classList.remove('active');
@@ -690,6 +700,10 @@ function switchOutputTab(tab) {
     if (tabStdout2) tabStdout2.classList.remove('active');
     if (tabStderr2) tabStderr2.classList.add('active');
   } else {
+    if (stdoutElMain) stdoutElMain.style.display = 'block';
+    if (stderrElMain) stderrElMain.style.display = 'none';
+    if (tabStdoutMain) tabStdoutMain.classList.add('active');
+    if (tabStderrMain) tabStderrMain.classList.remove('active');
     if (stdoutEl1) stdoutEl1.style.display = 'block';
     if (stderrEl1) stderrEl1.style.display = 'none';
     if (tabStdout1) tabStdout1.classList.add('active');
@@ -702,8 +716,13 @@ function switchOutputTab(tab) {
 }
 
 function setOutputStatus(status, message) {
+  const badgeMain = document.getElementById('outputStatusBadgeMain');
   const badge1 = document.getElementById('outputStatusBadge');
   const badge2 = document.getElementById('outputStatusBadgeSimple');
+  if (badgeMain) {
+    badgeMain.textContent = message;
+    badgeMain.className = 'status-badge ' + status;
+  }
   if (badge1) {
     badge1.textContent = message;
     badge1.className = 'status-badge ' + status;
@@ -715,10 +734,14 @@ function setOutputStatus(status, message) {
 }
 
 function setOutputMeta(exitCode, execTime) {
+  const ecElMain = document.getElementById('outputExitCodeMain');
+  const etElMain = document.getElementById('outputExecTimeMain');
   const ecEl1 = document.getElementById('outputExitCode');
   const etEl1 = document.getElementById('outputExecTime');
   const ecEl2 = document.getElementById('outputExitCodeSimple');
   const etEl2 = document.getElementById('outputExecTimeSimple');
+  if (ecElMain) ecElMain.textContent = exitCode !== null ? exitCode : '-';
+  if (etElMain) etElMain.textContent = execTime !== null ? execTime + ' ms' : '-';
   if (ecEl1) ecEl1.textContent = exitCode !== null ? exitCode : '-';
   if (etEl1) etEl1.textContent = execTime !== null ? execTime + ' ms' : '-';
   if (ecEl2) ecEl2.textContent = exitCode !== null ? exitCode : '-';
@@ -726,10 +749,14 @@ function setOutputMeta(exitCode, execTime) {
 }
 
 function setOutputText(stdout, stderr) {
+  const stdoutElMain = document.getElementById('outputStdoutMain');
+  const stderrElMain = document.getElementById('outputStderrMain');
   const stdoutEl1 = document.getElementById('outputStdout');
   const stderrEl1 = document.getElementById('outputStderr');
   const stdoutEl2 = document.getElementById('outputStdoutSimple');
   const stderrEl2 = document.getElementById('outputStderrSimple');
+  if (stdoutElMain) stdoutElMain.textContent = stdout || '(no output)';
+  if (stderrElMain) stderrElMain.textContent = stderr || '(no stderr)';
   if (stdoutEl1) stdoutEl1.textContent = stdout || '(no output)';
   if (stderrEl1) stderrEl1.textContent = stderr || '(no stderr)';
   if (stdoutEl2) stdoutEl2.textContent = stdout || '(no output)';
@@ -995,4 +1022,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const tabStderrSimple = document.getElementById("tabStderrSimple");
   if (tabStdoutSimple) tabStdoutSimple.addEventListener("click", () => switchOutputTab('stdout'));
   if (tabStderrSimple) tabStderrSimple.addEventListener("click", () => switchOutputTab('stderr'));
+
+  // Output tab switching (main always-visible panel)
+  const tabStdoutMain = document.getElementById("tabStdoutMain");
+  const tabStderrMain = document.getElementById("tabStderrMain");
+  if (tabStdoutMain) tabStdoutMain.addEventListener("click", () => switchOutputTab('stdout'));
+  if (tabStderrMain) tabStderrMain.addEventListener("click", () => switchOutputTab('stderr'));
 });

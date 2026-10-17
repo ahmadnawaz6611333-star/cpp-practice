@@ -466,26 +466,27 @@
             <textarea id="stdinInput" spellcheck="false" wrap="off" placeholder="Type input here... e.g. 10 20"></textarea>
           </div>
 
-          <!-- Output Area (Below Run button, outside box, with scroll) -->
-          <div class="output-area" id="outputArea" style="display:none;">
-            <div class="output-header-simple">
-              <span class="output-label-simple">📤 Output</span>
-              <div class="output-meta-simple">
-                <span id="outputStatusBadgeSimple" class="status-badge status-waiting">Waiting...</span>
-                <span id="outputExitCodeSimple" class="exit-code">-</span>
-                <span id="outputExecTimeSimple" class="exec-time">-</span>
+          <!-- Output Panel - Always Visible, Below Run Button, With Scroll -->
+          <div class="output-panel-main">
+            <div class="output-header-main">
+              <span class="output-label-main">📤 Output</span>
+              <div class="output-meta-main">
+                <span id="outputStatusBadgeMain" class="status-badge status-waiting">Waiting...</span>
+                <span id="outputExitCodeMain" class="exit-code">-</span>
+                <span id="outputExecTimeMain" class="exec-time">-</span>
               </div>
             </div>
+
             <!-- Simple output tabs -->
-            <div class="output-tabs-simple">
-              <div class="output-tab-simple active" id="tabStdoutSimple">stdout</div>
-              <div class="output-tab-simple" id="tabStderrSimple">stderr</div>
+            <div class="output-tabs-main">
+              <div class="output-tab-main active" id="tabStdoutMain">stdout</div>
+              <div class="output-tab-main" id="tabStderrMain">stderr</div>
             </div>
 
-            <!-- Scrollable output text area (outside box) -->
-            <div class="output-scroll" id="outputScroll">
-              <pre id="outputStdoutSimple"></pre>
-              <pre id="outputStderrSimple" style="display:none; color: #ff0055;"></pre>
+            <!-- Scrollable output text area -->
+            <div class="output-scroll-main" id="outputScrollMain">
+              <pre id="outputStdoutMain"></pre>
+              <pre id="outputStderrMain" style="display:none; color: #ff0055;"></pre>
             </div>
           </div>
         </div>
